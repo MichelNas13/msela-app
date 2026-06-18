@@ -1,0 +1,32 @@
+# Msela — Netlify deploy config
+# Publish the site from the repo root (these files).
+[build]
+  publish = "."
+
+# Always revalidate the app shell so a new deploy shows up immediately on every device.
+[[headers]]
+  for = "/index.html"
+  [headers.values]
+    Cache-Control = "no-cache, must-revalidate"
+
+[[headers]]
+  for = "/sw.js"
+  [headers.values]
+    Cache-Control = "no-cache, must-revalidate"
+
+[[headers]]
+  for = "/manifest.webmanifest"
+  [headers.values]
+    Cache-Control = "no-cache, must-revalidate"
+
+# Icons rarely change — let them cache for a day.
+[[headers]]
+  for = "/*.png"
+  [headers.values]
+    Cache-Control = "public, max-age=86400"
+
+# Single-page app: serve index.html for any unknown path (real files still win).
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200

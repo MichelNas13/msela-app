@@ -1,0 +1,1692 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#0F2A47">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Msela">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="icon" type="image/png" href="icon-192.png">
+<title>Msela — Unified Health Tracker</title>
+<style>
+:root{
+  --navy:#0F2A47; --slate:#4A5568; --slate2:#595959; --teal:#267474; --teal-soft:#B2DFDF;
+  --input:#0050C8; --green:#276749; --green-chip:#C6F6D5; --red:#9B2C2C; --red-chip:#FED7D7;
+  --orange:#9C4221; --orange-chip:#FEEBC8; --bg:#F7FAFC; --card:#FFFFFF; --line:#E2E8F0; --cue:#1A6A6A;
+  --shadow:0 1px 3px rgba(15,42,71,.10),0 4px 14px rgba(15,42,71,.06);
+}
+@media (prefers-color-scheme: dark){
+  :root{ --navy:#E2E8F0; --slate:#B6C2D0; --slate2:#A8B3BF; --bg:#0D1722; --card:#16273A;
+         --line:#2A3D52; --teal-soft:#1E3A4D; --green-chip:#1C3A2A; --red-chip:#461F1F;
+         --orange-chip:#42301A; --input:#7FB3FF; --green:#7BD8A0; --red:#F1A0A0; --orange:#F0B074; --cue:#7FD0D0;
+         --shadow:0 1px 3px rgba(0,0,0,.4); }
+  .hero{ background:#16273A !important; }
+}
+*{box-sizing:border-box; -webkit-tap-highlight-color:transparent}
+html,body{margin:0; padding:0; background:var(--bg); color:var(--navy); overflow-x:hidden;
+  font:16px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Calibri,sans-serif;
+  -webkit-text-size-adjust:100%;}
+header.app{position:sticky; top:0; z-index:10; background:#0F2A47; color:#fff;
+  padding:calc(env(safe-area-inset-top) + 14px) 18px 12px;}
+header.app h1{margin:0; font-size:17px; letter-spacing:.4px}
+header.app .sub{font-size:12px; color:#E2E8F0; margin-top:2px}
+main{max-width:680px; margin:0 auto; padding:16px 14px calc(86px + env(safe-area-inset-bottom));}
+.card{background:var(--card); border:1px solid var(--line); border-radius:16px;
+  box-shadow:var(--shadow); padding:16px; margin-bottom:14px; overflow-wrap:break-word;}
+.card h2{margin:0 0 4px; font-size:13px; letter-spacing:.8px; text-transform:uppercase; color:var(--slate)}
+.hero{background:linear-gradient(135deg,#0F2A47,#1B4570); color:#fff;}
+.hero h2{color:#CBD8E6} .hero .big{font-size:26px; font-weight:700; margin:4px 0}
+.hero .meta{font-size:13px; color:#E2E8F0}
+.chip{display:inline-block; padding:3px 10px; border-radius:999px; font-size:12px; font-weight:600; margin:2px 6px 2px 0}
+.chip.green{background:var(--green-chip); color:var(--green)}
+.chip.orange{background:var(--orange-chip); color:var(--orange)}
+.chip.red{background:var(--red-chip); color:var(--red)}
+.chip.teal{background:var(--teal-soft); color:var(--teal)}
+@media (prefers-color-scheme: dark){ .chip.teal{color:#9FD8D8} }
+.exrow{display:flex; align-items:center; gap:12px; padding:12px 2px; border-bottom:1px solid var(--line); min-height:48px; flex-wrap:wrap}
+.exrow:last-child{border-bottom:none}
+.exrow .n{flex:1; min-width:150px} .exrow .n b{display:block; font-size:15px}
+.exrow .n span{font-size:12.5px; color:var(--slate)}
+.exrow .rx{font-size:12.5px; color:var(--slate); white-space:nowrap}
+.star{color:var(--orange); font-weight:700}
+.note{font-size:13px; color:var(--slate)}
+.cue{display:block; font-size:12px; color:var(--cue); font-weight:600; margin-top:3px}
+.cue.up{color:var(--green)}
+.kpis{display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:10px}
+.kpi{background:rgba(255,255,255,.10); border-radius:10px; padding:10px}
+.kpi .v{font-size:20px; font-weight:700} .kpi .l{font-size:11.5px; color:#CBD8E6}
+.footer-note{text-align:center; font-size:12px; color:var(--slate); margin-top:18px}
+.bigscore{font-size:44px; font-weight:800; color:var(--navy); line-height:1}
+.gridR{display:grid; grid-template-columns:repeat(auto-fit,minmax(132px,1fr)); gap:10px; margin-top:10px}
+.dot{display:inline-block; width:11px; height:11px; border-radius:50%; vertical-align:middle}
+.dot.good{background:var(--green)} .dot.meh{background:var(--orange)} .dot.bad{background:var(--red)} .dot.neutral{background:var(--teal)}
+.bignum{font-size:22px; font-weight:800; color:var(--navy)} .unit{font-size:12px; color:var(--slate)}
+/* forms */
+.fld{margin:10px 0}
+.fld label{display:block; font-size:13px; font-weight:600; margin-bottom:4px}
+input[type=number],input[type=date],input[type=text]{width:100%; min-height:48px; padding:10px 12px;
+  font:inherit; color:var(--navy); background:var(--card); border:1.5px solid var(--line); border-radius:10px;}
+input:focus-visible,button:focus-visible{outline:3px solid var(--input); outline-offset:2px}
+.grid2{display:grid; grid-template-columns:1fr 1fr; gap:10px}
+.grid3{display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px}
+.btn{display:inline-flex; align-items:center; justify-content:center; min-height:48px; min-width:48px;
+  padding:10px 18px; border:0; border-radius:12px; font:inherit; font-weight:700; cursor:pointer;
+  background:var(--teal); color:#fff; width:100%}
+.btn.ghost{background:transparent; color:var(--teal); border:1.5px solid var(--teal); font-weight:600}
+.btn.sm{min-height:44px; width:auto; padding:8px 14px; font-size:14px}
+.seg{display:flex; gap:8px; margin:8px 0; flex-wrap:wrap}
+.seg button{flex:1; min-height:44px; min-width:44px; border:1.5px solid var(--line); background:var(--card);
+  color:var(--slate); border-radius:10px; font:inherit; font-size:14px; font-weight:600; cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--teal); border-color:var(--teal); color:#fff}
+.setin{display:flex; gap:8px; align-items:center}
+.setin{flex-wrap:wrap} .setin input{width:62px; text-align:center}
+.setin .x{color:var(--slate)}
+.e1rm{font-size:12px; color:var(--slate); min-width:86px; text-align:right}
+.msg{border-radius:10px; padding:10px 12px; font-size:13.5px; margin:8px 0}
+.msg.err{background:var(--red-chip); color:var(--red)}
+.msg.warn{background:var(--orange-chip); color:var(--orange)}
+.msg.ok{background:var(--green-chip); color:var(--green)}
+table.mini{width:100%; border-collapse:collapse; font-size:13.5px}
+table.mini th{text-align:left; color:var(--slate); font-size:11.5px; text-transform:uppercase; letter-spacing:.5px; padding:6px 4px; border-bottom:1px solid var(--line)}
+table.mini td{padding:8px 4px; border-bottom:1px solid var(--line)}
+table.mini button{min-height:36px}
+.toggle{display:flex; align-items:center; gap:12px; width:100%; min-height:56px; padding:10px 14px;
+  margin:8px 0; border:1.5px solid var(--line); border-radius:12px; background:var(--card);
+  color:var(--navy); font:inherit; font-size:15px; cursor:pointer; text-align:left}
+.toggle .box{width:26px; height:26px; border-radius:8px; border:2px solid var(--slate); flex:none;
+  display:flex; align-items:center; justify-content:center; color:#fff; font-weight:700}
+.toggle[aria-pressed="true"]{border-color:var(--teal)}
+.toggle[aria-pressed="true"] .box{background:var(--teal); border-color:var(--teal)}
+.toggle .stk{margin-left:auto; font-size:12.5px; color:var(--slate); white-space:nowrap}
+.heat{display:grid; grid-template-columns:repeat(12,1fr); gap:4px; margin-top:6px}
+.heat div{aspect-ratio:1; border-radius:4px; background:var(--line)}
+.heat div.on{background:var(--teal)}
+.toast{position:fixed; left:50%; transform:translateX(-50%); bottom:calc(96px + env(safe-area-inset-bottom));
+  background:var(--navy); color:var(--bg); padding:12px 20px; border-radius:12px; font-size:14px;
+  box-shadow:var(--shadow); opacity:0; transition:opacity .25s; pointer-events:none; z-index:20; max-width:88%}
+.toast.show{opacity:1}
+details.proto{margin:10px 0}
+details.proto summary{cursor:pointer; font-size:13.5px; font-weight:600; color:var(--teal); min-height:44px; display:flex; align-items:center}
+nav.tabs{position:fixed; bottom:0; left:0; right:0; z-index:10; display:flex;
+  background:var(--card); border-top:1px solid var(--line); padding-bottom:env(safe-area-inset-bottom);}
+nav.tabs button{flex:1; min-height:54px; min-width:0; border:0; background:none; cursor:pointer;
+  font:inherit; font-size:10px; letter-spacing:-.1px; color:var(--slate); display:flex; flex-direction:column;
+  align-items:center; gap:2px; padding:7px 1px 6px; overflow:hidden; white-space:nowrap;
+  border-top:2px solid transparent;}
+nav.tabs button .ic{font-size:19px; line-height:1}
+nav.tabs button[aria-selected="true"]{color:var(--teal); font-weight:700; border-top-color:#EC4899}
+nav.tabs button:focus-visible{outline:3px solid var(--input); outline-offset:-3px; border-radius:10px}
+.screen{display:none} .screen.active{display:block}
+</style>
+</head>
+<body>
+<header class="app">
+  <h1>MSELA</h1>
+  <div class="sub">Unified Health Tracker · process over outcome</div>
+</header>
+<main>
+  <section id="scr-today" class="screen active" role="tabpanel" aria-label="Today"></section>
+  <section id="scr-log" class="screen" role="tabpanel" aria-label="Log workout"></section>
+  <section id="scr-measure" class="screen" role="tabpanel" aria-label="Measurements"></section>
+  <section id="scr-habits" class="screen" role="tabpanel" aria-label="Habits"></section>
+  <section id="scr-dash" class="screen" role="tabpanel" aria-label="Dashboard">
+  </section>
+  <section id="scr-progress" class="screen" role="tabpanel" aria-label="Progress over time"></section>
+  <section id="scr-data" class="screen" role="tabpanel" aria-label="Data and backup"></section>
+</main>
+<div id="toast" class="toast" role="status" aria-live="polite"></div>
+<nav class="tabs" role="tablist" aria-label="Main navigation">
+  <button role="tab" aria-selected="true" data-scr="today"><span class="ic" aria-hidden="true">☀️</span>Today</button>
+  <button role="tab" aria-selected="false" data-scr="log"><span class="ic" aria-hidden="true">🏋️</span>Log</button>
+  <button role="tab" aria-selected="false" data-scr="measure"><span class="ic" aria-hidden="true">📏</span>Measure</button>
+  <button role="tab" aria-selected="false" data-scr="habits"><span class="ic" aria-hidden="true">✅</span>Habits</button>
+  <button role="tab" aria-selected="false" data-scr="dash"><span class="ic" aria-hidden="true">📊</span>Dash</button>
+  <button role="tab" aria-selected="false" data-scr="progress"><span class="ic" aria-hidden="true">📈</span>Insights</button>
+  <button role="tab" aria-selected="false" data-scr="data"><span class="ic" aria-hidden="true">💾</span>Data</button>
+</nav>
+<script>
+"use strict";
+/* ============ DATA MODEL & SEED (program is data, not code) ============ */
+const STORE_KEY = "uhs_data_v1";
+const DEFAULT_DATA = {
+  schema: 1,
+  profile: { name: "Michel", heightM: 1.87 },
+  targets: { weightKg: 100, waistCm: 90, navelCm: 95, bri: 3.01 }, // bri derived from waistCm at boot (kept consistent)
+  program: {
+    name: "Cluster-Based Block Periodization",
+    startDate: "2026-05-18",            // Monday of week 1
+    weeks: 16,
+    deloadWeeks: [6, 12],
+    blocks: [
+      { weeks: [1, 4],  name: "FOUNDATION",  params: "Reps 8-12 • 3 sets • RIR 2-3" },
+      { weeks: [5, 8],  name: "STRENGTH",    params: "Reps 6-10 • 3 sets • RIR 1-2" },
+      { weeks: [9, 12], name: "HYPERTROPHY", params: "Reps 8-12 • 4 sets tentpoles • RIR 1-2" },
+      { weeks: [13, 16],name: "REFINEMENT",  params: "Mixed 6-15 • isolation focus" }
+    ],
+    /* weekday: 0=Sun..6=Sat */
+    schedule: {
+      1: { type: "PULL + HINGE",  kind: "gym",  sessionKey: "mon", note: "Walk 4.5km to gym as warm-up" },
+      2: { type: "PUSH + ARMS",   kind: "gym",  sessionKey: "tue", note: "Walk 4.5km; the suit-fitting day" },
+      3: { type: "CALISTHENICS + BASKETBALL", kind: "mixed", logs: ["calisthenics", "basketball"], note: "Calisthenics primer, then ~3 hrs basketball (6-9pm) • snack 5pm • post-game meal within 90 min" },
+      4: { type: "PULL FOCUS",    kind: "gym",  sessionKey: "thu", note: "Light gym ~50 min + 6pm mobility class" },
+      5: { type: "CALISTHENICS + BASKETBALL", kind: "mixed", logs: ["calisthenics", "basketball"], note: "Calisthenics primer, then ~3 hrs basketball (6-9pm) • snack 5pm • post-game meal within 90 min" },
+      6: { type: "ACTIVE RECOVERY", kind: "recovery", note: "10km walk, <5.5 km/h — true recovery pace" },
+      0: { type: "REST + MEASURE", kind: "rest", note: "Measurements before food/water • 8km slow walk" }
+    },
+    sessions: {
+      mon: { title: "Monday — Pull (Back · Rear Delts · Biceps)", slots: [
+        { name: "Vertical Pull", star: 1, rx: "3-4 × 6-12", tent: "pulldown", w: ["Lat pulldown","Pull-up","Lat pulldown (neutral grip)","Weighted pull-up","Pull-up (assisted)"] },
+        { name: "Horizontal Row", rx: "3 × 8-12", w: ["Seated cable row","Barbell row","Chest-supported row","T-bar row"] },
+        { name: "Single-arm Row", rx: "3 × 10-12", w: ["Single-arm DB row","Single-arm cable row","Meadows row"] },
+        { name: "Rear Delts", rx: "3 × 12-15", w: ["Face pull","Reverse pec deck","Cable rear fly"] },
+        { name: "Biceps Curl", rx: "3 × 8-12", w: ["Barbell curl","EZ-bar curl","DB curl","Cable curl"] },
+        { name: "Hammer Curl", rx: "3 × 10-15", w: ["Hammer curl","Incline DB curl","Cable hammer curl"] },
+        { name: "Core", rx: "3 × 12-15", w: ["Hanging leg raise","Cable crunch","Pallof press","Plank"] }
+      ]},
+      tue: { title: "Tuesday — Push (Chest · Shoulders · Triceps)", slots: [
+        { name: "Incline Press", star: 1, rx: "3-4 × 6-12", tent: "incline", w: ["Incline DB press","Incline barbell press","Incline Smith press"] },
+        { name: "Chest", rx: "3 × 8-12", w: ["Flat DB press","Weighted dip","Machine chest press","Flat barbell press"] },
+        { name: "Chest Fly", rx: "3 × 12-15", w: ["Cable fly","Pec deck","Incline cable fly"] },
+        { name: "Shoulder Press", star: 1, rx: "3 × 6-12", tent: "ohp", w: ["Seated DB press","Smith shoulder press","Machine shoulder press","Arnold press"] },
+        { name: "Lateral Raise", star: 2, rx: "4 × 12-15", tent: "lateral", w: ["DB lateral raise","Cable lateral raise","Machine lateral raise","Lean-away cable lateral"] },
+        { name: "Triceps Pushdown", rx: "3 × 10-15", w: ["Rope pushdown","Bar pushdown","Single-arm pushdown"] },
+        { name: "Overhead Triceps", rx: "3 × 10-15", w: ["Overhead cable extension","DB overhead extension","Skull crusher"] }
+      ]},
+      thu: { title: "Thursday — Delts · Arms · Core", slots: [
+        { name: "Lateral Raise", star: 2, rx: "4 × 12-20", w: ["Cable lateral raise","DB lateral raise","Lean-away cable lateral","Machine lateral raise"] },
+        { name: "Rear Delts", rx: "3 × 12-15", w: ["Reverse pec deck","Face pull","Cable rear fly"] },
+        { name: "Biceps", rx: "3 × 8-12", w: ["DB curl","Cable curl","Preacher curl","EZ-bar curl"] },
+        { name: "Triceps", rx: "3 × 10-15", w: ["Rope pushdown","Overhead extension","Cable kickback"] },
+        { name: "Hamstrings", rx: "3 × 10-12", w: ["Romanian deadlift","Lying leg curl","Seated leg curl"] },
+        { name: "Core", rx: "3 × 12-15", w: ["Hanging leg raise","Cable crunch","Ab wheel","Hollow hold"] }
+      ]}
+    },
+    tentpoles: {
+      pulldown: { label: "Vertical Pull (pulldown / pull-up)", targetW16: "BW pull-up ×10-12 or 80 kg pulldown ×8 (1-yr)" },
+      incline:  { label: "Incline DB press",        targetW16: "36-40 kg/hand ×8-10 (1-yr)" },
+      ohp:      { label: "Seated DB shoulder press", targetW16: "28-30 kg/hand ×8-10 (1-yr)" },
+      lateral:  { label: "DB lateral raise",         targetW16: "14-16 kg strict ×12+ (1-yr)" }
+    }
+  },
+  habitsCatalog: [
+    { id: "meals",  label: "Sodium consistency — cook 5+ meals at home", w: 3 },
+    { id: "water",  label: "Water 3–3.5L, consistent timing", w: 3 },
+    { id: "sleep",  label: "Sleep consistency — bedtime ±30 min", w: 3 },
+    { id: "alcohol",label: "Alcohol-free or ≤2 units", w: 3 },
+    { id: "timing", label: "Consistent meal times", w: 2 },
+    { id: "rhythm", label: "Training rhythm held (no skip-then-cram)", w: 2 }
+  ],
+  measurements: [
+    { date: "2026-05-18", weightKg: 110,   waistCm: 97, navelCm: 105, hipCm: 105, sleepH: 7,    rhr: 56, bodyFatPct: 33 },
+    { date: "2026-06-09", weightKg: 111.7, waistCm: 95, navelCm: 103, hipCm: 103, sleepH: 5.23, rhr: 53 }
+  ],
+  workouts: [],   /* {date, cluster, sessionKey, sets:[{slot, exercise, kg, reps}]} */
+  activities: [], /* {date, type:"calisthenics"|"basketball"} — Wed/Fri loggable sessions */
+  deloads: [],    /* {date} — each completed block deload */
+  habitLog: {},   /* { "2026-W24": {meals:true,...} } */
+  checkpoints: [  /* health checkpoints — status: todo|booked|done • date + result are user-entered */
+    { id: "dexa1",   type: "DEXA scan — baseline",     when: "Start",     purpose: "Body-composition baseline: fat mass, lean mass, regional distribution, visceral fat, bone density.", status: "todo", date: "", result: "" },
+    { id: "blood1",  type: "Blood panel — baseline",   when: "Start",     purpose: "Lipids, HbA1c, fasting glucose, ALT/AST, free testosterone, TSH/free T4, vitamin D, ferritin, creatinine, eGFR.", status: "todo", date: "", result: "" },
+    { id: "bp1",     type: "Blood pressure — baseline",when: "Start",     purpose: "Clinic or pharmacy reading, both arms, per protocol.", status: "todo", date: "", result: "" },
+    { id: "chiro1",  type: "Chiropractor",             when: "Deload 1",  purpose: "Movement assessment + soft-tissue work during a deload.", status: "todo", date: "", result: "" },
+    { id: "physio1", type: "Physiotherapist",          when: "Deload 1",  purpose: "Movement screening (FMS), identify compensations and mobility limits.", status: "todo", date: "", result: "" },
+    { id: "dexa2",   type: "DEXA scan — follow-up",    when: "~12 weeks", purpose: "Validate composition change: muscle gain vs fat loss split.", status: "todo", date: "", result: "" },
+    { id: "chiro2",  type: "Chiropractor — follow-up", when: "~12 weeks", purpose: "Second soft-tissue + assessment session.", status: "todo", date: "", result: "" },
+    { id: "bp2",     type: "Blood pressure — recheck", when: "~12 weeks", purpose: "Recheck after the training cycle.", status: "todo", date: "", result: "" },
+    { id: "review",  type: "Measurements review",      when: "Quarterly", purpose: "Compare weight, waist, navel and BRI trends; adjust the plan if needed.", status: "todo", date: "", result: "" },
+    { id: "annual",  type: "Full health panel",        when: "Annually",  purpose: "Complete blood work + DEXA + full physical.", status: "todo", date: "", result: "" }
+  ]
+};
+/* ===== extend the program into a 52-week progressive macrocycle ===== */
+(function build52(p) {
+  const WEEKS = 52;
+  p.name = "52-Cluster Progressive Macrocycle";
+  p.weeks = WEEKS; p.deloadWeeks = [];   // deloads are EARNED via the block gate, not fixed clusters
+  p.blocks = [
+    { weeks: [1, 6],   name: "FOUNDATION",     params: "Reps 8-12 • 3 sets • RIR 2-3" },
+    { weeks: [7, 12],  name: "STRENGTH",       params: "Reps 6-10 • 3 sets • RIR 1-2" },
+    { weeks: [13, 18], name: "HYPERTROPHY",    params: "Reps 8-12 • 4 sets tentpoles" },
+    { weeks: [19, 24], name: "POWER-STRENGTH", params: "Reps 5-8 • heavier, full rest" },
+    { weeks: [25, 30], name: "HYPERTROPHY II", params: "Reps 10-15 • volume up" },
+    { weeks: [31, 36], name: "STRENGTH II",    params: "Reps 6-10 • push loads" },
+    { weeks: [37, 42], name: "METABOLITE",     params: "Reps 12-20 • short rest" },
+    { weeks: [43, 48], name: "PEAK STRENGTH",  params: "Reps 4-8 • heavy, RIR 1" },
+    { weeks: [49, 52], name: "REFINEMENT",     params: "Mixed 6-15 • isolation focus" }
+  ];
+  // continuous exercise rotation across all clusters (no fixed deload gaps — the gate inserts deloads)
+  for (const k of Object.keys(p.sessions)) for (const slot of p.sessions[k].slots) {
+    const pool = slot.w.filter(x => x && x !== "—"); const out = [];
+    for (let c = 0; c < WEEKS; c++) out.push(pool[c % pool.length]);
+    slot.w = out;
+  }
+})(DEFAULT_DATA.program);
+/* ============ CALCS (ported from workbook, verified) ============ */
+const Calc = {
+  bri(waistCm, heightM) {
+    const x = ((waistCm / 100) / (2 * Math.PI)) ** 2 / (0.5 * heightM) ** 2;
+    return 364.2 - 365.5 * Math.sqrt(Math.max(0, 1 - x));
+  },
+  whtr: (waistCm, heightM) => waistCm / (heightM * 100),
+  whr:  (waistCm, hipCm) => waistCm / hipCm,
+  bmi:  (kg, heightM) => kg / (heightM * heightM),
+  e1rm: (kg, reps) => kg * (1 + reps / 30),
+  briZone(b) {
+    if (b < 3.5) return { label: "Very Lean", cls: "green" };
+    if (b < 4.5) return { label: "Lean", cls: "green" };
+    if (b < 5.5) return { label: "Normal", cls: "teal" };
+    if (b < 6.5) return { label: "Watch", cls: "orange" };
+    if (b < 7.5) return { label: "Elevated", cls: "orange" };
+    return { label: "High", cls: "red" };
+  }
+};
+
+/* ============ STORAGE ============ */
+// Merge a saved/imported file with code defaults. User data wins, but program & habitsCatalog
+// always come from the current app code (so they can't be resurrected stale from an old backup).
+function mergeSaved(obj) {
+  const d = Object.assign(structuredClone(DEFAULT_DATA), obj || {});
+  d.program = structuredClone(DEFAULT_DATA.program);
+  d.habitsCatalog = structuredClone(DEFAULT_DATA.habitsCatalog);
+  return d;
+}
+const MIRROR_KEY = STORE_KEY + "_mirror";   // redundant copy: survives a single corrupt write to the main key
+const Store = {
+  parseValid(raw) {
+    if (!raw) return null;
+    const o = JSON.parse(raw);                // throws on bad JSON → caller falls through
+    if (!o || !Array.isArray(o.measurements)) return null;
+    return o;
+  },
+  load() {
+    // Try the main key, then the mirror, then a clean default — so one bad write can never wipe the history.
+    for (const key of [STORE_KEY, MIRROR_KEY]) {
+      try { const o = this.parseValid(localStorage.getItem(key)); if (o) return mergeSaved(o); } catch (e) {}
+    }
+    return structuredClone(DEFAULT_DATA);
+  },
+  save(d) {
+    let json; try { json = JSON.stringify(d); } catch (e) { return; }
+    try {
+      const prev = localStorage.getItem(STORE_KEY);
+      // keep the last good main copy in the mirror BEFORE overwriting the main key
+      if (prev) { try { if (this.parseValid(prev)) localStorage.setItem(MIRROR_KEY, prev); } catch (e) {} }
+      localStorage.setItem(STORE_KEY, json);
+    } catch (e) {}
+    if (typeof FileSync !== "undefined" && FileSync.handle) FileSync.write(d); // mirror to linked file if any
+  }
+};
+
+/* ============ PROGRAM CLOCK & DATES ============ */
+const Clock = {
+  parseISO(s) { const [y, m, d] = s.split("-").map(Number); return new Date(y, m - 1, d); },
+  toISO(d) { return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0"); },
+  week(data, date) {
+    const days = Math.floor((date - this.parseISO(data.program.startDate)) / 86400000);
+    return days < 0 ? 0 : Math.floor(days / 7) + 1;
+  },
+  block(data, wk) { return data.program.blocks.find(b => wk >= b.weeks[0] && wk <= b.weeks[1]) || null; },
+  isDeload: (data, wk) => data.program.deloadWeeks.includes(wk),
+  isoWeekKey(dt) {
+    const d = new Date(Date.UTC(dt.getFullYear(), dt.getMonth(), dt.getDate()));
+    const day = (d.getUTCDay() + 6) % 7;
+    d.setUTCDate(d.getUTCDate() - day + 3);
+    const wk1 = new Date(Date.UTC(d.getUTCFullYear(), 0, 4));
+    const wd1 = (wk1.getUTCDay() + 6) % 7;
+    wk1.setUTCDate(wk1.getUTCDate() - wd1 + 3);
+    const week = 1 + Math.round((d - wk1) / (7 * 86400000));
+    return d.getUTCFullYear() + "-W" + String(week).padStart(2, "0");
+  },
+  weekKeysBack(now, n) {
+    const out = []; const d = new Date(now);
+    for (let i = 0; i < n; i++) { out.unshift(this.isoWeekKey(d)); d.setDate(d.getDate() - 7); }
+    return out;
+  }
+};
+
+/* ============ DOMAIN LOGIC ============ */
+const Logic = {
+  tentpoleHistory(data, tentKey) {
+    const hist = [];
+    for (const w of data.workouts) for (const s of (w.sets || []))
+      if (s.tent === tentKey && isFinite(s.kg) && isFinite(s.reps) && s.reps > 0)
+        hist.push({ date: w.date, e1rm: Calc.e1rm(s.kg, s.reps) });
+    hist.sort((a, b) => a.date < b.date ? -1 : 1);
+    return hist;
+  },
+  stallStatus(hist) {
+    if (hist.length < 3) return { code: "building", label: "building data", cls: "teal" };
+    const latest = hist[hist.length - 1].e1rm, thirdLast = hist[hist.length - 3].e1rm;
+    return latest > thirdLast
+      ? { code: "progress", label: "PROGRESSING", cls: "green" }
+      : { code: "stall", label: "STALLED — check recovery", cls: "red" };
+  },
+  lastTime(data, sessionKey, slotName) {
+    for (let i = data.workouts.length - 1; i >= 0; i--) {
+      const w = data.workouts[i];
+      if (w.sessionKey !== sessionKey) continue;
+      const s = (w.sets || []).find(x => x.slot === slotName);
+      if (s) return s.kg + " kg × " + s.reps + " (" + w.date + ")";
+    }
+    return null;
+  },
+  validateMeasure(v, last) {
+    const errors = [], warnings = [];
+    const rng = (val, lo, hi, name) => { if (val != null && (val < lo || val > hi)) errors.push(name + " looks implausible (" + val + ")"); };
+    if (!v.date) errors.push("Date is required");
+    if (v.weightKg == null && v.waistCm == null) errors.push("Enter at least weight or waist");
+    rng(v.weightKg, 30, 300, "Weight"); rng(v.waistCm, 40, 250, "Waist");
+    rng(v.navelCm, 40, 250, "Navel"); rng(v.hipCm, 40, 250, "Hip");
+    rng(v.sleepH, 0, 14, "Sleep"); rng(v.rhr, 30, 120, "Resting HR");
+    rng(v.bpSys, 70, 220, "BP systolic"); rng(v.bpDia, 40, 140, "BP diastolic");
+    rng(v.bodyFatPct, 3, 60, "Body fat %");
+    rng(v.sleepScore, 0, 100, "Sleep score");
+    if (v.navelCm != null && v.waistCm != null && v.navelCm < v.waistCm - 15) warnings.push("Navel < waist by >15cm — check landmarks");
+    if (last) {
+      if (v.weightKg != null && last.weightKg != null && Math.abs(v.weightKg - last.weightKg) > 2.5)
+        warnings.push("Weight moved " + (v.weightKg - last.weightKg).toFixed(1) + " kg since last reading — fluid noise? (sodium, sleep, bowels)");
+      if (v.waistCm != null && last.waistCm != null && Math.abs(v.waistCm - last.waistCm) > 3)
+        warnings.push("Waist moved " + (v.waistCm - last.waistCm).toFixed(1) + " cm — re-measure to confirm landmark");
+    }
+    return { errors, warnings };
+  },
+  habitStreak(log, id, now) {
+    const cur = Clock.isoWeekKey(now);
+    let d = new Date(now);
+    if (!(log[cur] && log[cur][id])) d.setDate(d.getDate() - 7); /* current week not ticked yet: don't break streak */
+    let s = 0;
+    for (let i = 0; i < 520; i++) {
+      const k = Clock.isoWeekKey(d);
+      if (log[k] && log[k][id]) { s++; d.setDate(d.getDate() - 7); } else break;
+    }
+    return s;
+  }
+};
+
+/* ============ PROGRESSION COACH (week-1 calibration + double progression) ============ */
+// Seeds derived from the lifts you gave (bench ~50kg, curl 12.5kg/arm). Estimates — adjust to feel.
+const SEED_WEIGHTS = { "Incline Press": 16, "Chest": 18, "Shoulder Press": 14, "Lateral Raise": 7.5, "Triceps Pushdown": 15, "Overhead Triceps": 10, "Horizontal Row": 20, "Single-arm Row": 18, "Biceps Curl": 12.5, "Biceps": 12.5, "Hammer Curl": 10, "Hamstrings": 20 };
+const Prog = {
+  range(rx) {
+    const tail = String(rx).split("×").pop();
+    if (/\d\s*-?\s*\d*\s*s\b|sec/.test(tail)) return { kind: "time" };
+    const r = tail.match(/(\d+)\s*-\s*(\d+)/);
+    if (r) return { kind: "reps", lo: +r[1], hi: +r[2] };
+    const one = tail.match(/(\d+)/);
+    return one ? { kind: "reps", lo: +one[1], hi: +one[1] } : { kind: "reps", lo: 8, hi: 12 };
+  },
+  loadable(slot, ex) {
+    if (slot.tent) return true;
+    const n = (ex || slot.name).toLowerCase();
+    return !/plank|hollow|dead bug|copenhagen|l-sit|hanging|crunch|sit-up|mountain|med ball/.test(n);
+  },
+  inc(slot, ex) {
+    const n = ((ex || "") + " " + slot.name).toLowerCase();
+    return /curl|raise|fly|extension|pushdown|pec deck|face pull|rear|lateral|oblique|side bend|forearm|isolation/.test(n) ? 1 : 2.5;
+  },
+  lastSet(data, sessionKey, slotName) {
+    for (let i = data.workouts.length - 1; i >= 0; i--) {
+      const w = data.workouts[i];
+      if (w.sessionKey !== sessionKey) continue;
+      const s = (w.sets || []).find(x => x.slot === slotName);
+      if (s && isFinite(s.kg) && isFinite(s.reps)) return { kg: s.kg, reps: s.reps, date: w.date };
+    }
+    return null;
+  },
+  suggest(data, sessionKey, slot, ex) {
+    const R = this.range(slot.rx);
+    if (R.kind === "time" || !this.loadable(slot, ex))
+      return { mode: "bw", kg: null, reps: R.hi || null, text: "Bodyweight / core — add reps or hold time; add load only once it feels easy." };
+    const last = this.lastSet(data, sessionKey, slot.name), inc = this.inc(slot, ex);
+    if (!last) {
+      const seed = SEED_WEIGHTS[slot.name];
+      return { mode: "calibrate", kg: seed ?? null, reps: R.hi,
+        text: "Cluster 1 — find your working weight: ~" + R.hi + " clean reps with 2 left in the tank" + (seed ? " (≈ " + seed + "kg to start)" : "") + ". Groove the form now; load climbs as clusters build." };
+    }
+    if (last.reps >= R.hi) {
+      const w = Math.round((last.kg + inc) * 2) / 2;
+      return { mode: "up", kg: w, reps: R.lo, text: "Add weight — try " + w + "kg × " + R.lo + "+ (you hit " + R.hi + " at " + last.kg + "kg last time)." };
+    }
+    return { mode: "hold", kg: last.kg, reps: R.hi,
+      text: last.kg + "kg — aim for " + R.hi + " reps (last " + last.reps + "); clear " + R.hi + " on every set, then +" + inc + "kg." };
+  }
+};
+
+/* ============ SCORES (behaviour Process Score + Health Excellence index) ============ */
+const Score = {
+  weekPct(habitLog, weekKey, catalog) {
+    const log = habitLog[weekKey] || {};
+    let got = 0, tot = 0;
+    catalog.forEach(h => { tot += h.w; if (log[h.id]) got += h.w; });
+    return tot ? Math.round(got / tot * 100) : 0;
+  },
+  recentProcess(habitLog, catalog, now) {                 // avg of weeks with any ticks, last 4
+    const scored = Clock.weekKeysBack(now, 4)
+      .filter(k => habitLog[k] && Object.keys(habitLog[k]).length)
+      .map(k => this.weekPct(habitLog, k, catalog));
+    return scored.length ? Math.round(scored.reduce((a, c) => a + c, 0) / scored.length) : null;
+  },
+  rhr(v) { return v == null ? null : Math.max(10, Math.min(100, Math.round(100 - (v - 50) * 3))); },
+  sleep(score, hrs) {
+    if (score != null) return Math.max(0, Math.min(100, Math.round(score)));
+    if (hrs == null) return null;
+    if (hrs >= 7 && hrs <= 9) return 100;
+    return hrs < 7 ? Math.max(0, Math.round(100 - (7 - hrs) * 25)) : Math.max(0, Math.round(100 - (hrs - 9) * 15));
+  },
+  bp(sys, dia) { if (sys == null || dia == null) return null; if (sys < 120 && dia < 80) return 100; if (sys < 130 && dia < 80) return 85; if (sys < 140 && dia < 90) return 60; return 35; },
+  fitness(m) {
+    if (!m) return null;
+    const parts = [this.rhr(m.rhr), this.sleep(m.sleepScore, m.sleepH), this.bp(m.bpSys, m.bpDia)].filter(x => x != null);
+    return parts.length ? Math.round(parts.reduce((a, c) => a + c, 0) / parts.length) : null;
+  },
+  body(briW) { return briW == null ? null : Math.max(0, Math.min(100, Math.round(100 - (briW - 2.5) * 16))); },
+  strength(data) {
+    let judged = 0, prog = 0, anyData = false;
+    Object.keys(data.program.tentpoles).forEach(k => {
+      const h = Logic.tentpoleHistory(data, k); if (h.length) anyData = true;
+      const st = Logic.stallStatus(h);
+      if (st.code === "progress") { judged++; prog++; } else if (st.code === "stall") judged++;
+    });
+    if (!anyData) return null;
+    return judged === 0 ? 50 : Math.round(prog / judged * 100);
+  },
+  excellence(data, now) {
+    const ms = data.measurements, last = ms[ms.length - 1] || null;
+    const briW = last && last.waistCm ? Calc.bri(last.waistCm, data.profile.heightM) : null;
+    const comp = [
+      { k: "Body", v: this.body(briW), w: 30 },
+      { k: "Behaviour", v: this.recentProcess(data.habitLog, data.habitsCatalog, now), w: 30 },
+      { k: "Fitness", v: this.fitness(last), w: 25 },
+      { k: "Strength", v: this.strength(data), w: 15 }
+    ];
+    let sw = 0, sv = 0;
+    comp.forEach(c => { if (c.v != null) { sw += c.w; sv += c.w * c.v; } });
+    return { headline: sw ? Math.round(sv / sw) : null, comp };
+  }
+};
+
+/* ============ TRACK (period-based progress) ============ */
+const Track = {
+  fval(m, f, h) { return f === "bri" ? (m.waistCm != null ? Calc.bri(m.waistCm, h) : null) : (m[f] != null ? m[f] : null); },
+  series(ms, f, h) { return ms.map(m => ({ d: Clock.parseISO(m.date), v: this.fval(m, f, h), date: m.date })).filter(p => p.v != null); },
+  delta(ms, f, h, start) {
+    const s = this.series(ms, f, h); if (!s.length) return null;
+    const latest = s[s.length - 1]; let base = null;
+    for (const p of s) if (p.d <= start) base = p;            // your value entering the period
+    if (!base) base = s.find(p => p.d >= start) || null;       // else first reading within it
+    if (!base || base.date === latest.date) return { latest, base: base || latest, change: null };
+    return { latest, base, change: latest.v - base.v };
+  }
+};
+
+/* ============ INSIGHTS (deeper analytics — pure, testable) ============ */
+const Insights = {
+  // ETA to a target at the recent pace (last ~90 days, fallback last 4 readings)
+  projection(ms, f, h, targetV, now) {
+    const s = Track.series(ms, f, h);
+    if (s.length < 2 || targetV == null) return null;
+    const latest = s[s.length - 1];
+    const cut = new Date(latest.d.getTime() - 90 * 86400000);
+    let win = s.filter(p => p.d >= cut);
+    if (win.length < 2) win = s.slice(-Math.min(4, s.length));
+    const a = win[0], b = win[win.length - 1], days = (b.d - a.d) / 86400000;
+    if (days <= 0) return null;
+    const perMonth = (b.v - a.v) / days * 30.44, gap = targetV - latest.v;
+    if (Math.abs(gap) < 1e-6) return { reached: true, latest, perMonth };
+    const movingToward = (gap < 0 && perMonth < 0) || (gap > 0 && perMonth > 0);
+    if (!movingToward || Math.abs(perMonth) < 1e-3) return { stalled: true, latest, perMonth, gap };
+    const months = gap / perMonth, eta = new Date(latest.d.getTime() + months * 30.44 * 86400000);
+    return { latest, perMonth, gap, months, eta };
+  },
+  tonnage(workouts, since) {
+    let kg = 0, sets = 0;
+    workouts.forEach(w => {
+      if (since && Clock.parseISO(w.date) < since) return;
+      (w.sets || []).forEach(s => {
+        const r = isFinite(s.reps) ? s.reps : 0, k = isFinite(s.kg) ? s.kg : 0, sc = isFinite(s.setCount) ? s.setCount : 1;
+        if (k > 0 && r > 0) { kg += sc * r * k; sets += sc; }
+      });
+    });
+    return { kg: Math.round(kg), sets };
+  },
+  weeklyCount(activities, type, now, nWeeks) {
+    const out = [], d = new Date(now);
+    for (let i = 0; i < nWeeks; i++) {
+      const k = Clock.isoWeekKey(d);
+      out.unshift({ week: k, n: (activities || []).filter(a => a.type === type && Clock.isoWeekKey(Clock.parseISO(a.date)) === k).length });
+      d.setDate(d.getDate() - 7);
+    }
+    return out;
+  },
+  streak(activities, type, now) {
+    let d = new Date(now), s = 0;
+    const has = wk => (activities || []).some(a => a.type === type && Clock.isoWeekKey(Clock.parseISO(a.date)) === wk);
+    if (!has(Clock.isoWeekKey(d))) d.setDate(d.getDate() - 7);
+    for (let i = 0; i < 260; i++) { if (has(Clock.isoWeekKey(d))) { s++; d.setDate(d.getDate() - 7); } else break; }
+    return s;
+  },
+  sessionsInWindow(workouts, now, days) {
+    const cut = new Date(now.getTime() - days * 86400000);
+    return (workouts || []).filter(w => Clock.parseISO(w.date) >= cut).length;
+  },
+  habitAdherence(habitLog, catalog, now, nWeeks) {
+    const keys = Clock.weekKeysBack(now, nWeeks);
+    return catalog.map(hb => {
+      let hit = 0; keys.forEach(k => { if (habitLog[k] && habitLog[k][hb.id]) hit++; });
+      return { label: hb.label || hb.id, pct: Math.round(hit / nWeeks * 100), hit, of: nWeeks };
+    });
+  },
+  processTrend(habitLog, catalog, now, nWeeks) {
+    return Clock.weekKeysBack(now, nWeeks).map(k => ({
+      week: k,
+      pct: (habitLog[k] && Object.keys(habitLog[k]).length) ? Score.weekPct(habitLog, k, catalog) : null
+    }));
+  }
+};
+
+/* ============ UI HELPERS ============ */
+function esc(s) { return String(s).replace(/[&<>"']/g, c => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[c])); }
+function toast(msg) {
+  const t = document.getElementById("toast");
+  t.textContent = msg; t.classList.add("show");
+  clearTimeout(toast._h); toast._h = setTimeout(() => t.classList.remove("show"), 2400);
+}
+function numVal(id) {
+  const el = document.getElementById(id);
+  if (!el || el.value === "") return null;
+  const n = Number(el.value); return isFinite(n) ? n : null;
+}
+
+/* ============ APP STATE & RENDERERS ============ */
+const App = {
+  data: null, now: () => new Date(),
+  logSession: "mon", logWeek: 1,
+
+  boot() {
+    this.data = Store.load();
+    // keep BRI target consistent with the waist target (mirrors the workbook's live formula)
+    this.data.targets.bri = +Calc.bri(this.data.targets.waistCm, this.data.profile.heightM).toFixed(2);
+    Store.save(this.data);
+    const now = this.now();
+    const wk = Clock.week(this.data, now);
+    this.logWeek = Math.min(Math.max(wk, 1), this.data.program.weeks);
+    const day = this.data.program.schedule[now.getDay()];
+    this.logSession = day && day.sessionKey ? day.sessionKey : "mon";
+    this.initNav(); this.renderAll();
+    // backup nudge: only if there's data and it's been a while
+    const hasData = (this.data.measurements.length + this.data.workouts.length) > 0;
+    const lastB = this.data.lastBackupISO ? new Date(this.data.lastBackupISO) : null;
+    const ageDays = lastB ? (Date.now() - lastB.getTime()) / 86400000 : 999;
+    if (hasData && ageDays >= 14)
+      setTimeout(() => toast(lastB ? "Backup is " + Math.round(ageDays) + " days old — open Data to Copy/Export" : "No backup yet — open Data to Copy/Export your history"), 1400);
+  },
+  renderAll() { this.renderToday(); this.renderLog(); this.renderMeasure(); this.renderHabits(); },
+  initNav() {
+    const btns = document.querySelectorAll("nav.tabs button");
+    btns.forEach(btn => btn.addEventListener("click", () => this.switchTab(btn.dataset.scr)));
+  },
+  switchTab(name) {
+    document.querySelectorAll("nav.tabs button").forEach(b => b.setAttribute("aria-selected", b.dataset.scr === name ? "true" : "false"));
+    document.querySelectorAll(".screen").forEach(s => s.classList.remove("active"));
+    document.getElementById("scr-" + name).classList.add("active");
+    // re-render read-only views each time they're opened so they always reflect the latest data
+    const fn = { today: "renderToday", habits: "renderHabits", dash: "renderDash", progress: "renderProgress", data: "renderData" }[name];
+    if (fn && typeof this[fn] === "function") this[fn]();
+  },
+
+  /* ---- TODAY ---- */
+  renderToday() {
+    const data = this.data, now = this.now();
+    const el = document.getElementById("scr-today");
+    const wk = Clock.week(data, now);
+    const day = data.program.schedule[now.getDay()];
+    const dateStr = now.toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long" });
+    const last = data.measurements[data.measurements.length - 1];
+    let briTxt = "—", zone = null;
+    if (last && last.waistCm) { const b = Calc.bri(last.waistCm, data.profile.heightM); briTxt = b.toFixed(2); zone = Calc.briZone(b); }
+    const isGym = day.kind === "gym";
+    const cl = isGym ? this.clusterOf(day.sessionKey) : null;
+    const blk = isGym ? this.phaseFor(cl) : null;
+    let html = `<div class="card hero"><h2>${esc(dateStr)}</h2>
+      <div class="big">${esc(day.type)}${isGym ? " • Cluster " + cl : ""}</div>
+      <div class="meta">${isGym ? (blk ? esc(blk.name + " block • " + blk.params) : "") : esc(day.note)}</div>
+      <div class="kpis">
+        <div class="kpi"><div class="v">${briTxt}</div><div class="l">BRI (waist)${zone ? " • " + zone.label : ""}</div></div>
+        <div class="kpi"><div class="v">${last ? esc(last.weightKg) + " kg" : "—"}</div><div class="l">Last weigh-in</div></div>
+      </div></div>`;
+    if (isGym && this.isBlocked(day.sessionKey)) {
+      const sess = data.program.sessions[day.sessionKey];
+      html += `<div class="card"><h2>${esc(sess.title)} — done for this block ✓</h2><div class="note">You've finished your ${this.blockEnd()} ${day.sessionKey.toUpperCase()} clusters. Recover — finish the other days + calisthenics to unlock the deload.</div></div>`;
+    } else if (isGym) {
+      const sess = data.program.sessions[day.sessionKey];
+      html += `<div class="card"><h2>${esc(sess.title)} — Cluster ${cl}</h2>`;
+      sess.slots.forEach(slot => {
+        const ex = this.exFor(slot, cl);
+        const stars = slot.star ? ' <span class="star">' + "★".repeat(slot.star) + "</span>" : "";
+        const sug = Prog.suggest(data, day.sessionKey, slot, ex);
+        html += `<div class="exrow"><div class="n"><b>${esc(ex)}${stars}</b><span>${esc(slot.name)} • ${esc(slot.rx)}</span>
+          <span class="cue ${sug.mode === "up" ? "up" : ""}">${esc(sug.text)}</span></div></div>`;
+      });
+      html += `<div class="note" style="margin-top:10px">${esc(day.note)}</div>
+        <div style="margin-top:12px"><button class="btn" onclick="App.setLogSession('${day.sessionKey}');App.switchTab('log')">Log this session</button></div></div>`;
+    } else if (day.kind === "mixed") {
+      const today = Clock.toISO(now);
+      html += `<div class="card"><h2>${esc(day.type)}</h2><div class="note">${esc(day.note)}</div>`;
+      (day.logs || []).forEach(type => {
+        const doneToday = (data.activities || []).some(a => a.date === today && a.type === type);
+        const wk = this.activityWeek(type, now);
+        const label = type.charAt(0).toUpperCase() + type.slice(1);
+        html += `<div class="exrow"><div class="n"><b>${esc(label)}</b><span>${wk} this week${doneToday ? " • done today" : ""}</span></div>
+          <button class="btn ${doneToday ? "ghost" : ""} sm" style="width:auto" onclick="App.logActivity('${type}')">${doneToday ? "✓ undo" : "Log " + esc(label)}</button></div>`;
+      });
+      html += `</div>`;
+    } else {
+      html += `<div class="card"><h2>${esc(day.type)}</h2><div class="note">${esc(day.note)}</div></div>`;
+    }
+    const bp = this.blockProgress();
+    if (bp.ready) {
+      html += `<div class="card hero" style="background:linear-gradient(135deg,#1B4570,#267474)"><h2>BLOCK ${bp.block} COMPLETE 🎉</h2>
+        <div class="meta">All days hit ${bp.end} clusters and ${bp.calNeed} calisthenics. Take a deload week — calisthenics + walks, lighter — then mark it done:</div>
+        <div style="margin-top:12px"><button class="btn" onclick="App.completeDeload()">Mark deload done → unlock Block ${bp.block + 1}</button></div></div>`;
+    } else {
+      const grow = (lbl, have, need) => `<div class="exrow"><div class="n"><b>${lbl}</b></div><span class="chip ${have >= need ? "green" : "teal"}">${Math.min(have, need)}/${need}</span></div>`;
+      html += `<div class="card"><h2>Block ${bp.block} → deload progress</h2>
+        ${grow("Monday clusters", bp.days.mon, bp.end)}${grow("Tuesday clusters", bp.days.tue, bp.end)}${grow("Thursday clusters", bp.days.thu, bp.end)}${grow("Calisthenics", bp.cal, bp.calNeed)}
+        <div class="note" style="margin-top:8px">Hit all four to earn your deload.</div></div>`;
+    }
+    if (now.getDay() === 0) {
+      html += `<div class="card"><h2>Measurement day</h2><div class="note">Within 30 min of waking • post-bathroom • pre-food/water • same scale, hard floor.</div>
+        <div style="margin-top:12px"><button class="btn ghost" onclick="App.switchTab('measure')">Enter measurements</button></div></div>`;
+    }
+    html += `<div class="footer-note">Local-first • your data stays on this device</div>`;
+    el.innerHTML = html;
+  },
+
+  /* ---- LOG (workout) ---- */
+  setLogSession(k) { this.logSession = k; this.renderLog(); },
+  // current cluster for a day-type = how many of that day's sessions you've logged, + 1 (completion-based)
+  dayDone(key) { return this.data.workouts.filter(w => w.sessionKey === key).length; },
+  deloadsDone() { return (this.data.deloads || []).length; },
+  blockEnd() { return (this.deloadsDone() + 1) * 5; },
+  exFor(slot, cl) { return slot.w[(cl - 1) % slot.w.length]; },   // loops the rotation past cluster 52
+  phaseFor(cl) {
+    if (cl > this.data.program.weeks) return { name: "MAINTENANCE & ATHLETIC", params: "hold gains • minimum effective dose • re-build focus 2-3×/yr" };
+    return Clock.block(this.data, cl);
+  },
+  calDone() { return (this.data.activities || []).filter(a => a.type === "calisthenics").length; },
+  clusterOf(key) { return Math.min(this.dayDone(key) + 1, this.blockEnd()); },
+  isBlocked(key) { return this.dayDone(key) >= this.blockEnd(); },
+  blockProgress() {
+    const end = this.blockEnd(), calNeed = (this.deloadsDone() + 1) * 10;
+    const days = { mon: this.dayDone("mon"), tue: this.dayDone("tue"), thu: this.dayDone("thu") };
+    const daysOk = ["mon", "tue", "thu"].every(k => days[k] >= end), cal = this.calDone();
+    return { block: this.deloadsDone() + 1, end, days, cal, calNeed, daysOk, calOk: cal >= calNeed, ready: daysOk && cal >= calNeed };
+  },
+  completeDeload() {
+    if (!confirm("Mark this block's deload as done? It unlocks the next block — your gym days resume to their next cluster.")) return;
+    if (!this.data.deloads) this.data.deloads = [];
+    this.data.deloads.push({ date: Clock.toISO(this.now()) });
+    Store.save(this.data); toast("Deload logged — next block unlocked 💪"); this.renderToday();
+  },
+  // Wed/Fri activity logging (calisthenics, basketball) — tap to log, tap again to undo
+  logActivity(type) {
+    if (!this.data.activities) this.data.activities = [];
+    const today = Clock.toISO(this.now());
+    const i = this.data.activities.findIndex(a => a.date === today && a.type === type);
+    if (i >= 0) this.data.activities.splice(i, 1); else this.data.activities.push({ date: today, type });
+    Store.save(this.data); toast(i >= 0 ? type + " un-logged" : type + " logged ✓"); this.renderToday();
+  },
+  activityWeek(type, now) {
+    const k = Clock.isoWeekKey(now);
+    return (this.data.activities || []).filter(a => a.type === type && Clock.isoWeekKey(Clock.parseISO(a.date)) === k).length;
+  },
+  renderLog() {
+    const data = this.data, el = document.getElementById("scr-log");
+    const sess = data.program.sessions[this.logSession];
+    const cl = this.clusterOf(this.logSession), blk = this.phaseFor(cl);
+    let html = `<div class="card"><h2>Log a session</h2>
+      <div class="seg" role="group" aria-label="Day">
+        ${["mon","tue","thu"].map(k => `<button aria-pressed="${k === this.logSession}" onclick="App.setLogSession('${k}')">${k.toUpperCase()}</button>`).join("")}
+      </div>
+      <div class="note" style="margin-top:8px"><b>${esc(sess.title)}</b> · Cluster ${cl} of ${data.program.weeks}${blk ? " · " + esc(blk.name) : ""}. Do it and save to advance ${this.logSession.toUpperCase()} to its next cluster.</div>
+      <details class="proto"><summary>How weights &amp; progression work</summary>
+        <div class="note"><b>Cluster 1 is calibration.</b> For each lift, pick a weight you could do for the top of the rep range with ~2 reps still in the tank — that's your baseline. After that it's <b>double progression</b>: hold a weight until you hit the top of the range on every set, then add the smallest increment (2.5kg compounds, 1kg isolation). The ★ tentpole lifts build the physique — drive those up cluster by cluster. Form and reps-in-reserve beat the number on screen.</div>
+      </details></div>`;
+    if (this.isBlocked(this.logSession)) {
+      html += `<div class="card"><div class="msg warn">${this.logSession.toUpperCase()}'s ${this.blockEnd()} clusters are done for this block. Finish the other days + calisthenics, then deload (see Today).</div></div>`;
+    } else {
+      html += `<div class="card"><h2>${esc(sess.title)} — Cluster ${cl}</h2>`;
+      sess.slots.forEach((slot, i) => {
+        const ex = this.exFor(slot, cl);
+        const stars = slot.star ? ' <span class="star">' + "★".repeat(slot.star) + "</span>" : "";
+        const sug = Prog.suggest(data, this.logSession, slot, ex);
+        const kgPh = sug.kg != null ? sug.kg : "kg", rpPh = sug.reps != null ? sug.reps : "reps", setsPh = String(slot.rx).split("×")[0].trim();
+        html += `<div class="exrow">
+          <div class="n"><b>${esc(ex)}${stars}</b><span>${esc(slot.name)} • ${esc(slot.rx)}</span>
+            <span class="cue ${sug.mode === "up" ? "up" : ""}">${esc(sug.text)}</span></div>
+          <div class="setin">
+            <input type="number" inputmode="numeric" step="1" min="0" id="st-${i}" aria-label="${esc(slot.name)} sets" placeholder="${setsPh}" title="sets">
+            <span class="x" aria-hidden="true">×</span>
+            <input type="number" inputmode="decimal" step="0.5" min="0" id="kg-${i}" aria-label="${esc(slot.name)} weight kg" placeholder="${kgPh}" title="kg" oninput="App.liveE1rm(${i})">
+            <span class="x" aria-hidden="true">×</span>
+            <input type="number" inputmode="numeric" step="1" min="0" id="rp-${i}" aria-label="${esc(slot.name)} reps" placeholder="${rpPh}" title="reps" oninput="App.liveE1rm(${i})">
+          </div>
+          <div class="e1rm" id="e1-${i}">${slot.tent ? "e1RM —" : ""}</div></div>`;
+      });
+      html += `<div style="margin-top:12px"><button class="btn" onclick="App.saveWorkout()">Save session → advance to Cluster ${cl + 1}</button></div></div>`;
+    }
+    /* tentpole status */
+    html += `<div class="card"><h2>Tentpole status</h2>`;
+    for (const [key, tp] of Object.entries(data.program.tentpoles)) {
+      const hist = Logic.tentpoleHistory(data, key);
+      const st = Logic.stallStatus(hist);
+      const traj = hist.length
+        ? "e1RM " + hist[0].e1rm.toFixed(0) + " → " + hist[hist.length - 1].e1rm.toFixed(0) + "kg • target: " + tp.targetW16
+        : "log to start tracking • target: " + tp.targetW16;
+      html += `<div class="exrow"><div class="n"><b>${esc(tp.label)}</b><span>${esc(traj)}</span></div><span class="chip ${st.cls}">${esc(st.label)}</span></div>`;
+    }
+    html += `</div>`;
+    /* recent workouts */
+    const recent = data.workouts.slice(-3).reverse();
+    if (recent.length) {
+      html += `<div class="card"><h2>Recent sessions</h2><table class="mini"><tr><th>Date</th><th>Session</th><th>Sets</th><th></th></tr>`;
+      recent.forEach(w => {
+        const idx = data.workouts.indexOf(w);
+        html += `<tr><td>${esc(w.date)}</td><td>${esc(w.sessionKey.toUpperCase())} · C${esc(w.cluster || w.week)}</td><td>${(w.sets || []).length}</td>
+          <td><button class="btn ghost sm" onclick="App.deleteWorkout(${idx})" aria-label="Delete session ${esc(w.date)}">✕</button></td></tr>`;
+      });
+      html += `</table></div>`;
+    }
+    el.innerHTML = html;
+  },
+  liveE1rm(i) {
+    const slot = this.data.program.sessions[this.logSession].slots[i];
+    const el = document.getElementById("e1-" + i);
+    if (!slot.tent || !el) return;
+    const kg = numVal("kg-" + i), rp = numVal("rp-" + i);
+    el.textContent = (kg && rp) ? "e1RM " + Calc.e1rm(kg, rp).toFixed(1) : "e1RM —";
+  },
+  saveWorkout() {
+    const data = this.data, sess = data.program.sessions[this.logSession];
+    if (this.isBlocked(this.logSession)) { toast("This day's clusters are done for the block — deload first"); return; }
+    const cl = this.clusterOf(this.logSession);
+    const sets = [];
+    sess.slots.forEach((slot, i) => {
+      const st = numVal("st-" + i), kg = numVal("kg-" + i), rp = numVal("rp-" + i);
+      if (kg != null && rp != null && rp > 0)
+        sets.push({ slot: slot.name, exercise: this.exFor(slot, cl), setCount: st, kg, reps: rp, tent: slot.tent || null });
+    });
+    if (!sets.length) { toast("Enter weight × reps for at least one exercise"); return; }
+    data.workouts.push({ date: Clock.toISO(this.now()), cluster: cl, sessionKey: this.logSession, sets });
+    data.workouts.sort((a, b) => a.date < b.date ? -1 : 1);
+    Store.save(data); toast(this.logSession.toUpperCase() + " · Cluster " + cl + " saved — advancing"); this.renderLog();
+  },
+  deleteWorkout(idx) {
+    if (!confirm("Delete this session?")) return;
+    this.data.workouts.splice(idx, 1); Store.save(this.data); this.renderLog();
+  },
+
+  /* ---- MEASURE ---- */
+  renderMeasure() {
+    const data = this.data, el = document.getElementById("scr-measure");
+    const today = Clock.toISO(this.now());
+    let html = `<div class="card"><h2>Sunday measurement</h2>
+      <details class="proto"><summary>Protocol checklist</summary>
+        <div class="note">Sunday, within 30 min of waking • post-bathroom • pre-food/water • naked, hard floor •
+        tape parallel to floor, end of normal exhale • measure 3×, record median • waist = narrowest point, navel = across umbilicus, hip = widest point.</div>
+      </details>
+      <div class="fld"><label for="m-date">Date</label><input type="date" id="m-date" value="${today}"></div>
+      <div class="grid2">
+        <div class="fld"><label for="m-weight">Weight (kg)</label><input type="number" inputmode="decimal" step="0.1" id="m-weight" oninput="App.livePreview()"></div>
+        <div class="fld"><label for="m-waist">Waist (cm)</label><input type="number" inputmode="decimal" step="0.1" id="m-waist" oninput="App.livePreview()"></div>
+        <div class="fld"><label for="m-navel">Navel (cm)</label><input type="number" inputmode="decimal" step="0.1" id="m-navel" oninput="App.livePreview()"></div>
+        <div class="fld"><label for="m-hip">Hip (cm)</label><input type="number" inputmode="decimal" step="0.1" id="m-hip" oninput="App.livePreview()"></div>
+        <div class="fld"><label for="m-sleep">Sleep (hrs avg)</label><input type="number" inputmode="decimal" step="0.1" id="m-sleep"></div>
+        <div class="fld"><label for="m-sleepscore">Sleep score (watch)</label><input type="number" inputmode="numeric" step="1" id="m-sleepscore" placeholder="0-100"></div>
+        <div class="fld"><label for="m-rhr">Resting HR</label><input type="number" inputmode="numeric" step="1" id="m-rhr"></div>
+        <div class="fld"><label for="m-sys">BP systolic</label><input type="number" inputmode="numeric" step="1" id="m-sys"></div>
+        <div class="fld"><label for="m-dia">BP diastolic</label><input type="number" inputmode="numeric" step="1" id="m-dia"></div>
+        <div class="fld"><label for="m-bf">Body Fat % (DEXA)</label><input type="number" inputmode="decimal" step="0.1" id="m-bf" placeholder="DEXA only" oninput="App.livePreview()"></div>
+      </div>
+      <div class="fld"><label for="m-notes">Notes (sodium, late meal, poor sleep…)</label><input type="text" id="m-notes" maxlength="160"></div>
+      <div id="m-preview" class="note" style="min-height:20px"></div>
+      <div id="m-msgs"></div>
+      <div style="margin-top:8px"><button class="btn" onclick="App.saveMeasure()">Save measurement</button></div></div>`;
+    const recent = data.measurements.slice(-5).reverse();
+    if (recent.length) {
+      html += `<div class="card"><h2>Recent readings</h2><table class="mini">
+        <tr><th>Date</th><th>Kg</th><th>Waist</th><th>BRI</th><th></th></tr>`;
+      recent.forEach(m => {
+        const idx = data.measurements.indexOf(m);
+        const bri = m.waistCm ? Calc.bri(m.waistCm, data.profile.heightM).toFixed(2) : "—";
+        html += `<tr><td>${esc(m.date)}</td><td>${m.weightKg ?? "—"}</td><td>${m.waistCm ?? "—"}</td><td>${bri}</td>
+          <td style="white-space:nowrap"><button class="btn ghost sm" style="width:auto" onclick="App.editMeasure(${idx})" aria-label="Edit reading ${esc(m.date)}">✎</button> <button class="btn ghost sm" style="width:auto" onclick="App.deleteMeasure(${idx})" aria-label="Delete reading ${esc(m.date)}">✕</button></td></tr>`;
+      });
+      html += `</table></div>`;
+    }
+    html += `<div class="card"><details class="proto"><summary>Measurement protocol — full guide</summary>
+      <div class="note" style="margin-top:8px"><b>When to measure</b><br>
+      Sunday morning, within 30 min of waking (≈6:30–7:30am). Post-bathroom (void first), pre-food, pre-water, naked or minimal underwear. Not after a high-sodium dinner. Once per week only — don't weigh between weekly readings.</div>
+      <div class="note" style="margin-top:10px"><b>Landmarks &amp; technique</b><br>
+      <b>Weight</b> — same scale, hard floor (not carpet), post-void; calibrate the scale quarterly.<br>
+      <b>Waist</b> — narrowest point above the navel and below the ribs. Stand relaxed (don't suck in), tape parallel to the floor, read at the end of a normal exhale.<br>
+      <b>Navel</b> — directly across the belly button, tape parallel, same exhale technique.<br>
+      <b>Hip</b> — widest point around the buttocks (over the greater trochanters), feet together, tape parallel.<br>
+      <b>Tape</b> — soft retractable tape; measure 3× and record the median. If readings differ &gt;1cm, re-measure all three.<br>
+      <b>Resting HR</b> — first thing on waking, before sitting up. Wearable overnight average, or count radial pulse 30 sec × 2.<br>
+      <b>Blood pressure</b> — seated 5+ min, feet flat, arm at heart level. No caffeine in the prior hour, no exercise in the prior 30 min. Take 2 readings 1 min apart, record the second.</div>
+      <div class="note" style="margin-top:10px"><b>Common errors to avoid</b><br>
+      Tape angled up/down changes the reading — check in a mirror. Pulling the tape too tight compresses tissue; snug but slide one finger under. Mark the waist landmark with a pen for 2–3 weeks to train consistency. Expect ±0.5–1 cm natural variance — trust 4-week trends, not single readings. A 200g bowel movement is 200g on the scale; same morning routine matters. Heavy sodium the day before causes fluid retention — note it.</div>
+    </details></div>`;
+    el.innerHTML = html;
+  },
+  livePreview() {
+    const h = this.data.profile.heightM;
+    const w = numVal("m-waist"), n = numVal("m-navel"), hip = numVal("m-hip"), kg = numVal("m-weight");
+    const parts = [];
+    if (w) { const b = Calc.bri(w, h); parts.push("BRI " + b.toFixed(2) + " (" + Calc.briZone(b).label + ")"); parts.push("WHtR " + Calc.whtr(w, h).toFixed(3)); }
+    if (w && hip) parts.push("WHR " + Calc.whr(w, hip).toFixed(3));
+    if (n) parts.push("BRI@navel " + Calc.bri(n, h).toFixed(2));
+    if (kg) parts.push("BMI " + Calc.bmi(kg, h).toFixed(1));
+    const bf = numVal("m-bf"); if (bf) parts.push("Body fat " + bf.toFixed(1) + "%");
+    document.getElementById("m-preview").textContent = parts.join(" • ");
+  },
+  saveMeasure() {
+    const data = this.data;
+    const v = {
+      date: document.getElementById("m-date").value,
+      weightKg: numVal("m-weight"), waistCm: numVal("m-waist"), navelCm: numVal("m-navel"),
+      hipCm: numVal("m-hip"), sleepH: numVal("m-sleep"), sleepScore: numVal("m-sleepscore"), rhr: numVal("m-rhr"),
+      bpSys: numVal("m-sys"), bpDia: numVal("m-dia"), bodyFatPct: numVal("m-bf"),
+      notes: (document.getElementById("m-notes").value || "").trim() || undefined
+    };
+    const last = data.measurements[data.measurements.length - 1];
+    const { errors, warnings } = Logic.validateMeasure(v, last);
+    const box = document.getElementById("m-msgs");
+    box.innerHTML = errors.map(e => `<div class="msg err">${esc(e)}</div>`).join("") +
+                    warnings.map(w => `<div class="msg warn">${esc(w)} — saved anyway; note it.</div>`).join("");
+    if (errors.length) return;
+    const existing = data.measurements.findIndex(m => m.date === v.date);
+    if (existing >= 0) { if (!confirm("A reading for " + v.date + " exists. Replace it?")) return; data.measurements[existing] = v; }
+    else data.measurements.push(v);
+    data.measurements.sort((a, b) => a.date < b.date ? -1 : 1);
+    Store.save(data); toast("Measurement saved"); this.renderMeasure(); this.renderToday();
+  },
+  editMeasure(idx) {
+    const m = this.data.measurements[idx];
+    const set = (id, v) => { const el = document.getElementById(id); if (el) el.value = (v == null ? "" : v); };
+    set("m-date", m.date); set("m-weight", m.weightKg); set("m-waist", m.waistCm); set("m-navel", m.navelCm);
+    set("m-hip", m.hipCm); set("m-sleep", m.sleepH); set("m-sleepscore", m.sleepScore); set("m-rhr", m.rhr);
+    set("m-sys", m.bpSys); set("m-dia", m.bpDia); set("m-bf", m.bodyFatPct); set("m-notes", m.notes || "");
+    this.livePreview();
+    window.scrollTo({ top: 0, behavior: "smooth" });
+    toast("Loaded — edit any field and Save (same date overwrites)");
+  },
+  deleteMeasure(idx) {
+    if (!confirm("Delete this reading?")) return;
+    this.data.measurements.splice(idx, 1); Store.save(this.data); this.renderMeasure(); this.renderToday();
+  },
+
+  /* ---- HABITS ---- */
+  renderHabits() {
+    const data = this.data, el = document.getElementById("scr-habits");
+    const now = this.now(), curKey = Clock.isoWeekKey(now);
+    const wkLog = data.habitLog[curKey] || {};
+    const pct = Score.weekPct(data.habitLog, curKey, data.habitsCatalog);
+    let html = `<div class="card"><h2>This week — ${esc(curKey)} • Process ${pct}%</h2>
+      <div class="note">The six vital-few behaviours, weighted by impact (×3 high, ×2 medium). Tick what you held this week.</div>`;
+    data.habitsCatalog.forEach(h => {
+      const on = !!wkLog[h.id];
+      const streak = Logic.habitStreak(data.habitLog, h.id, now);
+      html += `<button class="toggle" aria-pressed="${on}" onclick="App.toggleHabit('${esc(h.id)}')">
+        <span class="box" aria-hidden="true">${on ? "✓" : ""}</span>${esc(h.label)}
+        <span class="stk">×${h.w}${streak > 0 ? " • " + streak + "wk" : ""}</span></button>`;
+    });
+    html += `</div><div class="card"><h2>Last 12 weeks</h2>`;
+    const keys = Clock.weekKeysBack(now, 12);
+    data.habitsCatalog.forEach(h => {
+      html += `<div class="note" style="margin-top:8px">${esc(h.label)}</div><div class="heat" role="img" aria-label="${esc(h.label)} last 12 weeks">`;
+      keys.forEach(k => { html += `<div class="${data.habitLog[k] && data.habitLog[k][h.id] ? "on" : ""}" title="${esc(k)}"></div>`; });
+      html += `</div>`;
+    });
+    html += `</div>`;
+    const NOISE = [
+      ["HIGH","Standardise sodium across the week","Water is retained in response to sodium changes, not absolute levels — inconsistent sodium causes 1–2 kg swings.","Cook 5+ meals at home weekly"],
+      ["HIGH","Drink water consistently, not reactively","Erratic intake makes the body hoard water; steady 3–3.5 L daily gives stable readings.","750 ml bottle × 4 daily"],
+      ["HIGH","Protect sleep consistency","Cortisol regulation depends on circadian consistency — 7 h every night beats 6 h/9 h alternating.","Fixed bedtime, ±30 min"],
+      ["HIGH","Minimise alcohol","Affects fluid balance, disrupts sleep for 24–48 h, elevates cortisol.","None Mon–Fri, ≤2 units weekend"],
+      ["HIGH","Eat at consistent times","Gut motility and hunger hormones adapt to your schedule.","Lunch 1–2pm, dinner 8–9pm"],
+      ["MED","Keep a consistent training rhythm","Random skips or back-to-back hard days shift inflammation, causing 0.5–1.5 kg fluid retention.","Weekly schedule fixed"],
+      ["MED","Time carbs to training days","Each gram of glycogen binds 3–4 g water; random evening carbs add water overnight.","Carbs at lunch on training days"],
+      ["MED","Keep fibre intake steady","Going low→high fibre suddenly creates 24–48 h bloating.","Greens + legumes every weekday"],
+      ["MED","Don't chase food variety","Same proteins, veg and carbs = familiar gut response = predictable scale.","Same 5–6 proteins Mon–Fri"],
+      ["MED","Manage stress proactively","Cortisol from work, family and sleep loss directly drives water retention.","Walk 30 min on the hardest day"],
+      ["LOW","Limit creatine cycling","Creatine adds 1–2 kg intracellular water on start, loses it on stop.","3–5 g daily, or skip"],
+      ["LOW","Be careful with NSAIDs","Ibuprofen and naproxen affect fluid balance.","Only when truly needed"],
+      ["LOW","Watch caffeine timing","Coffee past 2pm disrupts sleep, looping to cortisol and water retention.","Last coffee by 2pm"],
+      ["LOW","Standardise the weigh-in","Same conditions remove measurement noise.","Same scale, same time, weekly"]
+    ];
+    const riskCls = { HIGH: "red", MED: "orange", LOW: "teal" };
+    let noiseRows = NOISE.map((n, i) =>
+      `<div style="padding:8px 0;border-bottom:1px solid var(--line)"><b>${i + 1}. ${esc(n[1])}</b> <span class="chip ${riskCls[n[0]]}">${n[0]}</span>
+        <div class="note" style="margin-top:3px">${esc(n[2])}</div>
+        <div class="note" style="margin-top:2px"><b>Quick win:</b> ${esc(n[3])}</div></div>`).join("");
+    html += `<div class="card"><details class="proto"><summary>Why these habits — weight-noise control guide</summary>
+      <div class="note" style="margin:8px 0">Habits ranked by impact. The top 4 eliminate 60–70% of preventable weight noise — the day-to-day scale swings that aren't real fat change.</div>
+      ${noiseRows}</details></div>`;
+    el.innerHTML = html;
+  },
+  toggleHabit(id) {
+    const k = Clock.isoWeekKey(this.now());
+    const log = this.data.habitLog;
+    log[k] = log[k] || {};
+    log[k][id] = !log[k][id];
+    Store.save(this.data); this.renderHabits();
+  }
+};
+
+/* ============ BOOT ============ */
+if (typeof document !== "undefined") {
+  document.addEventListener("DOMContentLoaded", () => App.boot());
+  // register service worker for offline + installability (no-op on file://, only runs when hosted)
+  if ("serviceWorker" in navigator && location.protocol.indexOf("http") === 0) {
+    window.addEventListener("load", () => navigator.serviceWorker.register("sw.js").catch(() => {}));
+  }
+}
+
+/* ============ DASHBOARD GRAPHICS (hand-rolled SVG, zero deps) ============ */
+const Dash = {
+  zoneColors: ["var(--green)", "var(--green)", "var(--teal)", "var(--orange)", "var(--orange)", "var(--red)"],
+  zoneBounds: [2.5, 3.5, 4.5, 5.5, 6.5, 7.5, 8.5],
+  angle(v) { const c = Math.min(Math.max(v, 2.5), 8.5); return 180 * (1 - (c - 2.5) / 6); },
+  pt(cx, cy, r, deg) { const a = deg * Math.PI / 180; return [cx + r * Math.cos(a), cy - r * Math.sin(a)]; },
+  arc(cx, cy, r, d1, d2) {
+    const [x1, y1] = this.pt(cx, cy, r, d1), [x2, y2] = this.pt(cx, cy, r, d2);
+    return `M ${x1.toFixed(1)} ${y1.toFixed(1)} A ${r} ${r} 0 0 1 ${x2.toFixed(1)} ${y2.toFixed(1)}`;
+  },
+  progressPct(start, target, cur) {
+    if (start === target || cur == null) return 0;
+    return Math.max(0, Math.min(1, (start - cur) / (start - target)));
+  },
+  gauge(briW, briN, target) {
+    const cx = 150, cy = 150, r = 110;
+    let s = `<svg viewBox="0 0 300 175" role="img" aria-label="BRI gauge: waist ${briW != null ? briW.toFixed(2) : "no data"}, navel ${briN != null ? briN.toFixed(2) : "no data"}, target ${target}">`;
+    for (let i = 0; i < 6; i++) {
+      const d1 = this.angle(this.zoneBounds[i]), d2 = this.angle(this.zoneBounds[i + 1]);
+      s += `<path d="${this.arc(cx, cy, r, d1, d2)}" stroke="${this.zoneColors[i]}" stroke-width="20" fill="none" opacity="${i % 2 ? 0.55 : 0.95}" stroke-linecap="butt"/>`;
+    }
+    for (let i = 1; i < 6; i++) {  /* boundary labels */
+      const [x, y] = this.pt(cx, cy, r + 22, this.angle(this.zoneBounds[i]));
+      s += `<text x="${x.toFixed(1)}" y="${y.toFixed(1)}" font-size="9.5" fill="var(--slate)" text-anchor="middle">${this.zoneBounds[i]}</text>`;
+    }
+    if (target != null) {  /* target notch */
+      const [x1, y1] = this.pt(cx, cy, r - 14, this.angle(target)), [x2, y2] = this.pt(cx, cy, r - 26, this.angle(target));
+      s += `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="var(--navy)" stroke-width="2.5"/>
+            <text x="${x2.toFixed(1)}" y="${(y2 + 12).toFixed(1)}" font-size="9" fill="var(--slate)" text-anchor="middle">target</text>`;
+    }
+    if (briN != null) {  /* navel marker: outer triangle */
+      const d = this.angle(briN);
+      const [tx, ty] = this.pt(cx, cy, r + 14, d);
+      s += `<path d="M ${tx.toFixed(1)} ${ty.toFixed(1)} l -5 -9 l 10 0 Z" fill="var(--orange)" transform="rotate(${(90 - d).toFixed(1)} ${tx.toFixed(1)} ${ty.toFixed(1)})"/>`;
+    }
+    if (briW != null) {  /* needle */
+      const d = this.angle(briW);
+      const [nx, ny] = this.pt(cx, cy, r - 32, d);
+      s += `<line x1="${cx}" y1="${cy}" x2="${nx.toFixed(1)}" y2="${ny.toFixed(1)}" stroke="var(--navy)" stroke-width="3.5" stroke-linecap="round"/>
+            <circle cx="${cx}" cy="${cy}" r="6" fill="var(--navy)"/>
+            <text x="${cx}" y="${cy - 38}" font-size="30" font-weight="700" fill="var(--navy)" text-anchor="middle">${briW.toFixed(2)}</text>
+            <text x="${cx}" y="${cy - 20}" font-size="10.5" fill="var(--slate)" text-anchor="middle">BRI (waist)</text>`;
+    } else {
+      s += `<text x="${cx}" y="${cy - 30}" font-size="13" fill="var(--slate)" text-anchor="middle">add a measurement</text>`;
+    }
+    return s + `</svg>`;
+  },
+  ring(pct, big, label, sub) {
+    const r = 44, C = 2 * Math.PI * r, on = (pct * C).toFixed(1);
+    return `<svg viewBox="0 0 120 132" role="img" aria-label="${esc(label)}: ${Math.round(pct * 100)}% to target">
+      <circle cx="60" cy="60" r="${r}" fill="none" stroke="var(--line)" stroke-width="10"/>
+      <circle cx="60" cy="60" r="${r}" fill="none" stroke="var(--teal)" stroke-width="10" stroke-linecap="round"
+        stroke-dasharray="${on} ${C.toFixed(1)}" transform="rotate(-90 60 60)"/>
+      <text x="60" y="56" font-size="20" font-weight="700" fill="var(--navy)" text-anchor="middle">${Math.round(pct * 100)}%</text>
+      <text x="60" y="72" font-size="10" fill="var(--slate)" text-anchor="middle">${esc(big)}</text>
+      <text x="60" y="124" font-size="11" font-weight="600" fill="var(--navy)" text-anchor="middle">${esc(label)}</text>
+      <text x="60" y="88" font-size="9.5" fill="var(--slate)" text-anchor="middle">${esc(sub)}</text></svg>`;
+  },
+  spark(series, color, W, H) {
+    if (!series.length) return "";
+    const xs = series.map(p => p.x), ys = series.map(p => p.y);
+    let xmin = Math.min(...xs), xmax = Math.max(...xs); if (xmin === xmax) { xmin -= 1; xmax += 1; }
+    let lo = Math.min(...ys), hi = Math.max(...ys); const pad = (hi - lo || 1) * 0.25; lo -= pad; hi += pad;
+    const fx = x => 7 + (x - xmin) / (xmax - xmin) * (W - 14);
+    const fy = v => H - 7 - (v - lo) / (hi - lo) * (H - 14);
+    let s = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="trend" style="width:100%;height:auto;margin-top:8px">`;
+    s += `<line x1="7" y1="${(H - 7).toFixed(1)}" x2="${W - 7}" y2="${(H - 7).toFixed(1)}" stroke="var(--line)" stroke-width="1"/>`;
+    if (series.length > 1) s += `<polyline points="${series.map(p => fx(p.x).toFixed(1) + "," + fy(p.y).toFixed(1)).join(" ")}" fill="none" stroke="${color}" stroke-width="2.5" stroke-linejoin="round"/>`;
+    series.forEach((p, i) => { s += `<circle cx="${fx(p.x).toFixed(1)}" cy="${fy(p.y).toFixed(1)}" r="${i === series.length - 1 ? 3.4 : 2}" fill="${color}"/>`; });
+    return s + `</svg>`;
+  },
+  bar(pct, color) {
+    pct = Math.max(0, Math.min(1, pct));
+    return `<svg viewBox="0 0 100 8" preserveAspectRatio="none" role="img" aria-label="${Math.round(pct * 100)} percent to target" style="width:100%;height:8px;display:block"><rect width="100" height="8" rx="4" fill="var(--line)"/><rect width="${(pct * 100).toFixed(1)}" height="8" rx="4" fill="${color}"/></svg>`;
+  },
+  chart(series, opts = {}) {
+    const W = 600, H = 240, pl = 42, pr = 42, pt_ = 16, pb = 28;
+    const allX = series.flatMap(s => s.points.map(p => p.x));
+    if (!allX.length) return "";
+    let xmin = Math.min(...allX), xmax = Math.max(...allX);
+    if (xmin === xmax) { xmin -= 3 * 86400000; xmax += 3 * 86400000; }
+    const fx = x => pl + (x - xmin) / (xmax - xmin) * (W - pl - pr);
+    const scaled = series.map((s, si) => {
+      let ys = s.points.map(p => p.y);
+      if (s.band) ys = ys.concat(s.points.map(p => p.y + s.band), s.points.map(p => p.y - s.band));
+      let lo, hi;
+      if (opts.dual) { lo = Math.min(...ys); hi = Math.max(...ys); }
+      else {
+        const ally = series.flatMap(z => z.points.map(p => p.y));
+        lo = Math.min(...ally); hi = Math.max(...ally);
+      }
+      const pad = (hi - lo || 1) * 0.18; lo -= pad; hi += pad;
+      const fy = y => H - pb - (y - lo) / (hi - lo) * (H - pt_ - pb);
+      return { ...s, fy, lo, hi };
+    });
+    const dfmt = ms => { const d = new Date(ms); return d.getDate() + "/" + (d.getMonth() + 1); };
+    let s = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(opts.label || "trend chart")}">`;
+    s += `<line x1="${pl}" y1="${H - pb}" x2="${W - pr}" y2="${H - pb}" stroke="var(--line)" stroke-width="1"/>`;
+    s += `<text x="${pl}" y="${H - 8}" font-size="10" fill="var(--slate)">${dfmt(xmin)}</text>
+          <text x="${W - pr}" y="${H - 8}" font-size="10" fill="var(--slate)" text-anchor="end">${dfmt(xmax)}</text>`;
+    scaled.forEach((sr, si) => {
+      const pts = sr.points.map(p => fx(p.x).toFixed(1) + "," + sr.fy(p.y).toFixed(1)).join(" ");
+      if (sr.band) {
+        const up = sr.points.map(p => fx(p.x).toFixed(1) + "," + sr.fy(p.y + sr.band).toFixed(1));
+        const dn = sr.points.slice().reverse().map(p => fx(p.x).toFixed(1) + "," + sr.fy(p.y - sr.band).toFixed(1));
+        s += `<polygon points="${up.concat(dn).join(" ")}" fill="${sr.color}" opacity="0.13"/>`;
+      }
+      if (sr.points.length > 1) s += `<polyline points="${pts}" fill="none" stroke="${sr.color}" stroke-width="2.5" stroke-linejoin="round"/>`;
+      sr.points.forEach(p => { s += `<circle cx="${fx(p.x).toFixed(1)}" cy="${sr.fy(p.y).toFixed(1)}" r="4" fill="${sr.color}"/>`; });
+      const lastP = sr.points[sr.points.length - 1];
+      s += `<text x="${(fx(lastP.x) + 6).toFixed(1)}" y="${(sr.fy(lastP.y) - 8).toFixed(1)}" font-size="11" font-weight="700" fill="${sr.color}">${lastP.y}</text>`;
+      if (opts.dual) {
+        const ax = si === 0 ? pl - 6 : W - pr + 6, anchor = si === 0 ? "end" : "start";
+        s += `<text x="${ax}" y="${pt_ + 8}" font-size="10" fill="${sr.color}" text-anchor="${anchor}">${sr.hi.toFixed(0)}</text>
+              <text x="${ax}" y="${H - pb}" font-size="10" fill="${sr.color}" text-anchor="${anchor}">${sr.lo.toFixed(0)}</text>`;
+      }
+      s += `<text x="${pl + si * 110}" y="${pt_ - 4}" font-size="11" font-weight="600" fill="${sr.color}">${esc(sr.label)}</text>`;
+    });
+    return s + `</svg>`;
+  },
+  recompStatus(first, last) {
+    if (!first || !last || first === last) return null;
+    const dw = (last.weightKg ?? 0) - (first.weightKg ?? 0);
+    const dc = (last.waistCm ?? 0) - (first.waistCm ?? 0);
+    if (first.weightKg == null || last.weightKg == null || first.waistCm == null || last.waistCm == null) return null;
+    let label, cls, msg;
+    if (dw >= 0.5 && dc <= -0.5) { label = "RECOMPOSITION"; cls = "green"; msg = "Weight up, waist down — muscle gained while belly shrinks. This is why weight isn't the target."; }
+    else if (dw <= -0.5 && dc <= -0.5) { label = "CUTTING"; cls = "green"; msg = "Weight and waist both falling."; }
+    else if (dc >= 0.5) { label = "WATCH"; cls = "orange"; msg = "Waist trending up — check the top-4 noise controls first; trust 4-week trends."; }
+    else { label = "STABLE"; cls = "teal"; msg = "Holding steady."; }
+    return { label, cls, msg, dw, dc };
+  }
+};
+
+App.renderDash = function () {
+  const data = this.data, el = document.getElementById("scr-dash");
+  const h = data.profile.heightM, ms = data.measurements;
+  const last = ms[ms.length - 1] || null, first = ms[0] || null;
+  const briW = last && last.waistCm ? Calc.bri(last.waistCm, h) : null;
+  const briN = last && last.navelCm ? Calc.bri(last.navelCm, h) : null;
+  const briStart = first && first.waistCm ? Calc.bri(first.waistCm, h) : null;
+  const now = this.now();
+  let html = "";
+
+  /* health excellence index */
+  const ex = Score.excellence(data, now);
+  html += `<div class="card"><h2>Health Excellence Index</h2>`;
+  if (ex.headline == null) {
+    html += `<div class="note" style="text-align:center;padding:14px 4px">Log a measurement and tick this week's habits to light up your index.</div>`;
+  } else {
+    const hb = ex.headline >= 80 ? "green" : ex.headline >= 60 ? "orange" : "red";
+    html += `<div style="text-align:center"><span class="bigscore">${ex.headline}</span><span class="note"> / 100 &nbsp;</span><span class="chip ${hb}">${ex.headline >= 80 ? "excellent" : ex.headline >= 60 ? "solid" : "needs work"}</span>
+      <div class="note">overall — body, behaviour, fitness &amp; strength combined</div></div>
+      <div class="gridR">` + ex.comp.map(c => Dash.ring(c.v != null ? c.v / 100 : 0, c.v != null ? "" : "no data", c.k, "")).join("") + `</div>
+      <div class="note" style="margin-top:8px">Transparent by design — the four rings are the real signal; the headline just flags where to look.</div>`;
+  }
+  html += `</div>`;
+
+  /* behaviour process score */
+  const wkKey = Clock.isoWeekKey(now), cur = Score.weekPct(data.habitLog, wkKey, data.habitsCatalog);
+  const band = cur >= 85 ? ["green", "dialled in"] : cur >= 70 ? ["orange", "tighten up"] : ["red", "results leak here"];
+  html += `<div class="card"><h2>Behaviour — Process Score</h2>
+    <div style="text-align:center"><span class="bigscore">${cur}%</span> <span class="chip ${band[0]}">${band[1]}</span>
+    <div class="note">this week • ${esc(wkKey)} • the vital-few driving most of the result</div></div>
+    <table class="mini"><tr><th>Behaviour</th><th>Impact</th><th>This week</th></tr>`;
+  const wl = data.habitLog[wkKey] || {};
+  data.habitsCatalog.forEach(hh => {
+    html += `<tr><td>${esc(hh.label)}</td><td>×${hh.w}</td><td>${wl[hh.id] ? '<span class="chip green">held</span>' : '<span class="chip red">missed</span>'}</td></tr>`;
+  });
+  html += `</table>`;
+  const ow = ms.filter(m => m.waistCm != null).map(m => ({ x: Clock.parseISO(m.date).getTime(), w: m.waistCm, p: Score.weekPct(data.habitLog, Clock.isoWeekKey(Clock.parseISO(m.date)), data.habitsCatalog) }));
+  if (ow.length >= 2) {
+    html += `<h2 style="margin-top:14px">Behaviour vs waist</h2>` + Dash.chart([
+      { label: "Process %", color: "var(--teal)", points: ow.map(p => ({ x: p.x, y: p.p })) },
+      { label: "Waist cm", color: "var(--orange)", points: ow.map(p => ({ x: p.x, y: p.w })) }
+    ], { dual: true, label: "Process score versus waist over time" })
+    + `<div class="note">When the teal process line rises, the waist line should drift down — that's the loop working.</div>`;
+  }
+  html += `</div>`;
+
+  /* gauge */
+  html += `<div class="card"><h2>Body Roundness Index</h2>${Dash.gauge(briW, briN, data.targets.bri)}`;
+  if (briW != null) {
+    const z = Calc.briZone(briW);
+    html += `<div style="text-align:center"><span class="chip ${z.cls}">${esc(z.label)}</span>`;
+    if (briN != null) html += `<span class="chip orange">▲ navel ${briN.toFixed(2)} (NHANES-comparable)</span>`;
+    html += `<div class="note" style="margin-top:6px">Target ${data.targets.bri.toFixed(2)} (waist ~${data.targets.waistCm}cm) • waist landmark reads leaner than navel</div></div>`;
+  }
+  html += `</div>`;
+
+  /* rings */
+  if (first && last) {
+    const rs = [
+      { pct: Dash.progressPct(first.waistCm, data.targets.waistCm, last.waistCm), big: (last.waistCm ?? "—") + " cm", label: "Waist", sub: first.waistCm + " → " + data.targets.waistCm },
+      { pct: Dash.progressPct(first.navelCm, data.targets.navelCm, last.navelCm), big: (last.navelCm ?? "—") + " cm", label: "Navel", sub: first.navelCm + " → " + data.targets.navelCm },
+      { pct: briStart != null && briW != null ? Dash.progressPct(briStart, data.targets.bri, briW) : 0, big: briW != null ? briW.toFixed(2) : "—", label: "BRI", sub: (briStart != null ? briStart.toFixed(2) : "—") + " → " + data.targets.bri.toFixed(2) }
+    ];
+    html += `<div class="card"><h2>Progress to targets</h2><div class="grid3">` +
+      rs.map(r => Dash.ring(r.pct, r.big, r.label, r.sub)).join("") + `</div></div>`;
+  }
+
+  /* trends + recomp */
+  const wPts = ms.filter(m => m.weightKg != null).map(m => ({ x: Clock.parseISO(m.date).getTime(), y: m.weightKg }));
+  const cPts = ms.filter(m => m.waistCm != null).map(m => ({ x: Clock.parseISO(m.date).getTime(), y: m.waistCm }));
+  if (wPts.length || cPts.length) {
+    html += `<div class="card"><h2>Weight vs waist — the recomp view</h2>`;
+    html += Dash.chart([
+      { label: "Weight (kg)", color: "var(--teal)", points: wPts },
+      { label: "Waist (cm)", color: "var(--orange)", points: cPts, band: 0.75 }
+    ], { dual: true, label: "Weight versus waist over time" });
+    const rc = Dash.recompStatus(first, last);
+    if (rc) html += `<div style="margin-top:8px"><span class="chip ${rc.cls}">${esc(rc.label)}</span>
+      <span class="note">${rc.dw >= 0 ? "+" : ""}${rc.dw.toFixed(1)} kg, ${rc.dc >= 0 ? "+" : ""}${rc.dc.toFixed(1)} cm waist since start. ${esc(rc.msg)}</span></div>`;
+    html += `<div class="note" style="margin-top:6px">Shaded band = ±0.75cm measurement noise — react to trends, not single readings.</div></div>`;
+  }
+
+  /* strength curves */
+  const tpSeries = [];
+  const tpColors = ["var(--teal)", "var(--orange)", "var(--green)", "var(--input)"];
+  Object.entries(data.program.tentpoles).forEach(([key, tp], i) => {
+    const hist = Logic.tentpoleHistory(data, key);
+    if (hist.length) tpSeries.push({ label: tp.label.split("/")[0].trim(), color: tpColors[i % 4], points: hist.map(p => ({ x: Clock.parseISO(p.date).getTime(), y: Math.round(Calc.e1rm ? p.e1rm * 10 : 0) / 10 })) });
+  });
+  html += `<div class="card"><h2>Tentpole strength — e1RM</h2>`;
+  html += tpSeries.length ? Dash.chart(tpSeries, { label: "Estimated one-rep max per tentpole lift" })
+                          : `<div class="note" style="text-align:center;padding:18px 8px">Log gym sessions and the four tentpole curves appear here.</div>`;
+  html += `</div>`;
+
+  /* derived metrics */
+  if (last) {
+    const rows = [];
+    if (last.waistCm && last.hipCm) { const v = Calc.whr(last.waistCm, last.hipCm); rows.push(["Waist-to-Hip", v.toFixed(3), v < 0.85 ? ["OPTIMAL", "green"] : v < 0.90 ? ["GOOD", "green"] : v < 0.95 ? ["IMPROVING", "orange"] : ["FOCUS", "red"]]); }
+    if (last.waistCm) { const v = Calc.whtr(last.waistCm, h); rows.push(["Waist-to-Height", v.toFixed(3), v < 0.45 ? ["LEAN", "green"] : v < 0.50 ? ["GOOD", "green"] : v < 0.55 ? ["IMPROVING", "orange"] : ["FOCUS", "red"]]); }
+    if (last.navelCm && last.waistCm) { const v = last.navelCm - last.waistCm; rows.push(["Navel−waist gap", v.toFixed(1) + " cm", v < 3 ? ["TIGHT", "green"] : v < 6 ? ["GOOD", "green"] : v < 10 ? ["PROGRESSING", "orange"] : ["FOCUS", "red"]]); }
+    if (last.rhr) rows.push(["Resting HR", last.rhr + " bpm", last.rhr < 50 ? ["EXCELLENT", "green"] : last.rhr < 60 ? ["ATHLETIC", "green"] : last.rhr < 70 ? ["GOOD", "teal"] : ["TRACK", "orange"]]);
+    if (last.bpSys && last.bpDia) rows.push(["Blood pressure", last.bpSys + "/" + last.bpDia, (last.bpSys < 120 && last.bpDia < 80) ? ["OPTIMAL", "green"] : (last.bpSys < 130 && last.bpDia < 80) ? ["GOOD", "green"] : (last.bpSys < 140 && last.bpDia < 90) ? ["TRACK", "orange"] : ["FOCUS", "red"]]);
+    if (last.bodyFatPct != null) { const v = last.bodyFatPct; rows.push(["Body fat % (DEXA)", v.toFixed(1) + "%", v < 15 ? ["EXCELLENT", "green"] : v < 20 ? ["LEAN", "green"] : v < 25 ? ["GOOD", "teal"] : ["FOCUS", "red"]]); }
+    if (last.weightKg) rows.push(["BMI (limited use)", Calc.bmi(last.weightKg, h).toFixed(1), ["REFERENCE", "teal"]]);
+    if (rows.length) {
+      html += `<div class="card"><h2>Derived metrics — ${esc(last.date)}</h2><table class="mini"><tr><th>Metric</th><th>Value</th><th>Status</th></tr>`;
+      rows.forEach(([m, v, [lab, cls]]) => { html += `<tr><td>${esc(m)}</td><td><b>${esc(v)}</b></td><td><span class="chip ${cls}">${esc(lab)}</span></td></tr>`; });
+      html += `</table></div>`;
+    }
+  }
+  if (!ms.length) html += `<div class="card"><div class="note" style="text-align:center;padding:20px">Add your first measurement to light up the dashboard.</div></div>`;
+  el.innerHTML = html;
+};
+
+/* wire dash into lifecycle */
+App._renderAll0 = App.renderAll;
+App.renderAll = function () { this._renderAll0(); this.renderDash(); };
+App._saveMeasure0 = App.saveMeasure;
+App.saveMeasure = function () { this._saveMeasure0(); this.renderDash(); };
+App._saveWorkout0 = App.saveWorkout;
+App.saveWorkout = function () { this._saveWorkout0(); this.renderDash(); };
+App._deleteMeasure0 = App.deleteMeasure;
+App.deleteMeasure = function (i) { this._deleteMeasure0(i); this.renderDash(); };
+App._deleteWorkout0 = App.deleteWorkout;
+App.deleteWorkout = function (i) { this._deleteWorkout0(i); this.renderDash(); };
+/* ============ DATA I/O — export, import, calendar (Phase 4) ============ */
+const DataIO = {
+  download(name, text, mime) {
+    const blob = new Blob([text], { type: (mime || "text/plain") + ";charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url; a.download = name; document.body.appendChild(a); a.click();
+    setTimeout(() => { URL.revokeObjectURL(url); a.remove(); }, 150);
+  },
+  stamp() { return Clock.toISO(App.now()); },
+  backupText() {
+    const meta = { app: "Msela", schema: App.data.schema || 1, exportedAt: new Date().toISOString() };
+    return JSON.stringify(Object.assign({ _meta: meta }, App.data), null, 2);
+  },
+  markBackedUp() {
+    App.data.lastBackup = new Date().toLocaleString("en-GB");
+    App.data.lastBackupISO = new Date().toISOString();
+    Store.save(App.data);
+  },
+  exportJSON() {
+    this.download("msela-backup-" + this.stamp() + ".json", this.backupText(), "application/json");
+    this.markBackedUp(); App.renderData(); toast("Backup exported");
+  },
+  async copyBackup() {
+    const txt = this.backupText();
+    try {
+      if (navigator.clipboard && navigator.clipboard.writeText) await navigator.clipboard.writeText(txt);
+      else throw new Error("no-clipboard");
+      this.markBackedUp(); App.renderData(); toast("Backup copied — paste it somewhere safe (Notes, email to yourself)");
+    } catch (e) {
+      const ta = document.createElement("textarea");
+      ta.value = txt; ta.style.position = "fixed"; ta.style.opacity = "0"; document.body.appendChild(ta); ta.focus(); ta.select();
+      let ok = false; try { ok = document.execCommand("copy"); } catch (e2) {}
+      ta.remove();
+      if (ok) { this.markBackedUp(); App.renderData(); toast("Backup copied"); }
+      else toast("Couldn't copy here — use Export backup instead");
+    }
+  },
+  pasteRestore() {
+    const str = window.prompt("Paste your Msela backup text here (the JSON you copied or exported):");
+    if (str == null || !str.trim()) return;
+    this.importText(str.trim());
+  },
+  csvRow(arr) { return arr.map(v => { v = (v == null ? "" : String(v)); return /[",\n]/.test(v) ? '"' + v.replace(/"/g, '""') + '"' : v; }).join(","); },
+  exportMeasurementsCSV() {
+    const h = App.data.profile.heightM;
+    const head = ["date","weightKg","waistCm","navelCm","hipCm","bodyFatPct","sleepH","sleepScore","rhr","bpSys","bpDia","BRI_waist","BRI_navel","WHtR","WHR","BMI","notes"];
+    const rows = App.data.measurements.map(m => this.csvRow([
+      m.date, m.weightKg, m.waistCm, m.navelCm, m.hipCm, m.bodyFatPct, m.sleepH, m.sleepScore, m.rhr, m.bpSys, m.bpDia,
+      m.waistCm ? Calc.bri(m.waistCm, h).toFixed(2) : "", m.navelCm ? Calc.bri(m.navelCm, h).toFixed(2) : "",
+      m.waistCm ? Calc.whtr(m.waistCm, h).toFixed(3) : "", (m.waistCm && m.hipCm) ? Calc.whr(m.waistCm, m.hipCm).toFixed(3) : "",
+      m.weightKg ? Calc.bmi(m.weightKg, h).toFixed(1) : "", m.notes
+    ]));
+    if (!rows.length) return toast("No measurements yet");
+    this.download("msela-measurements-" + this.stamp() + ".csv", [this.csvRow(head)].concat(rows).join("\r\n"), "text/csv");
+  },
+  exportWorkoutsCSV() {
+    const head = ["date","cluster","session","slot","exercise","sets","kg","reps","e1rm","tentpole"];
+    const rows = [];
+    App.data.workouts.forEach(w => (w.sets || []).forEach(s => rows.push(this.csvRow([
+      w.date, (w.cluster ?? w.week), w.sessionKey, s.slot, s.exercise, s.setCount, s.kg, s.reps,
+      (isFinite(s.kg) && isFinite(s.reps)) ? Calc.e1rm(s.kg, s.reps).toFixed(1) : "", s.tent || ""
+    ]))));
+    if (!rows.length) return toast("No workouts logged yet");
+    this.download("msela-workouts-" + this.stamp() + ".csv", [this.csvRow(head)].concat(rows).join("\r\n"), "text/csv");
+  },
+  importText(str) {
+    let obj;
+    try { obj = JSON.parse(str); } catch (e) { toast("Import failed: not valid JSON"); return false; }
+    if (obj && obj._meta) delete obj._meta;                 // drop export metadata before merging
+    if (!obj || !Array.isArray(obj.measurements) || !obj.program) { toast("Import failed: not a Msela backup"); return false; }
+    if (!confirm("Replace ALL current data with this backup?\n" + obj.measurements.length + " measurements, " + (obj.workouts || []).length + " workouts.")) return false;
+    App.data = mergeSaved(obj);
+    App.data.targets.bri = +Calc.bri(App.data.targets.waistCm, App.data.profile.heightM).toFixed(2);
+    Store.save(App.data); App.renderAll(); App.switchTab("data"); toast("Backup restored");
+    return true;
+  },
+  importJSON(file) {
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => this.importText(reader.result);
+    reader.readAsText(file);
+  },
+  icsEsc(s) { return String(s).replace(/[\\;,]/g, m => "\\" + m).replace(/\n/g, "\\n"); },
+  icsFold(line) {
+    const enc = new TextEncoder();
+    if (enc.encode(line).length <= 75) return line;
+    let out = "", cur = "", curBytes = 0, first = true;
+    for (const ch of line) {                     // iterate by code point (keeps multi-byte chars intact)
+      const b = enc.encode(ch).length;
+      const limit = first ? 75 : 74;             // continuation lines begin with a space (1 octet)
+      if (curBytes + b > limit) { out += (out ? "\r\n " : "") + cur; cur = ch; curBytes = b; first = false; }
+      else { cur += ch; curBytes += b; }
+    }
+    return out + (out ? "\r\n " : "") + cur;
+  },
+  buildICS(data) {
+    const pad = n => String(n).padStart(2, "0");
+    const fmt = dt => dt.getFullYear() + pad(dt.getMonth() + 1) + pad(dt.getDate()) + "T" + pad(dt.getHours()) + pad(dt.getMinutes()) + "00";
+    const start = Clock.parseISO(data.program.startDate);
+    const dayAt = (wk, off, hh, mm) => { const d = new Date(start); d.setDate(d.getDate() + (wk - 1) * 7 + off); d.setHours(hh, mm, 0, 0); return d; };
+    const ev = []; let uid = 0;
+    const push = (s0, s1, summary, desc, alarmMin) => {
+      uid++;
+      let s = "BEGIN:VEVENT\r\nUID:msela-" + uid + "-" + fmt(s0) + "@local\r\nDTSTAMP:" + fmt(new Date()) +
+        "\r\nDTSTART:" + fmt(s0) + "\r\nDTEND:" + fmt(s1) + "\r\nSUMMARY:" + this.icsEsc(summary) + "\r\n";
+      if (desc) s += "DESCRIPTION:" + this.icsEsc(desc) + "\r\n";
+      if (alarmMin) s += "BEGIN:VALARM\r\nACTION:DISPLAY\r\nDESCRIPTION:" + this.icsEsc(summary) + "\r\nTRIGGER:-PT" + alarmMin + "M\r\nEND:VALARM\r\n";
+      ev.push(s + "END:VEVENT");
+    };
+    const gym = [["mon", 0, "Pull + Rear + Arms"], ["tue", 1, "Push + Shoulders + Arms"], ["thu", 3, "Accessory + Weak Points"]];
+    for (let wk = 1; wk <= data.program.weeks; wk++) {
+      const deload = Clock.isDeload(data, wk), blk = Clock.block(data, wk);
+      if (!deload) gym.forEach(([key, off, lbl]) => {
+        const sess = data.program.sessions[key];
+        const exs = sess.slots.map(sl => sl.w[wk - 1]).filter(x => x && x !== "—");
+        const dur = key === "thu" ? 50 : 90;
+        const s0 = dayAt(wk, off, 18, 0);
+        push(s0, new Date(s0.getTime() + dur * 60000), "W" + wk + " " + key.toUpperCase() + ": " + lbl,
+          (blk ? blk.name + " block • " + blk.params + "\n" : "") + "Exercises: " + exs.join(", "), 30);
+      });
+      else { const s0 = dayAt(wk, 0, 18, 0); push(s0, new Date(s0.getTime() + 45 * 60000), "W" + wk + " DELOAD — calisthenics + walks", wk === 6 ? "Book chiropractor + physio assessment." : "Book DEXA follow-up + BP recheck.", 0); }
+      [2, 4].forEach(off => { const s0 = dayAt(wk, off, 18, 0); push(s0, dayAt(wk, off, 21, 0), "W" + wk + " Basketball", "Snack 5pm • post-game meal within 90 min.", 60); });
+      let desc = "Within 30 min waking • post-bathroom • pre-food/water • naked, hard floor • tape parallel, end of exhale • measure 3×, record median.";
+      if (wk === 1) desc += "\nBOOK: DEXA baseline + blood panel + BP.";
+      else if (wk % 26 === 0) desc += "\nBOOK: DEXA + blood panel + BP check (every 26 weeks).";
+      else if (wk % 12 === 0) desc += "\nBOOK: BP recheck + progress review.";
+      push(dayAt(wk, 6, 6, 30), dayAt(wk, 6, 7, 0), "W" + wk + " Sunday measurement", desc, 30);
+    }
+    // floating local time is intentional: reminders should fire at that wall-clock time wherever you are.
+    const cal = "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//Msela//Health Tracker//EN\r\nCALSCALE:GREGORIAN\r\nMETHOD:PUBLISH\r\n" + ev.join("\r\n") + "\r\nEND:VCALENDAR";
+    return cal.split("\r\n").map(l => this.icsFold(l)).join("\r\n") + "\r\n";
+  },
+  exportICS() { this.download("msela-16week-calendar.ics", this.buildICS(App.data), "text/calendar"); toast("Calendar downloaded"); }
+};
+
+/* ============ FILE-FIRST SYNC (File System Access API) ============ */
+const FileSync = {
+  handle: null,
+  supported() { return typeof window !== "undefined" && "showSaveFilePicker" in window; },
+  async link() {
+    try {
+      this.handle = await window.showSaveFilePicker({ suggestedName: "msela-data.json",
+        types: [{ description: "Msela data", accept: { "application/json": [".json"] } }] });
+      await this.write(App.data); App.fileName = this.handle.name;
+      toast("Linked — auto-saving to " + this.handle.name); App.renderData();
+    } catch (e) { if (e.name !== "AbortError") toast("Could not link file"); }
+  },
+  async open() {
+    try {
+      const [h] = await window.showOpenFilePicker({ types: [{ description: "Msela data", accept: { "application/json": [".json"] } }] });
+      const obj = JSON.parse(await (await h.getFile()).text());
+      if (!obj || !Array.isArray(obj.measurements) || !obj.program) return toast("Not a Msela data file");
+      if (!confirm("Load this file and auto-save to it from now on? Current on-device data will be replaced.")) return;
+      this.handle = h; App.data = mergeSaved(obj);
+      App.data.targets.bri = +Calc.bri(App.data.targets.waistCm, App.data.profile.heightM).toFixed(2);
+      App.fileName = h.name; Store.save(App.data); App.renderAll(); App.switchTab("data"); toast("Opened " + h.name);
+    } catch (e) { if (e.name !== "AbortError") toast("Could not open file"); }
+  },
+  async write(data) {
+    if (!this.handle) return;
+    try { const w = await this.handle.createWritable(); await w.write(JSON.stringify(data, null, 2)); await w.close(); }
+    catch (e) { toast("File write failed — data is still saved on this device"); }
+  }
+};
+
+App.renderData = function () {
+  const data = this.data, el = document.getElementById("scr-data");
+  if (!el) return;
+  const lastB = data.lastBackupISO ? new Date(data.lastBackupISO) : null;
+  const ageDays = lastB ? Math.round((Date.now() - lastB.getTime()) / 86400000) : null;
+  const hasData = (data.measurements.length + data.workouts.length) > 0;
+  const stale = hasData && (ageDays == null || ageDays >= 14);
+  const banner = stale
+    ? `<div class="card"><div class="msg warn">${lastB ? "Your last backup was <b>" + ageDays + " days</b> ago." : "You haven't backed up yet."} Your data lives only on this device until you do — tap <b>Copy backup</b> or <b>Export</b> below.</div></div>`
+    : "";
+  const fc = FileSync.supported()
+    ? `<div class="card"><h2>File-first storage &bull; recommended</h2>
+        <div class="note">Link a JSON file on your device and the app auto-saves to it on every change — that file becomes your real source of truth, surviving cleared browser data and outliving any single training block.</div>
+        <div class="grid2" style="margin-top:12px">
+          <button class="btn" onclick="FileSync.link()">Link a data file (auto-save)</button>
+          <button class="btn ghost" onclick="FileSync.open()">Open existing data file</button>
+        </div>
+        <div class="note" style="margin-top:10px">${this.fileName ? "Auto-saving to <b>" + esc(this.fileName) + "</b>" : "Not linked — currently using on-device storage."}</div></div>`
+    : `<div class="card"><h2>File-first storage</h2><div class="note">This browser can't link a file directly (Safari / Firefox). Use Export / Import below to keep a file backup. On Chrome or Edge you'd also get one-tap auto-save straight to a file.</div></div>`;
+  el.innerHTML = banner + fc + `
+    <div class="card"><h2>Data &amp; backup</h2>
+      <div class="note">Your data lives on this device. Export regularly — that file is your real backup and long-term archive.</div>
+      <div class="grid2" style="margin-top:12px">
+        <button class="btn" onclick="DataIO.exportJSON()">Export backup (JSON)</button>
+        <button class="btn ghost" onclick="document.getElementById('import-file').click()">Import backup (JSON)</button>
+        <button class="btn" onclick="DataIO.copyBackup()">Copy backup (clipboard)</button>
+        <button class="btn ghost" onclick="DataIO.pasteRestore()">Paste to restore</button>
+        <button class="btn ghost" onclick="DataIO.exportMeasurementsCSV()">Measurements (CSV)</button>
+        <button class="btn ghost" onclick="DataIO.exportWorkoutsCSV()">Workouts (CSV)</button>
+      </div>
+      <input id="import-file" type="file" accept="application/json,.json" style="position:absolute;width:1px;height:1px;opacity:0" aria-label="Choose a backup file to import" onchange="DataIO.importJSON(this.files[0]); this.value='';">
+      <div class="note" style="margin-top:12px">${data.lastBackup ? "Last export: " + esc(data.lastBackup) : "No export yet — back up now to be safe."}</div>
+    </div>
+    <div class="card"><h2>Reminders calendar</h2>
+      <div class="note">A <b>.ics</b> for your whole program you import once into your phone calendar: Sunday measurement reminders and Mon/Tue/Thu sessions that name each week's exercises, plus basketball, deloads and DEXA/blood/BP checkpoints — each with a 30-minute alert. Native notifications, even offline.</div>
+      <div style="margin-top:12px"><button class="btn" onclick="DataIO.exportICS()">Download .ics calendar</button></div>
+    </div>
+    ${this.checkpointsCard()}
+    <div class="card"><h2>Profile &amp; setup</h2>
+      <div class="note">Make the app yours — set your details and tap Save. Sharing it? Whoever installs the same link on their phone gets a private copy; they tap <b>Start fresh</b> and enter their own.</div>
+      <div class="grid2" style="margin-top:10px">
+        <div class="fld"><label for="p-name">Name</label><input type="text" id="p-name" maxlength="40" value="${esc(data.profile.name || "")}"></div>
+        <div class="fld"><label for="p-height">Height (m)</label><input type="number" inputmode="decimal" step="0.01" id="p-height" value="${data.profile.heightM || ""}"></div>
+        <div class="fld"><label for="p-start">Program start (a Monday)</label><input type="date" id="p-start" value="${esc(data.program.startDate || "")}"></div>
+        <div class="fld"><label for="p-twt">Target weight (kg)</label><input type="number" inputmode="decimal" step="0.1" id="p-twt" value="${data.targets.weightKg || ""}"></div>
+        <div class="fld"><label for="p-tw">Target waist (cm)</label><input type="number" inputmode="decimal" step="0.1" id="p-tw" value="${data.targets.waistCm || ""}"></div>
+        <div class="fld"><label for="p-tn">Target navel (cm)</label><input type="number" inputmode="decimal" step="0.1" id="p-tn" value="${data.targets.navelCm || ""}"></div>
+      </div>
+      <div style="margin-top:8px"><button class="btn" onclick="App.saveProfile()">Save profile</button></div>
+      <div style="margin-top:10px"><button class="btn ghost" onclick="App.startFresh()">Start fresh (new person)</button></div>
+    </div>
+    <div class="card"><h2>This device</h2><table class="mini">
+      <tr><td>Measurements</td><td><b>${data.measurements.length}</b></td></tr>
+      <tr><td>Logged sessions</td><td><b>${data.workouts.length}</b></td></tr>
+      <tr><td>Program</td><td><b>${esc(data.program.name)}</b></td></tr>
+      <tr><td>BRI target</td><td><b>${data.targets.bri.toFixed(2)}</b> (from waist ${data.targets.waistCm}cm)</td></tr>
+      <tr><td>Storage</td><td><b>browser local-first</b></td></tr>
+    </table></div>`;
+};
+App.checkpointsCard = function () {
+  const cps = this.data.checkpoints || [];
+  if (!cps.length) return "";
+  const meta = { todo: ["Book", "orange"], booked: ["Booked", "teal"], done: ["Done ✓", "green"] };
+  const rows = cps.map((c, i) => {
+    const m = meta[c.status] || meta.todo;
+    const dateBit = c.date ? " · " + esc(c.date) : "";
+    const resultBit = c.result ? `<div class="note" style="margin-top:3px"><b>Result:</b> ${esc(c.result)}</div>` : "";
+    return `<div style="padding:8px 0;border-bottom:1px solid var(--line)">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:8px">
+        <b>${esc(c.type)}</b>
+        <button class="chip ${m[1]}" style="border:0;cursor:pointer" onclick="App.cycleCheckpoint(${i})" aria-label="Change status of ${esc(c.type)}">${esc(m[0])}</button>
+      </div>
+      <div class="note" style="margin-top:2px">${esc(c.when)}${dateBit} — ${esc(c.purpose)}</div>
+      ${resultBit}
+      <div style="margin-top:6px;display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn ghost sm" style="width:auto" onclick="App.editCheckpointDate(${i})">Set date</button>
+        <button class="btn ghost sm" style="width:auto" onclick="App.editCheckpointResult(${i})">${c.result ? "Edit result" : "Add result"}</button>
+      </div></div>`;
+  }).join("");
+  const doneN = cps.filter(c => c.status === "done").length;
+  return `<div class="card"><h2>Health checkpoints <span class="chip teal" style="float:right">${doneN}/${cps.length} done</span></h2>
+    <div class="note">DEXA, blood panel, BP, chiropractor and physio. Tap the status to cycle Book → Booked → Done, set a date, and record results — so your scans and bloods live here, not in a spreadsheet.</div>
+    ${rows}</div>`;
+};
+App.cycleCheckpoint = function (i) {
+  const c = this.data.checkpoints[i]; if (!c) return;
+  c.status = c.status === "todo" ? "booked" : c.status === "booked" ? "done" : "todo";
+  Store.save(this.data); this.renderData();
+};
+App.editCheckpointDate = function (i) {
+  const c = this.data.checkpoints[i]; if (!c) return;
+  const v = window.prompt("Date for " + c.type + " (YYYY-MM-DD), or blank to clear:", c.date || "");
+  if (v == null) return;
+  c.date = v.trim(); Store.save(this.data); this.renderData();
+};
+App.editCheckpointResult = function (i) {
+  const c = this.data.checkpoints[i]; if (!c) return;
+  const v = window.prompt("Result / notes for " + c.type + ":", c.result || "");
+  if (v == null) return;
+  c.result = v.trim(); Store.save(this.data); this.renderData();
+};
+App._renderAllData = App.renderAll;
+App.renderAll = function () { this._renderAllData(); this.renderData(); };
+
+App.saveProfile = function () {
+  const d = this.data;
+  const name = (document.getElementById("p-name").value || "").trim();
+  const hh = numVal("p-height"), sd = document.getElementById("p-start").value;
+  const twt = numVal("p-twt"), tw = numVal("p-tw"), tn = numVal("p-tn");
+  if (name) d.profile.name = name;
+  if (hh && hh > 0.5 && hh < 2.6) d.profile.heightM = hh;
+  if (sd) d.program.startDate = sd;
+  if (twt) d.targets.weightKg = twt;
+  if (tw) d.targets.waistCm = tw;
+  if (tn) d.targets.navelCm = tn;
+  d.targets.bri = +Calc.bri(d.targets.waistCm, d.profile.heightM).toFixed(2);
+  Store.save(d); this.renderAll(); toast("Profile saved");
+};
+App.startFresh = function () {
+  if (!confirm("Start fresh? This erases ALL measurements, workouts and habit ticks on THIS device so a new person can begin (your program stays). Export a backup first if unsure.")) return;
+  const d = this.data;
+  d.measurements = []; d.workouts = []; d.habitLog = {}; d.profile.name = "";
+  Store.save(d); this.renderAll(); this.switchTab("data"); toast("Cleared — set the profile above, then start logging");
+};
+
+App.insightLens = (function () { try { return localStorage.getItem("msela_lens") || "body"; } catch (e) { return "body"; } })();
+App.setLens = function (name) { this.insightLens = name; try { localStorage.setItem("msela_lens", name); } catch (e) {} this.renderProgress(); };
+
+App.renderProgress = function () {
+  const data = this.data, el = document.getElementById("scr-progress"); if (!el) return;
+  const ms = data.measurements, h = data.profile.heightM, now = this.now();
+  const lens = this.insightLens || "body";
+  const tabs = [["body","Body"],["strength","Strength"],["training","Training"],["activity","Activity"],["scores","Scores"]];
+  const menu = `<div class="seg" role="tablist" aria-label="Choose an analysis">` +
+    tabs.map(([k,lab]) => `<button role="tab" aria-pressed="${lens === k}" onclick="App.setLens('${k}')">${lab}</button>`).join("") + `</div>`;
+  const fmt = (v, dp) => v == null ? "—" : v.toFixed(dp);
+  let bodyHtml;
+  if (lens === "strength") bodyHtml = this.lensStrength(data, now, fmt);
+  else if (lens === "training") bodyHtml = this.lensTraining(data, now);
+  else if (lens === "activity") bodyHtml = this.lensActivity(data, now);
+  else if (lens === "scores") bodyHtml = this.lensScores(data, now, fmt);
+  else bodyHtml = this.lensBody(ms, h, now, fmt);
+  el.innerHTML = `<div class="card"><h2>Insights</h2><div class="note">Pick a lens to dig into your numbers.</div>${menu}</div>` + bodyHtml;
+};
+
+App.lensBody = function (ms, h, now, fmt) {
+  if (ms.length < 2)
+    return `<div class="card"><div class="note" style="text-align:center;padding:20px">Add at least two measurements and your body trends light up here — graded green / amber / red.</div></div>`;
+  const T = this.data.targets, mon = d => d.toLocaleDateString("en-GB", { month: "short", year: "numeric" });
+  const projDefs = [["Weight","weightKg","kg",1,T.weightKg],["Waist","waistCm","cm",1,T.waistCm],["Navel","navelCm","cm",1,T.navelCm],["BRI","bri","",2,T.bri]];
+  let prows = "";
+  for (const [label,f,unit,dp,tgt] of projDefs) {
+    const p = Insights.projection(ms, f, h, tgt, now); if (!p) continue;
+    let chip, txt;
+    if (p.reached) { chip = "green"; txt = "target met 🎉"; }
+    else if (p.stalled) { chip = "orange"; txt = "holding — " + (p.gap > 0 ? "+" : "") + fmt(p.gap, dp) + (unit ? " " + unit : "") + " to go"; }
+    else { chip = "teal"; const wks = Math.max(1, Math.round(p.months * 4.345)); txt = "≈ " + wks + " wks → " + mon(p.eta); }
+    const pace = p.perMonth != null ? (p.perMonth > 0 ? "+" : "") + fmt(p.perMonth, dp) + (unit ? " " + unit : "") + "/mo" : "—";
+    prows += `<tr><td>${esc(label)}</td><td>${fmt(p.latest.v,dp)}${unit?" "+esc(unit):""} → ${fmt(tgt,dp)}${unit?" "+esc(unit):""}</td><td>${esc(pace)}</td><td><span class="chip ${chip}">${esc(txt)}</span></td></tr>`;
+  }
+  let html = prows ? `<div class="card"><h2>Projection to target</h2><div class="note">At your recent pace (last ~90 days), here's the runway to each target. ETA assumes the trend holds.</div><table class="mini"><tr><th>Metric</th><th>Now → target</th><th>Pace</th><th>ETA</th></tr>${prows}</table></div>` : "";
+  const y = now.getFullYear(), mo = now.getMonth(), q = Math.floor(mo / 3) * 3;
+  const periods = [["All-time",new Date(1970,0,1)],["This month",new Date(y,mo,1)],["This quarter",new Date(y,q,1)],["Year to date",new Date(y,0,1)],["Last 12 months",new Date(now.getTime()-365*86400000)]];
+  const RULES = { weightKg:{good:-0.2,bad:0.2}, waistCm:{good:-0.5,bad:0.3}, navelCm:{good:-0.5,bad:0.3}, bri:{good:-0.05,bad:0.03}, bodyFatPct:{good:-0.3,bad:0.2} };
+  const metrics = [["Weight","weightKg","kg",1],["Waist","waistCm","cm",1],["Navel","navelCm","cm",1],["BRI","bri","",2],["Body fat","bodyFatPct","%",1]];
+  const first = Clock.parseISO(ms[0].date), span = Math.round((now - first) / 86400000);
+  html += `<div class="card"><h2>Trend by period</h2><div class="note">${ms.length} readings over ${span} days. Each period compares your latest reading with your value entering it — green improving / amber holding / red slipping, by change-per-month.</div></div>`;
+  for (const [plabel, start] of periods) {
+    let rows = "";
+    for (const [label, f, unit, dp] of metrics) {
+      const d = Track.delta(ms, f, h, start); if (!d) continue;
+      let chip = "teal", chg, range;
+      if (d.change == null) { chip = "teal"; chg = "need a baseline"; range = "from " + fmt(d.base.v, dp) + (unit ? " " + unit : ""); }
+      else {
+        const months = Math.max(0.25, (d.latest.d - d.base.d) / (30.44 * 86400000)), r = d.change / months, rule = RULES[f];
+        const rating = r <= rule.good ? "good" : (r >= rule.bad ? "bad" : "meh");
+        chip = rating === "good" ? "green" : rating === "bad" ? "red" : "orange";
+        chg = (d.change > 0 ? "+" : "") + fmt(d.change, dp) + (unit ? " " + unit : "");
+        range = fmt(d.base.v, dp) + " → " + fmt(d.latest.v, dp) + (unit ? " " + unit : "");
+      }
+      rows += `<tr><td>${esc(label)}</td><td>${esc(range)}</td><td><span class="chip ${chip}">${esc(chg)}</span></td></tr>`;
+    }
+    html += `<div class="card"><h2>${esc(plabel)}</h2><table class="mini"><tr><th>Metric</th><th>Range</th><th>Change</th></tr>${rows}</table></div>`;
+  }
+  return html;
+};
+
+App.lensStrength = function (data, now, fmt) {
+  if (!data.workouts.length)
+    return `<div class="card"><div class="note" style="text-align:center;padding:20px">Log a few gym sessions and your strength trends appear here — e1RM per key lift, stalls, and training tonnage.</div></div>`;
+  let trows = "";
+  for (const [key, tp] of Object.entries(data.program.tentpoles)) {
+    const hist = Logic.tentpoleHistory(data, key), st = Logic.stallStatus(hist);
+    const traj = hist.length ? hist[0].e1rm.toFixed(0) + " → " + hist[hist.length - 1].e1rm.toFixed(0) + " kg" : "—";
+    const chg = hist.length > 1 ? (hist[hist.length - 1].e1rm - hist[0].e1rm) : null;
+    const chgTxt = chg == null ? "" : " (" + (chg >= 0 ? "+" : "") + chg.toFixed(0) + ")";
+    trows += `<tr><td><b>${esc(tp.label)}</b><br><span style="color:var(--slate);font-size:11.5px">target ${esc(String(tp.targetW16))}</span></td><td>${esc(traj)}${esc(chgTxt)}</td><td><span class="chip ${st.cls}">${esc(st.label)}</span></td></tr>`;
+  }
+  const t28 = Insights.tonnage(data.workouts, new Date(now.getTime() - 28 * 86400000));
+  const tPrev = Insights.tonnage(data.workouts.filter(w => { const d = Clock.parseISO(w.date); return d < new Date(now.getTime() - 28 * 86400000) && d >= new Date(now.getTime() - 56 * 86400000); }), null);
+  const dv = tPrev.kg ? Math.round((t28.kg - tPrev.kg) / tPrev.kg * 100) : null;
+  const volChip = dv == null ? "teal" : dv >= 0 ? "green" : "orange";
+  const volTxt = dv == null ? "first block" : (dv >= 0 ? "+" : "") + dv + "% vs prior 28d";
+  const ton = `<div class="card"><h2>Training tonnage</h2><div class="note">Total weight moved (sets × reps × kg) — the clearest single proxy for whether you're building work capacity.</div><table class="mini">
+    <tr><th>Window</th><th>Tonnage</th><th>Sets</th><th></th></tr>
+    <tr><td>Last 28 days</td><td><b>${t28.kg.toLocaleString()} kg</b></td><td>${t28.sets}</td><td><span class="chip ${volChip}">${esc(volTxt)}</span></td></tr>
+    <tr><td>Prior 28 days</td><td>${tPrev.kg.toLocaleString()} kg</td><td>${tPrev.sets}</td><td></td></tr></table></div>`;
+  return `<div class="card"><h2>Key lifts (e1RM)</h2><div class="note">Estimated 1-rep max from your best logged set — rising means real strength gain. "Stalled" = no progress in 3 sessions; check recovery, sleep, food.</div><table class="mini"><tr><th>Lift</th><th>e1RM trail</th><th>Status</th></tr>${trows}</table></div>` + ton;
+};
+
+App.lensTraining = function (data, now) {
+  const days = ["mon","tue","thu"], names = { mon:"Monday · Pull", tue:"Tuesday · Push", thu:"Thursday · Delts/Arms" };
+  const end = this.blockEnd();
+  let crows = "";
+  days.forEach(k => {
+    const cl = this.clusterOf(k), pct = Math.round(cl / end * 100), chip = cl >= end ? "green" : pct >= 50 ? "teal" : "orange";
+    crows += `<tr><td>${esc(names[k])}</td><td>cluster <b>${cl}</b> / ${end}</td><td><span class="chip ${chip}">${this.isBlocked(k) ? "block done ✓" : pct + "%"}</span></td></tr>`;
+  });
+  const s7 = Insights.sessionsInWindow(data.workouts, now, 7), s28 = Insights.sessionsInWindow(data.workouts, now, 28);
+  const consChip = s7 >= 3 ? "green" : s7 >= 2 ? "orange" : "red";
+  const allTon = Insights.tonnage(data.workouts, null);
+  const cal = this.calDone();
+  const cons = `<div class="card"><h2>Consistency</h2><table class="mini">
+    <tr><td>Sessions this week</td><td><b>${s7}</b> / 3 target</td><td><span class="chip ${consChip}">${s7 >= 3 ? "on track" : "keep going"}</span></td></tr>
+    <tr><td>Sessions last 28 days</td><td><b>${s28}</b></td><td><span class="chip teal">≈ ${(s28/4).toFixed(1)}/wk</span></td></tr>
+    <tr><td>Total sessions logged</td><td><b>${data.workouts.length}</b></td><td></td></tr>
+    <tr><td>Calisthenics logged</td><td><b>${cal}</b></td><td></td></tr>
+    <tr><td>Lifetime tonnage</td><td><b>${allTon.kg.toLocaleString()} kg</b></td><td></td></tr></table></div>`;
+  return `<div class="card"><h2>Where each day stands</h2><div class="note">Your three gym days progress independently. Each climbs to ${end} clusters this block, then holds for an earned deload.</div><table class="mini"><tr><th>Day</th><th>Cluster</th><th>Block</th></tr>${crows}</table></div>` + cons;
+};
+
+App.lensActivity = function (data, now) {
+  const N = 8;
+  const block = (type, label, emoji) => {
+    const wk = Insights.weeklyCount(data.activities, type, now, N), streak = Insights.streak(data.activities, type, now);
+    const total = wk.reduce((a, c) => a + c.n, 0), avg = (total / N).toFixed(1);
+    let cells = wk.map(w => `<td style="text-align:center"><span class="chip ${w.n > 0 ? "green" : "red"}" style="margin:0">${w.n}</span></td>`).join("");
+    return `<div class="card"><h2>${emoji} ${esc(label)}</h2><div class="note">Sessions per week, last ${N} weeks. Current streak: <b>${streak}</b> week${streak === 1 ? "" : "s"} • avg ${avg}/wk.</div>
+      <table class="mini"><tr>${wk.map(w => `<th style="text-align:center">${esc(w.week.split("-W")[1])}</th>`).join("")}</tr><tr>${cells}</tr></table></div>`;
+  };
+  const note = `<div class="card"><div class="note">Walks aren't logged individually — they're your daily baseline. Basketball and calisthenics are the trackable Wed/Fri sessions.</div></div>`;
+  return block("basketball", "Basketball", "🏀") + block("calisthenics", "Calisthenics", "🤸") + note;
+};
+
+App.lensScores = function (data, now, fmt) {
+  const ex = Score.excellence(data, now);
+  const head = ex.headline == null ? "—" : ex.headline;
+  const headChip = ex.headline == null ? "teal" : ex.headline >= 80 ? "green" : ex.headline >= 50 ? "orange" : "red";
+  let crows = ex.comp.map(c => {
+    const chip = c.v == null ? "teal" : c.v >= 80 ? "green" : c.v >= 50 ? "orange" : "red";
+    return `<tr><td>${esc(c.k)}</td><td style="color:var(--slate)">weight ${c.w}%</td><td><span class="chip ${chip}">${c.v == null ? "no data" : c.v}</span></td></tr>`;
+  }).join("");
+  const exCard = `<div class="card"><h2>Health Excellence index <span class="chip ${headChip}" style="float:right">${head}</span></h2><div class="note">A weighted blend of your body, behaviour, fitness markers and strength trend — one number for the whole system.</div><table class="mini"><tr><th>Component</th><th></th><th>Score</th></tr>${crows}</table></div>`;
+  const tr = Insights.processTrend(data.habitLog, data.habitsCatalog, now, 6);
+  let prow = tr.map(w => `<td style="text-align:center"><span class="chip ${w.pct == null ? "teal" : w.pct >= 80 ? "green" : w.pct >= 50 ? "orange" : "red"}" style="margin:0">${w.pct == null ? "–" : w.pct}</span></td>`).join("");
+  const procCard = `<div class="card"><h2>Behaviour score — last 6 weeks</h2><div class="note">Weekly habit adherence %, weighted by importance. Consistency here is what moves the body numbers.</div><table class="mini"><tr>${tr.map(w => `<th style="text-align:center">${esc(w.week.split("-W")[1])}</th>`).join("")}</tr><tr>${prow}</tr></table></div>`;
+  const adh = Insights.habitAdherence(data.habitLog, data.habitsCatalog, now, 8);
+  let arows = adh.map(a => `<tr><td>${esc(a.label)}</td><td>${a.hit}/${a.of} wks</td><td><span class="chip ${a.pct >= 80 ? "green" : a.pct >= 50 ? "orange" : "red"}">${a.pct}%</span></td></tr>`).join("");
+  const adhCard = `<div class="card"><h2>Habit adherence — last 8 weeks</h2><table class="mini"><tr><th>Habit</th><th>Weeks hit</th><th>Rate</th></tr>${arows}</table></div>`;
+  return exCard + procCard + adhCard;
+};
+App._renderAllProg = App.renderAll;
+App.renderAll = function () { this._renderAllProg(); this.renderProgress(); };
+
+if (typeof module !== "undefined") { module.exports = { Calc, Clock, Logic, Dash, DataIO, DEFAULT_DATA }; }
+</script>
+</body>
+</html>
