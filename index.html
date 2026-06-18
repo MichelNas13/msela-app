@@ -94,6 +94,8 @@ table.mini{width:100%; border-collapse:collapse; font-size:13.5px}
 table.mini th{text-align:left; color:var(--slate); font-size:11.5px; text-transform:uppercase; letter-spacing:.5px; padding:6px 4px; border-bottom:1px solid var(--line)}
 table.mini td{padding:8px 4px; border-bottom:1px solid var(--line)}
 table.mini button{min-height:36px}
+.scrollx{overflow-x:auto; -webkit-overflow-scrolling:touch}
+table.mini.nowrap th, table.mini.nowrap td{white-space:nowrap}
 .toggle{display:flex; align-items:center; gap:12px; width:100%; min-height:56px; padding:10px 14px;
   margin:8px 0; border:1.5px solid var(--line); border-radius:12px; background:var(--card);
   color:var(--navy); font:inherit; font-size:15px; cursor:pointer; text-align:left}
@@ -1492,7 +1494,7 @@ App.checkpointsCard = function () {
     return `<div style="padding:8px 0;border-bottom:1px solid var(--line)">
       <div style="display:flex;justify-content:space-between;align-items:center;gap:8px">
         <b>${esc(c.type)}</b>
-        <button class="chip ${m[1]}" style="border:0;cursor:pointer" onclick="App.cycleCheckpoint(${i})" aria-label="Change status of ${esc(c.type)}">${esc(m[0])}</button>
+        <button class="chip ${m[1]}" style="border:0;cursor:pointer;padding:8px 14px;font-size:13px" onclick="App.cycleCheckpoint(${i})" aria-label="Change status of ${esc(c.type)}">${esc(m[0])}</button>
       </div>
       <div class="note" style="margin-top:2px">${esc(c.when)}${dateBit} — ${esc(c.purpose)}</div>
       ${resultBit}
@@ -1502,7 +1504,7 @@ App.checkpointsCard = function () {
       </div></div>`;
   }).join("");
   const doneN = cps.filter(c => c.status === "done").length;
-  return `<div class="card"><h2>Health checkpoints <span class="chip teal" style="float:right">${doneN}/${cps.length} done</span></h2>
+  return `<div class="card"><h2 style="display:flex;justify-content:space-between;align-items:center;gap:8px">Health checkpoints <span class="chip teal">${doneN}/${cps.length} done</span></h2>
     <div class="note">DEXA, blood panel, BP, chiropractor and physio. Tap the status to cycle Book → Booked → Done, set a date, and record results — so your scans and bloods live here, not in a spreadsheet.</div>
     ${rows}</div>`;
 };
@@ -1660,7 +1662,7 @@ App.lensActivity = function (data, now) {
     const total = wk.reduce((a, c) => a + c.n, 0), avg = (total / N).toFixed(1);
     let cells = wk.map(w => `<td style="text-align:center"><span class="chip ${w.n > 0 ? "green" : "red"}" style="margin:0">${w.n}</span></td>`).join("");
     return `<div class="card"><h2>${emoji} ${esc(label)}</h2><div class="note">Sessions per week, last ${N} weeks. Current streak: <b>${streak}</b> week${streak === 1 ? "" : "s"} • avg ${avg}/wk.</div>
-      <table class="mini"><tr>${wk.map(w => `<th style="text-align:center">${esc(w.week.split("-W")[1])}</th>`).join("")}</tr><tr>${cells}</tr></table></div>`;
+      <div class="scrollx"><table class="mini nowrap"><tr>${wk.map(w => `<th style="text-align:center">${esc(w.week.split("-W")[1])}</th>`).join("")}</tr><tr>${cells}</tr></table></div></div>`;
   };
   const note = `<div class="card"><div class="note">Walks aren't logged individually — they're your daily baseline. Basketball and calisthenics are the trackable Wed/Fri sessions.</div></div>`;
   return block("basketball", "Basketball", "🏀") + block("calisthenics", "Calisthenics", "🤸") + note;
@@ -1674,10 +1676,10 @@ App.lensScores = function (data, now, fmt) {
     const chip = c.v == null ? "teal" : c.v >= 80 ? "green" : c.v >= 50 ? "orange" : "red";
     return `<tr><td>${esc(c.k)}</td><td style="color:var(--slate)">weight ${c.w}%</td><td><span class="chip ${chip}">${c.v == null ? "no data" : c.v}</span></td></tr>`;
   }).join("");
-  const exCard = `<div class="card"><h2>Health Excellence index <span class="chip ${headChip}" style="float:right">${head}</span></h2><div class="note">A weighted blend of your body, behaviour, fitness markers and strength trend — one number for the whole system.</div><table class="mini"><tr><th>Component</th><th></th><th>Score</th></tr>${crows}</table></div>`;
+  const exCard = `<div class="card"><h2 style="display:flex;justify-content:space-between;align-items:center;gap:8px">Health Excellence index <span class="chip ${headChip}">${head}</span></h2><div class="note">A weighted blend of your body, behaviour, fitness markers and strength trend — one number for the whole system.</div><table class="mini"><tr><th>Component</th><th></th><th>Score</th></tr>${crows}</table></div>`;
   const tr = Insights.processTrend(data.habitLog, data.habitsCatalog, now, 6);
   let prow = tr.map(w => `<td style="text-align:center"><span class="chip ${w.pct == null ? "teal" : w.pct >= 80 ? "green" : w.pct >= 50 ? "orange" : "red"}" style="margin:0">${w.pct == null ? "–" : w.pct}</span></td>`).join("");
-  const procCard = `<div class="card"><h2>Behaviour score — last 6 weeks</h2><div class="note">Weekly habit adherence %, weighted by importance. Consistency here is what moves the body numbers.</div><table class="mini"><tr>${tr.map(w => `<th style="text-align:center">${esc(w.week.split("-W")[1])}</th>`).join("")}</tr><tr>${prow}</tr></table></div>`;
+  const procCard = `<div class="card"><h2>Behaviour score — last 6 weeks</h2><div class="note">Weekly habit adherence %, weighted by importance. Consistency here is what moves the body numbers.</div><div class="scrollx"><table class="mini nowrap"><tr>${tr.map(w => `<th style="text-align:center">${esc(w.week.split("-W")[1])}</th>`).join("")}</tr><tr>${prow}</tr></table></div></div>`;
   const adh = Insights.habitAdherence(data.habitLog, data.habitsCatalog, now, 8);
   let arows = adh.map(a => `<tr><td>${esc(a.label)}</td><td>${a.hit}/${a.of} wks</td><td><span class="chip ${a.pct >= 80 ? "green" : a.pct >= 50 ? "orange" : "red"}">${a.pct}%</span></td></tr>`).join("");
   const adhCard = `<div class="card"><h2>Habit adherence — last 8 weeks</h2><table class="mini"><tr><th>Habit</th><th>Weeks hit</th><th>Rate</th></tr>${arows}</table></div>`;
