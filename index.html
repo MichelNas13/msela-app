@@ -166,6 +166,27 @@ body.commercial nav.tabs button[data-scr="log"]{display:none}
     <div class="cover-foot">Private to you · works offline · no ads</div>
   </div>
 </div>
+<div id="onboard" class="cover" role="dialog" aria-label="Set up your profile" style="display:none">
+  <div class="cover-inner">
+    <div class="cover-brand">
+      <h1 class="cover-name">Welcome</h1>
+      <div class="cover-tag">Let's set up your profile</div>
+      <div class="cover-sub">Takes 20 seconds. Change anything later in Data.</div>
+    </div>
+    <div class="cover-card">
+      <h2>About you</h2>
+      <div class="cover-note">Just the basics so your numbers make sense.</div>
+      <div class="fld"><label for="ob-name">Your name</label><input type="text" id="ob-name" autocomplete="given-name" placeholder="First name"></div>
+      <div class="grid2">
+        <div class="fld"><label for="ob-height">Height (m)</label><input type="number" inputmode="decimal" step="0.01" id="ob-height" placeholder="1.75"></div>
+        <div class="fld"><label for="ob-twt">Target weight (kg)</label><input type="number" inputmode="decimal" step="0.1" id="ob-twt" placeholder="optional"></div>
+      </div>
+      <div class="fld"><label for="ob-tw">Target waist (cm)</label><input type="number" inputmode="decimal" step="0.1" id="ob-tw" placeholder="optional"></div>
+      <button class="btn cover-btn" onclick="App.completeOnboarding()">Get started</button>
+    </div>
+    <div class="cover-foot">You can edit all of this anytime under Data → Profile</div>
+  </div>
+</div>
 <header class="app">
   <h1>MSELA</h1>
   <div class="sub">Unified Health Tracker · process over outcome</div>
@@ -197,8 +218,8 @@ const STORE_KEY = "uhs_data_v1";
 const OWNER_EMAILS = ["michelnas13@gmail.com"];   // accounts that unlock the full personal program; everyone else gets the commercial experience
 const DEFAULT_DATA = {
   schema: 1,
-  profile: { name: "Michel", heightM: 1.87 },
-  targets: { weightKg: 100, waistCm: 90, navelCm: 95, bri: 3.01 }, // bri derived from waistCm at boot (kept consistent)
+  profile: { name: "", heightM: 1.75 },
+  targets: { weightKg: 80, waistCm: 85, navelCm: 90, bri: 0 }, // neutral defaults; each user sets their own at onboarding; bri derived from waistCm at boot
   program: {
     name: "Cluster-Based Block Periodization",
     startDate: "2026-05-18",            // Monday of week 1
@@ -263,10 +284,7 @@ const DEFAULT_DATA = {
     { id: "timing", label: "Consistent meal times", w: 2 },
     { id: "rhythm", label: "Training rhythm held (no skip-then-cram)", w: 2 }
   ],
-  measurements: [
-    { date: "2026-05-18", weightKg: 110,   waistCm: 97, navelCm: 105, hipCm: 105, sleepH: 7,    rhr: 56, bodyFatPct: 33 },
-    { date: "2026-06-09", weightKg: 111.7, waistCm: 95, navelCm: 103, hipCm: 103, sleepH: 5.23, rhr: 53 }
-  ],
+  measurements: [],
   workouts: [],   /* {date, cluster, sessionKey, sets:[{slot, exercise, kg, reps}]} */
   activities: [], /* {date, type:"calisthenics"|"basketball"} — Wed/Fri loggable sessions */
   deloads: [],    /* {date} — each completed block deload */
@@ -1621,9 +1639,12 @@ const Cloud = {
       <div class="note" style="margin-top:8px">First time? Tap <b>Create account</b>. Already have one (e.g. on another device)? Tap <b>Log in</b> and your data appears here.</div></div>`;
   },
   syncCoverState() {
-    const cover = document.getElementById("cover"); if (!cover) return;
-    let skipped = false; try { skipped = localStorage.getItem("msela_skip") === "1"; } catch (e) {}
-    cover.style.display = (this.user || skipped) ? "none" : "flex";
+    const cover = document.getElementById("cover");
+    if (cover) {
+      let skipped = false; try { skipped = localStorage.getItem("msela_skip") === "1"; } catch (e) {}
+      cover.style.display = (this.user || skipped) ? "none" : "flex";
+    }
+    if (typeof App.syncOnboard === "function") App.syncOnboard();
   },
   render() {
     this.syncCoverState();
@@ -1670,6 +1691,29 @@ App.commercialToday = function (now, dateStr, last, briTxt, zone) {
   }
   html += `<div class="footer-note">Private to your account · synced across your devices</div>`;
   return html;
+};
+// First-run setup: show the onboarding overlay when a user has no name set (and isn't on the cover)
+App.syncOnboard = function () {
+  const o = document.getElementById("onboard"); if (!o) return;
+  const coverEl = document.getElementById("cover");
+  const coverVisible = !!coverEl && coverEl.style.display === "flex";
+  const needsSetup = !(((this.data && this.data.profile && this.data.profile.name) || "").trim());
+  o.style.display = (!coverVisible && needsSetup) ? "flex" : "none";
+};
+App.completeOnboarding = function () {
+  const d = this.data;
+  const name = ((document.getElementById("ob-name") || {}).value || "").trim();
+  if (!name) { toast("Enter your name to continue"); return; }
+  const hh = numVal("ob-height"), twt = numVal("ob-twt"), tw = numVal("ob-tw");
+  d.profile.name = name;
+  if (hh && hh > 0.5 && hh < 2.6) d.profile.heightM = hh;
+  if (twt) d.targets.weightKg = twt;
+  if (tw) d.targets.waistCm = tw;
+  d.targets.bri = +Calc.bri(d.targets.waistCm, d.profile.heightM).toFixed(2);
+  Store.save(d); this.renderAll();
+  if (typeof Cloud !== "undefined") Cloud.syncCoverState();
+  this.syncOnboard();
+  toast("You're all set — welcome to Msela");
 };
 
 App.renderData = function () {
