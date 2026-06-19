@@ -215,7 +215,7 @@ body.commercial nav.tabs button[data-scr="log"]{display:none}
 "use strict";
 /* ============ DATA MODEL & SEED (program is data, not code) ============ */
 const STORE_KEY = "uhs_data_v1";
-const OWNER_EMAILS = ["michelnas13@gmail.com"];   // accounts that unlock the full personal program; everyone else gets the commercial experience
+const OWNER_EMAILS = ["michelnas13@gmail.com", "michelnnasibu@gmail.com"];   // owner accounts unlock the full personal program (2nd = demo/review account); everyone else gets the commercial experience
 const DEFAULT_DATA = {
   schema: 1,
   profile: { name: "", heightM: 1.75 },
@@ -1545,6 +1545,28 @@ const Cloud = {
     this.user = null; this.status = ""; this.render();
     toast("Logged out — your data stays on this device");
   },
+  async changePassword() {
+    if (!this.user) return;
+    const cur = ((document.getElementById("cp-cur") || {}).value || "");
+    const nw = ((document.getElementById("cp-new") || {}).value || "");
+    const cf = ((document.getElementById("cp-confirm") || {}).value || "");
+    if (!cur || !nw) return toast("Enter your current and new password");
+    if (nw.length < 6) return toast("New password needs at least 6 characters");
+    if (nw !== cf) return toast("New passwords don't match");
+    if (nw === cur) return toast("New password must be different from the current one");
+    this._busy = true; this.render();
+    try {
+      const sb = await this.client();
+      // Step 1 — verify the CURRENT password (re-authenticate, so only the real owner can proceed)
+      const v = await sb.auth.signInWithPassword({ email: this.user.email, password: cur });
+      if (v.error) { toast("Current password is incorrect"); return; }
+      // Step 2 — set the new password
+      const u = await sb.auth.updateUser({ password: nw });
+      if (u.error) { toast(u.error.message); return; }
+      toast("Password changed ✓");
+    } catch (e) { toast("Couldn't change password — check your connection"); }
+    finally { this._busy = false; this.render(); }
+  },
   async pull() {
     const sb = await this.client();
     const { data, error } = await sb.from("msela_data").select("data, updated_at").eq("user_id", this.user.id).maybeSingle();
@@ -1624,7 +1646,14 @@ const Cloud = {
         <div class="grid2" style="margin-top:12px">
           <button class="btn" ${this._busy ? "disabled" : ""} onclick="Cloud.pullMerge('Synced')">Sync now</button>
           <button class="btn ghost" onclick="Cloud.signOut()">Log out</button>
-        </div></div>`;
+        </div>
+        <details class="proto" style="margin-top:12px"><summary>Change password</summary>
+          <div class="note" style="margin:6px 0">Two steps: enter your current password, then your new one — so only you can change it.</div>
+          <div class="fld"><label for="cp-cur">Current password</label><input type="password" id="cp-cur" autocomplete="current-password"></div>
+          <div class="fld"><label for="cp-new">New password</label><input type="password" id="cp-new" autocomplete="new-password"></div>
+          <div class="fld"><label for="cp-confirm">Confirm new password</label><input type="password" id="cp-confirm" autocomplete="new-password"></div>
+          <button class="btn" ${this._busy ? "disabled" : ""} onclick="Cloud.changePassword()">Change password</button>
+        </details></div>`;
     }
     return `<div class="card"><h2>Cloud sync — your data on every device</h2>
       <div class="note">Create an account (or log in) and Msela keeps everything in sync across your phone, tablet and computer automatically. Optional — without it the app still works and your data stays on this device.</div>
