@@ -1602,14 +1602,17 @@ const Cloud = {
     this._syncing = true;
     try {
       const remote = await this.pull();
+      let adopted = false;
       if (remote && remote.data) {
-        const merged = Cloud.merge(App.data, remote.data, remote.updated_at);
-        App.data = mergeSaved(merged);
+        const rUp = remote.updated_at ? new Date(remote.updated_at).getTime() : 0;
+        const lUp = (App.data && App.data.updatedAt) ? new Date(App.data.updatedAt).getTime() : 0;
+        adopted = rUp > lUp;           // another device changed more recently → adopt it and re-render
+        App.data = mergeSaved(Cloud.merge(App.data, remote.data, remote.updated_at));
         App.data.targets.bri = +Calc.bri(App.data.targets.waistCm, App.data.profile.heightM).toFixed(2);
       }
       Store.save(App.data);            // writes locally (and via the hook re-pushes the merged set)
       await this.push();
-      App.renderAll();
+      if (adopted) App.renderAll();    // only re-render when newer data actually arrived — never disrupt your current screen mid-edit
       if (label) this.status = label + " " + new Date().toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" });
       this.render();
     } catch (e) { this.status = "Sync error — will retry"; this.render(); }
@@ -1621,36 +1624,15 @@ const Cloud = {
     // pull-merge-then-push so a local change never clobbers another device's recent edits
     this._pushT = setTimeout(() => this.pullMerge("Synced"), 1500);
   },
-  // union arrays (never lose an entry), newer blob wins for single-value fields
+  // Last-write-wins: whichever side changed most recently wins as a whole. For a single user
+  // across their own devices this is predictable and correct — your latest action (add, edit,
+  // delete or un-tick) wins everywhere, and changes still cross between devices. The program and
+  // habitsCatalog always come from the app's code (forced in mergeSaved), so they're never lost.
   merge(local, remote, remoteUpdated) {
-    const out = structuredClone(local);
-    const remoteNewer = (remoteUpdated ? new Date(remoteUpdated).getTime() : 0) > (local.updatedAt ? new Date(local.updatedAt).getTime() : 0);
-    const unionBy = (a, b, keyFn) => {
-      const map = new Map();
-      (a || []).forEach(x => map.set(keyFn(x), x));
-      (b || []).forEach(x => { const k = keyFn(x); if (!map.has(k)) map.set(k, x); });
-      return [...map.values()];
-    };
-    out.measurements = unionBy(local.measurements, remote.measurements, m => m.date).sort((a, b) => a.date < b.date ? -1 : 1);
-    out.workouts = unionBy(local.workouts, remote.workouts, w => w.date + "|" + w.sessionKey + "|" + (w.cluster != null ? w.cluster : ""));
-    out.activities = unionBy(local.activities, remote.activities, a => a.date + "|" + a.type);
-    out.deloads = unionBy(local.deloads, remote.deloads, d => d.date || JSON.stringify(d));
-    // habit ticks: true "ticked anywhere wins" union, per week and per habit — a tick can never be lost across devices
-    out.habitLog = {};
-    const allWeeks = new Set([...Object.keys(local.habitLog || {}), ...Object.keys(remote.habitLog || {})]);
-    allWeeks.forEach(wk => {
-      const lw = (local.habitLog || {})[wk] || {}, rw = (remote.habitLog || {})[wk] || {}, merged = {};
-      new Set([...Object.keys(lw), ...Object.keys(rw)]).forEach(id => { merged[id] = !!(lw[id] || rw[id]); });
-      out.habitLog[wk] = merged;
-    });
-    if (remote.checkpoints) {
-      const score = c => (c.result ? 2 : 0) + (c.status === "done" ? 2 : c.status === "booked" ? 1 : 0) + (c.date ? 1 : 0);
-      const rById = {}; (remote.checkpoints || []).forEach(c => { rById[c.id] = c; });
-      out.checkpoints = (local.checkpoints || []).map(c => { const r = rById[c.id]; return (r && score(r) > score(c)) ? r : c; });
-    }
-    if (remoteNewer) { out.profile = remote.profile || local.profile; out.targets = remote.targets || local.targets; }
-    out.lastBackup = local.lastBackup || remote.lastBackup;
-    out.lastBackupISO = local.lastBackupISO || remote.lastBackupISO;
+    const lUp = (local && local.updatedAt) ? new Date(local.updatedAt).getTime() : 0;
+    const rUp = remoteUpdated ? new Date(remoteUpdated).getTime() : 0;
+    const winner = (rUp > lUp) ? remote : local;
+    const out = structuredClone(winner);
     out.updatedAt = new Date().toISOString();
     return out;
   },
