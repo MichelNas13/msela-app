@@ -320,7 +320,7 @@ const Store = {
       localStorage.setItem(STORE_KEY, json);
     } catch (e) {}
     if (typeof FileSync !== "undefined" && FileSync.handle) FileSync.write(d); // mirror to linked file if any
-    if (typeof Cloud !== "undefined" && Cloud.user) Cloud.queuePush();          // push to cloud if signed in
+    if (typeof Cloud !== "undefined" && Cloud.user && !Cloud._syncing) Cloud.queuePush();   // push to cloud if signed in (not during an in-progress merge)
   }
 };
 
@@ -1430,7 +1430,7 @@ const FileSync = {
 const Cloud = {
   URL: "https://vygjkcgjdbddrcaysjle.supabase.co",
   KEY: "sb_publishable_XySZ48FKLjI8RNea4GZtlg_NzW1lWad",
-  sb: null, user: null, status: "", _pushT: null, _busy: false,
+  sb: null, user: null, status: "", _pushT: null, _busy: false, _syncing: false,
   async client() {
     if (this.sb) return this.sb;
     const mod = await import("https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm");
@@ -1444,6 +1444,9 @@ const Cloud = {
       const { data } = await sb.auth.getSession();
       if (data && data.session) { this.user = data.session.user; this.render(); await this.pullMerge("Synced on open"); }
       sb.auth.onAuthStateChange((_e, session) => { this.user = session ? session.user : null; this.render(); });
+      // pull-merge whenever the app comes back to the foreground or regains connection → feels live across devices
+      document.addEventListener("visibilitychange", () => { if (!document.hidden && this.user) this.pullMerge("Synced"); });
+      window.addEventListener("online", () => { if (this.user) this.pullMerge("Synced"); });
     } catch (e) { /* offline or library blocked — app stays fully local */ }
     this.render();
   },
@@ -1498,7 +1501,8 @@ const Cloud = {
     this.render();
   },
   async pullMerge(label) {
-    if (!this.user || !this.online()) return;
+    if (!this.user || !this.online() || this._syncing) return;
+    this._syncing = true;
     try {
       const remote = await this.pull();
       if (remote && remote.data) {
@@ -1512,11 +1516,13 @@ const Cloud = {
       if (label) this.status = label + " " + new Date().toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" });
       this.render();
     } catch (e) { this.status = "Sync error — will retry"; this.render(); }
+    finally { this._syncing = false; }
   },
   queuePush() {
     if (!this.user) return;
     clearTimeout(this._pushT);
-    this._pushT = setTimeout(() => { if (this.online()) this.push(); }, 1500);
+    // pull-merge-then-push so a local change never clobbers another device's recent edits
+    this._pushT = setTimeout(() => this.pullMerge("Synced"), 1500);
   },
   // union arrays (never lose an entry), newer blob wins for single-value fields
   merge(local, remote, remoteUpdated) {
@@ -1532,8 +1538,14 @@ const Cloud = {
     out.workouts = unionBy(local.workouts, remote.workouts, w => w.date + "|" + w.sessionKey + "|" + (w.cluster != null ? w.cluster : ""));
     out.activities = unionBy(local.activities, remote.activities, a => a.date + "|" + a.type);
     out.deloads = unionBy(local.deloads, remote.deloads, d => d.date || JSON.stringify(d));
-    out.habitLog = Object.assign({}, remote.habitLog || {}, local.habitLog || {});
-    Object.keys(remote.habitLog || {}).forEach(wk => { out.habitLog[wk] = Object.assign({}, (remote.habitLog || {})[wk] || {}, (local.habitLog || {})[wk] || {}); });
+    // habit ticks: true "ticked anywhere wins" union, per week and per habit — a tick can never be lost across devices
+    out.habitLog = {};
+    const allWeeks = new Set([...Object.keys(local.habitLog || {}), ...Object.keys(remote.habitLog || {})]);
+    allWeeks.forEach(wk => {
+      const lw = (local.habitLog || {})[wk] || {}, rw = (remote.habitLog || {})[wk] || {}, merged = {};
+      new Set([...Object.keys(lw), ...Object.keys(rw)]).forEach(id => { merged[id] = !!(lw[id] || rw[id]); });
+      out.habitLog[wk] = merged;
+    });
     if (remote.checkpoints) {
       const score = c => (c.result ? 2 : 0) + (c.status === "done" ? 2 : c.status === "booked" ? 1 : 0) + (c.date ? 1 : 0);
       const rById = {}; (remote.checkpoints || []).forEach(c => { rById[c.id] = c; });
