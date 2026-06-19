@@ -1,0 +1,10 @@
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "app.netlify.msela.twa",
+      "sha256_cert_fingerprints": ["49:92:BB:3E:0E:D6:CD:12:57:AE:A7:B1:87:7C:DE:30:1A:98:5E:45:EF:F2:ED:A8:2D:14:12:1C:BA:6E:68:F8"]
+    }
+  }
+]
