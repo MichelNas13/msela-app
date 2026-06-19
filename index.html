@@ -68,7 +68,7 @@ main{max-width:680px; margin:0 auto; padding:16px 14px calc(86px + env(safe-area
 /* forms */
 .fld{margin:10px 0}
 .fld label{display:block; font-size:13px; font-weight:600; margin-bottom:4px}
-input[type=number],input[type=date],input[type=text]{width:100%; min-height:48px; padding:10px 12px;
+input[type=number],input[type=date],input[type=text],input[type=email],input[type=password]{width:100%; min-height:48px; padding:10px 12px;
   font:inherit; color:var(--navy); background:var(--card); border:1.5px solid var(--line); border-radius:10px;}
 input:focus-visible,button:focus-visible{outline:3px solid var(--input); outline-offset:2px}
 .grid2{display:grid; grid-template-columns:1fr 1fr; gap:10px}
@@ -311,6 +311,7 @@ const Store = {
     return structuredClone(DEFAULT_DATA);
   },
   save(d) {
+    d.updatedAt = new Date().toISOString();   // stamp for cloud-merge conflict resolution
     let json; try { json = JSON.stringify(d); } catch (e) { return; }
     try {
       const prev = localStorage.getItem(STORE_KEY);
@@ -319,6 +320,7 @@ const Store = {
       localStorage.setItem(STORE_KEY, json);
     } catch (e) {}
     if (typeof FileSync !== "undefined" && FileSync.handle) FileSync.write(d); // mirror to linked file if any
+    if (typeof Cloud !== "undefined" && Cloud.user) Cloud.queuePush();          // push to cloud if signed in
   }
 };
 
@@ -992,7 +994,7 @@ const App = {
 
 /* ============ BOOT ============ */
 if (typeof document !== "undefined") {
-  document.addEventListener("DOMContentLoaded", () => App.boot());
+  document.addEventListener("DOMContentLoaded", () => { App.boot(); if (typeof Cloud !== "undefined") Cloud.init(); });
   // register service worker for offline + installability (no-op on file://, only runs when hosted)
   if ("serviceWorker" in navigator && location.protocol.indexOf("http") === 0) {
     window.addEventListener("load", () => navigator.serviceWorker.register("sw.js").catch(() => {}));
@@ -1424,6 +1426,152 @@ const FileSync = {
   }
 };
 
+/* ============ CLOUD SYNC (Supabase — optional, additive, local-first) ============ */
+const Cloud = {
+  URL: "https://vygjkcgjdbddrcaysjle.supabase.co",
+  KEY: "sb_publishable_XySZ48FKLjI8RNea4GZtlg_NzW1lWad",
+  sb: null, user: null, status: "", _pushT: null, _busy: false,
+  async client() {
+    if (this.sb) return this.sb;
+    const mod = await import("https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm");
+    this.sb = mod.createClient(this.URL, this.KEY, { auth: { persistSession: true, autoRefreshToken: true } });
+    return this.sb;
+  },
+  online() { return typeof navigator === "undefined" || navigator.onLine; },
+  async init() {
+    try {
+      const sb = await this.client();
+      const { data } = await sb.auth.getSession();
+      if (data && data.session) { this.user = data.session.user; this.render(); await this.pullMerge("Synced on open"); }
+      sb.auth.onAuthStateChange((_e, session) => { this.user = session ? session.user : null; this.render(); });
+    } catch (e) { /* offline or library blocked — app stays fully local */ }
+    this.render();
+  },
+  async signUp(email, pw) {
+    email = (email || "").trim();
+    if (!email || !pw) return toast("Enter an email and a password");
+    if (pw.length < 6) return toast("Password needs at least 6 characters");
+    this._busy = true;
+    try {
+      const sb = await this.client();
+      const { data, error } = await sb.auth.signUp({ email, password: pw });
+      if (error) { toast(error.message); return; }
+      if (data.session) this.user = data.user;
+      else { const r = await sb.auth.signInWithPassword({ email, password: pw }); if (r.error) { toast("Account created — now tap Log in"); return; } this.user = r.data.user; }
+      await this.pullMerge("Synced");
+      toast("Account created — sync is on");
+    } catch (e) { toast("Sign-up failed — check your connection"); }
+    finally { this._busy = false; this.render(); }
+  },
+  async signIn(email, pw) {
+    email = (email || "").trim();
+    if (!email || !pw) return toast("Enter your email and password");
+    this._busy = true;
+    try {
+      const sb = await this.client();
+      const { data, error } = await sb.auth.signInWithPassword({ email, password: pw });
+      if (error) { toast(error.message); return; }
+      this.user = data.user;
+      await this.pullMerge("Synced");
+      toast("Logged in — sync is on");
+    } catch (e) { toast("Login failed — check your connection"); }
+    finally { this._busy = false; this.render(); }
+  },
+  async signOut() {
+    try { const sb = await this.client(); await sb.auth.signOut(); } catch (e) {}
+    this.user = null; this.status = ""; this.render();
+    toast("Logged out — your data stays on this device");
+  },
+  async pull() {
+    const sb = await this.client();
+    const { data, error } = await sb.from("msela_data").select("data, updated_at").eq("user_id", this.user.id).maybeSingle();
+    if (error) throw error;
+    return data;
+  },
+  async push() {
+    if (!this.user) return;
+    try {
+      const sb = await this.client();
+      const { error } = await sb.from("msela_data").upsert({ user_id: this.user.id, data: App.data, updated_at: new Date().toISOString() }, { onConflict: "user_id" });
+      this.status = error ? "Sync error — will retry" : "Synced " + new Date().toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" });
+    } catch (e) { this.status = "Sync error — will retry"; }
+    this.render();
+  },
+  async pullMerge(label) {
+    if (!this.user || !this.online()) return;
+    try {
+      const remote = await this.pull();
+      if (remote && remote.data) {
+        const merged = Cloud.merge(App.data, remote.data, remote.updated_at);
+        App.data = mergeSaved(merged);
+        App.data.targets.bri = +Calc.bri(App.data.targets.waistCm, App.data.profile.heightM).toFixed(2);
+      }
+      Store.save(App.data);            // writes locally (and via the hook re-pushes the merged set)
+      await this.push();
+      App.renderAll();
+      if (label) this.status = label + " " + new Date().toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" });
+      this.render();
+    } catch (e) { this.status = "Sync error — will retry"; this.render(); }
+  },
+  queuePush() {
+    if (!this.user) return;
+    clearTimeout(this._pushT);
+    this._pushT = setTimeout(() => { if (this.online()) this.push(); }, 1500);
+  },
+  // union arrays (never lose an entry), newer blob wins for single-value fields
+  merge(local, remote, remoteUpdated) {
+    const out = structuredClone(local);
+    const remoteNewer = (remoteUpdated ? new Date(remoteUpdated).getTime() : 0) > (local.updatedAt ? new Date(local.updatedAt).getTime() : 0);
+    const unionBy = (a, b, keyFn) => {
+      const map = new Map();
+      (a || []).forEach(x => map.set(keyFn(x), x));
+      (b || []).forEach(x => { const k = keyFn(x); if (!map.has(k)) map.set(k, x); });
+      return [...map.values()];
+    };
+    out.measurements = unionBy(local.measurements, remote.measurements, m => m.date).sort((a, b) => a.date < b.date ? -1 : 1);
+    out.workouts = unionBy(local.workouts, remote.workouts, w => w.date + "|" + w.sessionKey + "|" + (w.cluster != null ? w.cluster : ""));
+    out.activities = unionBy(local.activities, remote.activities, a => a.date + "|" + a.type);
+    out.deloads = unionBy(local.deloads, remote.deloads, d => d.date || JSON.stringify(d));
+    out.habitLog = Object.assign({}, remote.habitLog || {}, local.habitLog || {});
+    Object.keys(remote.habitLog || {}).forEach(wk => { out.habitLog[wk] = Object.assign({}, (remote.habitLog || {})[wk] || {}, (local.habitLog || {})[wk] || {}); });
+    if (remote.checkpoints) {
+      const score = c => (c.result ? 2 : 0) + (c.status === "done" ? 2 : c.status === "booked" ? 1 : 0) + (c.date ? 1 : 0);
+      const rById = {}; (remote.checkpoints || []).forEach(c => { rById[c.id] = c; });
+      out.checkpoints = (local.checkpoints || []).map(c => { const r = rById[c.id]; return (r && score(r) > score(c)) ? r : c; });
+    }
+    if (remoteNewer) { out.profile = remote.profile || local.profile; out.targets = remote.targets || local.targets; }
+    out.lastBackup = local.lastBackup || remote.lastBackup;
+    out.lastBackupISO = local.lastBackupISO || remote.lastBackupISO;
+    out.updatedAt = new Date().toISOString();
+    return out;
+  },
+  card() {
+    if (this.user) {
+      return `<div class="card"><h2 style="display:flex;justify-content:space-between;align-items:center;gap:8px">Cloud sync <span class="chip green">on</span></h2>
+        <div class="note">Signed in as <b>${esc(this.user.email || "you")}</b>. Your data syncs automatically across every device you log in on.${this.status ? " <br>" + esc(this.status) + "." : ""}</div>
+        <div class="grid2" style="margin-top:12px">
+          <button class="btn" ${this._busy ? "disabled" : ""} onclick="Cloud.pullMerge('Synced')">Sync now</button>
+          <button class="btn ghost" onclick="Cloud.signOut()">Log out</button>
+        </div></div>`;
+    }
+    return `<div class="card"><h2>Cloud sync — your data on every device</h2>
+      <div class="note">Create an account (or log in) and Msela keeps everything in sync across your phone, tablet and computer automatically. Optional — without it the app still works and your data stays on this device.</div>
+      <div class="grid2" style="margin-top:12px">
+        <div class="fld"><label for="cl-email">Email</label><input type="email" id="cl-email" autocomplete="username" inputmode="email"></div>
+        <div class="fld"><label for="cl-pw">Password</label><input type="password" id="cl-pw" autocomplete="current-password"></div>
+      </div>
+      <div class="grid2" style="margin-top:8px">
+        <button class="btn" ${this._busy ? "disabled" : ""} onclick="Cloud.signIn(document.getElementById('cl-email').value, document.getElementById('cl-pw').value)">Log in</button>
+        <button class="btn ghost" ${this._busy ? "disabled" : ""} onclick="Cloud.signUp(document.getElementById('cl-email').value, document.getElementById('cl-pw').value)">Create account</button>
+      </div>
+      <div class="note" style="margin-top:8px">First time? Tap <b>Create account</b>. Already have one (e.g. on another device)? Tap <b>Log in</b> and your data appears here.</div></div>`;
+  },
+  render() {
+    const el = document.getElementById("scr-data");
+    if (el && el.classList.contains("active") && typeof App.renderData === "function") App.renderData();
+  }
+};
+
 App.renderData = function () {
   const data = this.data, el = document.getElementById("scr-data");
   if (!el) return;
@@ -1443,7 +1591,7 @@ App.renderData = function () {
         </div>
         <div class="note" style="margin-top:10px">${this.fileName ? "Auto-saving to <b>" + esc(this.fileName) + "</b>" : "Not linked — currently using on-device storage."}</div></div>`
     : `<div class="card"><h2>File-first storage</h2><div class="note">This browser can't link a file directly (Safari / Firefox). Use Export / Import below to keep a file backup. On Chrome or Edge you'd also get one-tap auto-save straight to a file.</div></div>`;
-  el.innerHTML = banner + fc + `
+  el.innerHTML = Cloud.card() + banner + fc + `
     <div class="card"><h2>Data &amp; backup</h2>
       <div class="note">Your data lives on this device. Export regularly — that file is your real backup and long-term archive.</div>
       <div class="grid2" style="margin-top:12px">
