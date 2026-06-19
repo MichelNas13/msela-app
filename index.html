@@ -142,6 +142,7 @@ nav.tabs button:focus-visible{outline:3px solid var(--input); outline-offset:-3p
 .cover-skip{display:block; width:100%; margin-top:16px; background:none; border:0; color:var(--slate);
   font:inherit; font-size:13.5px; font-weight:600; cursor:pointer; min-height:40px}
 .cover-foot{text-align:center; color:#8FA6BE; font-size:11.5px; margin-top:18px}
+body.commercial nav.tabs button[data-scr="log"]{display:none}
 </style>
 </head>
 <body>
@@ -193,6 +194,7 @@ nav.tabs button:focus-visible{outline:3px solid var(--input); outline-offset:-3p
 "use strict";
 /* ============ DATA MODEL & SEED (program is data, not code) ============ */
 const STORE_KEY = "uhs_data_v1";
+const OWNER_EMAILS = ["michelnas13@gmail.com"];   // accounts that unlock the full personal program; everyone else gets the commercial experience
 const DEFAULT_DATA = {
   schema: 1,
   profile: { name: "Michel", heightM: 1.87 },
@@ -658,7 +660,7 @@ const App = {
     this.logWeek = Math.min(Math.max(wk, 1), this.data.program.weeks);
     const day = this.data.program.schedule[now.getDay()];
     this.logSession = day && day.sessionKey ? day.sessionKey : "mon";
-    this.initNav(); this.renderAll();
+    this.initNav(); this.renderAll(); this.applyMode();
     // backup nudge: only if there's data and it's been a while
     const hasData = (this.data.measurements.length + this.data.workouts.length) > 0;
     const lastB = this.data.lastBackupISO ? new Date(this.data.lastBackupISO) : null;
@@ -690,6 +692,7 @@ const App = {
     const last = data.measurements[data.measurements.length - 1];
     let briTxt = "—", zone = null;
     if (last && last.waistCm) { const b = Calc.bri(last.waistCm, data.profile.heightM); briTxt = b.toFixed(2); zone = Calc.briZone(b); }
+    if (!this.isPersonal()) { el.innerHTML = this.commercialToday(now, dateStr, last, briTxt, zone); return; }
     const isGym = day.kind === "gym";
     const cl = isGym ? this.clusterOf(day.sessionKey) : null;
     const blk = isGym ? this.phaseFor(cl) : null;
@@ -1624,6 +1627,9 @@ const Cloud = {
   },
   render() {
     this.syncCoverState();
+    if (typeof App.applyMode === "function") App.applyMode();
+    const td = document.getElementById("scr-today");
+    if (td && td.classList.contains("active") && typeof App.renderToday === "function") App.renderToday();
     const el = document.getElementById("scr-data");
     if (el && el.classList.contains("active") && typeof App.renderData === "function") App.renderData();
   }
@@ -1632,6 +1638,39 @@ App.coverLogin = function () { Cloud.signIn((document.getElementById("cv-email")
 App.coverSignup = function () { Cloud.signUp((document.getElementById("cv-email") || {}).value, (document.getElementById("cv-pw") || {}).value); };
 App.coverSkip = function () { try { localStorage.setItem("msela_skip", "1"); } catch (e) {} Cloud.syncCoverState(); toast("Using Msela on this device"); };
 App.showCover = function () { try { localStorage.removeItem("msela_skip"); } catch (e) {} Cloud.syncCoverState(); };
+// PERSONAL vs COMMERCIAL mode: only the owner account unlocks the full workout program; everyone else gets the commercial app.
+App.isPersonal = function () {
+  return typeof Cloud !== "undefined" && !!Cloud.user && OWNER_EMAILS.indexOf(((Cloud.user.email) || "").toLowerCase().trim()) !== -1;
+};
+App.applyMode = function () { if (document.body) document.body.classList.toggle("commercial", !this.isPersonal()); };
+// Commercial Today: simple daily activity log (no gym program)
+App.commercialToday = function (now, dateStr, last, briTxt, zone) {
+  const data = this.data, today = Clock.toISO(now);
+  let html = `<div class="card hero"><h2>${esc(dateStr)}</h2>
+    <div class="big">Today</div>
+    <div class="meta">Log what you did, hold your habits, measure weekly.</div>
+    <div class="kpis">
+      <div class="kpi"><div class="v">${briTxt}</div><div class="l">BRI (waist)${zone ? " • " + esc(zone.label) : ""}</div></div>
+      <div class="kpi"><div class="v">${last ? esc(last.weightKg) + " kg" : "—"}</div><div class="l">Last weigh-in</div></div>
+    </div></div>`;
+  const acts = [["workout", "Workout", "🏋️"], ["walk", "Walk", "🚶"], ["basketball", "Basketball", "🏀"], ["calisthenics", "Calisthenics", "🤸"]];
+  html += `<div class="card"><h2>Log today's activity</h2><div class="note">Tap what you did today — tap again to undo.</div>`;
+  acts.forEach(([type, label, emoji]) => {
+    const doneToday = (data.activities || []).some(a => a.date === today && a.type === type);
+    const wk = this.activityWeek(type, now);
+    html += `<div class="exrow"><div class="n"><b>${emoji} ${esc(label)}</b><span>${wk} this week${doneToday ? " • done today" : ""}</span></div>
+      <button class="btn ${doneToday ? "ghost" : ""} sm" style="width:auto" onclick="App.logActivity('${type}')">${doneToday ? "✓ undo" : "Log"}</button></div>`;
+  });
+  html += `</div>`;
+  if (now.getDay() === 0) {
+    html += `<div class="card"><h2>Measurement day</h2><div class="note">Within 30 min of waking • post-bathroom • pre-food/water • same scale, hard floor.</div>
+      <div style="margin-top:12px"><button class="btn ghost" onclick="App.switchTab('measure')">Enter measurements</button></div></div>`;
+  } else {
+    html += `<div class="card"><div class="note">Measure weekly on Sundays and tick your habits daily — consistency is what moves your numbers.</div></div>`;
+  }
+  html += `<div class="footer-note">Private to your account · synced across your devices</div>`;
+  return html;
+};
 
 App.renderData = function () {
   const data = this.data, el = document.getElementById("scr-data");
@@ -1873,8 +1912,12 @@ App.lensActivity = function (data, now) {
     return `<div class="card"><h2>${emoji} ${esc(label)}</h2><div class="note">Sessions per week, last ${N} weeks. Current streak: <b>${streak}</b> week${streak === 1 ? "" : "s"} • avg ${avg}/wk.</div>
       <div class="scrollx"><table class="mini nowrap"><tr>${wk.map(w => `<th style="text-align:center">${esc(w.week.split("-W")[1])}</th>`).join("")}</tr><tr>${cells}</tr></table></div></div>`;
   };
-  const note = `<div class="card"><div class="note">Walks aren't logged individually — they're your daily baseline. Basketball and calisthenics are the trackable Wed/Fri sessions.</div></div>`;
-  return block("basketball", "Basketball", "🏀") + block("calisthenics", "Calisthenics", "🤸") + note;
+  const has = type => (data.activities || []).some(a => a.type === type);
+  let out = block("basketball", "Basketball", "🏀") + block("calisthenics", "Calisthenics", "🤸");
+  if (has("walk")) out += block("walk", "Walking", "🚶");
+  if (has("workout")) out += block("workout", "Workout", "🏋️");
+  const note = `<div class="card"><div class="note">Your sessions by week. Basketball and calisthenics always show; walking and workouts appear once you log them.</div></div>`;
+  return out + note;
 };
 
 App.lensScores = function (data, now, fmt) {
