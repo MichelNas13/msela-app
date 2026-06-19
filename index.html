@@ -123,9 +123,48 @@ nav.tabs button .ic{font-size:19px; line-height:1}
 nav.tabs button[aria-selected="true"]{color:var(--teal); font-weight:700; border-top-color:#EC4899}
 nav.tabs button:focus-visible{outline:3px solid var(--input); outline-offset:-3px; border-radius:10px}
 .screen{display:none} .screen.active{display:block}
+/* welcome / sign-in cover */
+.cover{position:fixed; inset:0; z-index:100; display:flex; align-items:center; justify-content:center;
+  padding:28px calc(20px + env(safe-area-inset-left)) calc(28px + env(safe-area-inset-bottom)) calc(20px + env(safe-area-inset-right));
+  background:radial-gradient(120% 80% at 80% 0%, #2a6f73 0%, rgba(42,111,115,0) 55%), linear-gradient(155deg,#0C2440 0%,#143a5e 48%,#1d5a5e 100%);
+  overflow-y:auto;}
+.cover-inner{width:100%; max-width:384px; margin:auto}
+.cover-brand{text-align:center; color:#fff; margin-bottom:24px}
+.cover-logo{width:88px; height:88px; border-radius:24px; box-shadow:0 10px 34px rgba(0,0,0,.40); margin-bottom:16px}
+.cover-name{font-size:36px; font-weight:800; letter-spacing:.5px; line-height:1; margin:0}
+.cover-name::after{content:""; display:block; width:48px; height:3px; background:#EC4899; border-radius:2px; margin:12px auto 0}
+.cover-tag{font-size:14px; color:#D4E0EC; margin-top:14px; font-weight:600; letter-spacing:.3px}
+.cover-sub{font-size:13px; color:#9FB4CC; margin-top:3px}
+.cover-card{background:var(--card); border:1px solid var(--line); border-radius:20px; padding:22px 18px; box-shadow:0 20px 56px rgba(0,0,0,.34)}
+.cover-card h2{margin:0 0 3px; font-size:17px; font-weight:700; color:var(--navy); letter-spacing:0; text-transform:none}
+.cover-card .cover-note{font-size:13px; color:var(--slate); margin-bottom:4px}
+.cover-btn{margin-top:10px}
+.cover-skip{display:block; width:100%; margin-top:16px; background:none; border:0; color:var(--slate);
+  font:inherit; font-size:13.5px; font-weight:600; cursor:pointer; min-height:40px}
+.cover-foot{text-align:center; color:#8FA6BE; font-size:11.5px; margin-top:18px}
 </style>
 </head>
 <body>
+<div id="cover" class="cover" role="dialog" aria-label="Welcome to Msela" style="display:none">
+  <div class="cover-inner">
+    <div class="cover-brand">
+      <img src="icon-512.png" alt="Msela logo" class="cover-logo">
+      <h1 class="cover-name">Msela</h1>
+      <div class="cover-tag">Unified Health Tracker</div>
+      <div class="cover-sub">Process over outcome.</div>
+    </div>
+    <div class="cover-card">
+      <h2>Sign in to sync everywhere</h2>
+      <div class="cover-note">Your measurements, workouts and habits — kept in sync across every device you use.</div>
+      <div class="fld"><label for="cv-email">Email</label><input type="email" id="cv-email" autocomplete="username" inputmode="email" placeholder="you@email.com"></div>
+      <div class="fld"><label for="cv-pw">Password</label><input type="password" id="cv-pw" autocomplete="current-password" placeholder="Your password"></div>
+      <button class="btn cover-btn" onclick="App.coverLogin()">Log in</button>
+      <button class="btn ghost cover-btn" onclick="App.coverSignup()">Create account</button>
+      <button class="cover-skip" onclick="App.coverSkip()">Continue on this device →</button>
+    </div>
+    <div class="cover-foot">Private to you · works offline · no ads</div>
+  </div>
+</div>
 <header class="app">
   <h1>MSELA</h1>
   <div class="sub">Unified Health Tracker · process over outcome</div>
@@ -994,7 +1033,7 @@ const App = {
 
 /* ============ BOOT ============ */
 if (typeof document !== "undefined") {
-  document.addEventListener("DOMContentLoaded", () => { App.boot(); if (typeof Cloud !== "undefined") Cloud.init(); });
+  document.addEventListener("DOMContentLoaded", () => { App.boot(); if (typeof Cloud !== "undefined") { Cloud.syncCoverState(); Cloud.init(); } });
   // register service worker for offline + installability (no-op on file://, only runs when hosted)
   if ("serviceWorker" in navigator && location.protocol.indexOf("http") === 0) {
     window.addEventListener("load", () => navigator.serviceWorker.register("sw.js").catch(() => {}));
@@ -1578,11 +1617,21 @@ const Cloud = {
       </div>
       <div class="note" style="margin-top:8px">First time? Tap <b>Create account</b>. Already have one (e.g. on another device)? Tap <b>Log in</b> and your data appears here.</div></div>`;
   },
+  syncCoverState() {
+    const cover = document.getElementById("cover"); if (!cover) return;
+    let skipped = false; try { skipped = localStorage.getItem("msela_skip") === "1"; } catch (e) {}
+    cover.style.display = (this.user || skipped) ? "none" : "flex";
+  },
   render() {
+    this.syncCoverState();
     const el = document.getElementById("scr-data");
     if (el && el.classList.contains("active") && typeof App.renderData === "function") App.renderData();
   }
 };
+App.coverLogin = function () { Cloud.signIn((document.getElementById("cv-email") || {}).value, (document.getElementById("cv-pw") || {}).value); };
+App.coverSignup = function () { Cloud.signUp((document.getElementById("cv-email") || {}).value, (document.getElementById("cv-pw") || {}).value); };
+App.coverSkip = function () { try { localStorage.setItem("msela_skip", "1"); } catch (e) {} Cloud.syncCoverState(); toast("Using Msela on this device"); };
+App.showCover = function () { try { localStorage.removeItem("msela_skip"); } catch (e) {} Cloud.syncCoverState(); };
 
 App.renderData = function () {
   const data = this.data, el = document.getElementById("scr-data");
