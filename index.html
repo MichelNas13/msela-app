@@ -1502,7 +1502,7 @@ const Cloud = {
     try {
       const sb = await this.client();
       const { data } = await sb.auth.getSession();
-      if (data && data.session) { this.user = data.session.user; this.render(); await this.pullMerge("Synced on open"); }
+      if (data && data.session) { this.user = data.session.user; this.prepLocalForUser(this.user.id); this.render(); await this.pullMerge("Synced on open"); }
       sb.auth.onAuthStateChange((_e, session) => { this.user = session ? session.user : null; this.render(); });
       // pull-merge whenever the app comes back to the foreground or regains connection → feels live across devices
       document.addEventListener("visibilitychange", () => { if (!document.hidden && this.user) this.pullMerge("Synced"); });
@@ -1521,6 +1521,7 @@ const Cloud = {
       if (error) { toast(error.message); return; }
       if (data.session) this.user = data.user;
       else { const r = await sb.auth.signInWithPassword({ email, password: pw }); if (r.error) { toast("Account created — now tap Log in"); return; } this.user = r.data.user; }
+      this.prepLocalForUser(this.user.id);
       await this.pullMerge("Synced");
       toast("Account created — sync is on");
     } catch (e) { toast("Sign-up failed — check your connection"); }
@@ -1535,15 +1536,29 @@ const Cloud = {
       const { data, error } = await sb.auth.signInWithPassword({ email, password: pw });
       if (error) { toast(error.message); return; }
       this.user = data.user;
+      this.prepLocalForUser(this.user.id);
       await this.pullMerge("Synced");
       toast("Logged in — sync is on");
     } catch (e) { toast("Login failed — check your connection"); }
     finally { this._busy = false; this.render(); }
   },
+  // Tag local data with the account it belongs to; if a DIFFERENT account logs in, wipe local first so data can't bleed across accounts.
+  prepLocalForUser(uid) {
+    let prev = ""; try { prev = localStorage.getItem("msela_local_uid") || ""; } catch (e) {}
+    if (prev && prev !== uid) {
+      App.data = structuredClone(DEFAULT_DATA);
+      App.data.targets.bri = +Calc.bri(App.data.targets.waistCm, App.data.profile.heightM).toFixed(2);
+    }
+    try { localStorage.setItem("msela_local_uid", uid); } catch (e) {}
+  },
   async signOut() {
     try { const sb = await this.client(); await sb.auth.signOut(); } catch (e) {}
-    this.user = null; this.status = ""; this.render();
-    toast("Logged out — your data stays on this device");
+    this.user = null; this.status = "";
+    try { localStorage.removeItem("msela_local_uid"); } catch (e) {}
+    App.data = structuredClone(DEFAULT_DATA);           // clear the browser copy so the next account can't inherit this one's data
+    App.data.targets.bri = +Calc.bri(App.data.targets.waistCm, App.data.profile.heightM).toFixed(2);
+    Store.save(App.data); App.renderAll(); this.render();
+    toast("Logged out — your data is safe in your account");
   },
   async changePassword() {
     if (!this.user) return;
