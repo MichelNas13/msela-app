@@ -216,7 +216,7 @@ body.commercial nav.tabs button[data-scr="log"]{display:none}
 /* ============ DATA MODEL & SEED (program is data, not code) ============ */
 const STORE_KEY = "uhs_data_v1";
 const OWNER_EMAILS = ["michelnas13@gmail.com"];   // only this account unlocks the full personal program; everyone else gets the commercial experience
-const APP_VERSION = "2026-06-19 · LWW-sync-v6";   // visible build tag — bump on every deploy so we can confirm what's actually live on a device
+const APP_VERSION = "2026-06-22 · sync-v7 (no-empty-clobber)";   // visible build tag — bump on every deploy so we can confirm what's actually live on a device
 const DEFAULT_DATA = {
   schema: 1,
   profile: { name: "", heightM: 1.75 },
@@ -370,8 +370,8 @@ const Store = {
     }
     return structuredClone(DEFAULT_DATA);
   },
-  save(d) {
-    d.updatedAt = new Date().toISOString();   // stamp for cloud-merge conflict resolution
+  save(d, keepStamp) {
+    if (!keepStamp) d.updatedAt = new Date().toISOString();   // stamp for cloud-merge conflict resolution (skip on boot-time normalisation)
     let json; try { json = JSON.stringify(d); } catch (e) { return; }
     try {
       const prev = localStorage.getItem(STORE_KEY);
@@ -673,7 +673,7 @@ const App = {
     this.data = Store.load();
     // keep BRI target consistent with the waist target (mirrors the workbook's live formula)
     this.data.targets.bri = +Calc.bri(this.data.targets.waistCm, this.data.profile.heightM).toFixed(2);
-    Store.save(this.data);
+    Store.save(this.data, true);   // boot normalisation only — keep the real last-change time so it can't out-rank cloud data
     const now = this.now();
     const wk = Clock.week(this.data, now);
     this.logWeek = Math.min(Math.max(wk, 1), this.data.program.weeks);
@@ -1605,9 +1605,7 @@ const Cloud = {
       const remote = await this.pull();
       let adopted = false;
       if (remote && remote.data) {
-        const rUp = remote.updated_at ? new Date(remote.updated_at).getTime() : 0;
-        const lUp = (App.data && App.data.updatedAt) ? new Date(App.data.updatedAt).getTime() : 0;
-        adopted = rUp > lUp;           // another device changed more recently → adopt it and re-render
+        adopted = this.pickRemote(App.data, remote.data, remote.updated_at);   // remote actually taken → re-render
         App.data = mergeSaved(Cloud.merge(App.data, remote.data, remote.updated_at));
         App.data.targets.bri = +Calc.bri(App.data.targets.waistCm, App.data.profile.heightM).toFixed(2);
       }
@@ -1629,11 +1627,31 @@ const Cloud = {
   // across their own devices this is predictable and correct — your latest action (add, edit,
   // delete or un-tick) wins everywhere, and changes still cross between devices. The program and
   // habitsCatalog always come from the app's code (forced in mergeSaved), so they're never lost.
-  merge(local, remote, remoteUpdated) {
+  // Does this blob hold any real user content? (used so an empty side never overwrites a populated one)
+  hasContent(d) {
+    if (!d) return false;
+    if (((d.profile && d.profile.name) || "").trim()) return true;
+    if (d.measurements && d.measurements.length) return true;
+    if (d.workouts && d.workouts.length) return true;
+    if (d.activities && d.activities.length) return true;
+    if (d.deloads && d.deloads.length) return true;
+    if (d.habitLog && Object.keys(d.habitLog).some(wk => Object.values(d.habitLog[wk] || {}).some(Boolean))) return true;
+    if (d.checkpoints && d.checkpoints.some(c => c && (c.date || c.result || (c.status && c.status !== "todo")))) return true;
+    return false;
+  },
+  // Decide whether to adopt the remote blob. Content beats emptiness first (so a blank local can
+  // never wipe real cloud data, and a blank cloud can never wipe real local data); only when BOTH
+  // sides have content do we fall back to last-write-wins by timestamp.
+  pickRemote(local, remote, remoteUpdated) {
+    const lHas = this.hasContent(local), rHas = this.hasContent(remote);
+    if (lHas && !rHas) return false;
+    if (rHas && !lHas) return true;
     const lUp = (local && local.updatedAt) ? new Date(local.updatedAt).getTime() : 0;
     const rUp = remoteUpdated ? new Date(remoteUpdated).getTime() : 0;
-    const winner = (rUp > lUp) ? remote : local;
-    const out = structuredClone(winner);
+    return rUp > lUp;
+  },
+  merge(local, remote, remoteUpdated) {
+    const out = structuredClone(this.pickRemote(local, remote, remoteUpdated) ? remote : local);
     out.updatedAt = new Date().toISOString();
     return out;
   },
