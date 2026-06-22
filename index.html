@@ -1491,7 +1491,7 @@ const FileSync = {
 const Cloud = {
   URL: "https://vygjkcgjdbddrcaysjle.supabase.co",
   KEY: "sb_publishable_XySZ48FKLjI8RNea4GZtlg_NzW1lWad",
-  sb: null, user: null, status: "", _pushT: null, _busy: false, _syncing: false,
+  sb: null, user: null, status: "", _pushT: null, _busy: false, _syncing: false, _skip: false,
   async client() {
     if (this.sb) return this.sb;
     const mod = await import("https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm");
@@ -1515,7 +1515,7 @@ const Cloud = {
     email = (email || "").trim();
     if (!email || !pw) return toast("Enter an email and a password");
     if (pw.length < 6) return toast("Password needs at least 6 characters");
-    this._busy = true;
+    this._busy = true; toast("Creating your account…");
     try {
       const sb = await this.client();
       const { data, error } = await sb.auth.signUp({ email, password: pw });
@@ -1531,7 +1531,7 @@ const Cloud = {
   async signIn(email, pw) {
     email = (email || "").trim();
     if (!email || !pw) return toast("Enter your email and password");
-    this._busy = true;
+    this._busy = true; toast("Signing in…");
     try {
       const sb = await this.client();
       const { data, error } = await sb.auth.signInWithPassword({ email, password: pw });
@@ -1667,10 +1667,8 @@ const Cloud = {
   },
   syncCoverState() {
     const cover = document.getElementById("cover");
-    if (cover) {
-      let skipped = false; try { skipped = localStorage.getItem("msela_skip") === "1"; } catch (e) {}
-      cover.style.display = (this.user || skipped) ? "none" : "flex";
-    }
+    // login cover shows on every fresh open until you're signed in; "Continue on this device" only dismisses it for this session
+    if (cover) cover.style.display = (this.user || this._skip) ? "none" : "flex";
     if (typeof App.syncOnboard === "function") App.syncOnboard();
   },
   render() {
@@ -1684,8 +1682,8 @@ const Cloud = {
 };
 App.coverLogin = function () { Cloud.signIn((document.getElementById("cv-email") || {}).value, (document.getElementById("cv-pw") || {}).value); };
 App.coverSignup = function () { Cloud.signUp((document.getElementById("cv-email") || {}).value, (document.getElementById("cv-pw") || {}).value); };
-App.coverSkip = function () { try { localStorage.setItem("msela_skip", "1"); } catch (e) {} Cloud.syncCoverState(); toast("Using Msela on this device"); };
-App.showCover = function () { try { localStorage.removeItem("msela_skip"); } catch (e) {} Cloud.syncCoverState(); };
+App.coverSkip = function () { Cloud._skip = true; Cloud.syncCoverState(); toast("Using Msela on this device"); };
+App.showCover = function () { Cloud._skip = false; Cloud.syncCoverState(); };
 // PERSONAL vs COMMERCIAL mode: only the owner account unlocks the full workout program; everyone else gets the commercial app.
 App.isPersonal = function () {
   return typeof Cloud !== "undefined" && !!Cloud.user && OWNER_EMAILS.indexOf(((Cloud.user.email) || "").toLowerCase().trim()) !== -1;
