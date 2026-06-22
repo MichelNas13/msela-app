@@ -11,7 +11,7 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="icon" type="image/png" href="icon-192.png">
-<title>Msela — Unified Health Tracker</title>
+<title>Msela — Health & Fitness Tracker</title>
 <style>
 :root{
   --navy:#0F2A47; --slate:#4A5568; --slate2:#595959; --teal:#267474; --teal-soft:#B2DFDF;
@@ -154,7 +154,7 @@ body.commercial nav.tabs button[data-scr="log"]{display:none}
     <div class="cover-brand">
       <img src="icon-512.png" alt="Msela logo" class="cover-logo">
       <h1 class="cover-name">Msela</h1>
-      <div class="cover-tag">Unified Health Tracker</div>
+      <div class="cover-tag">Health & Fitness Tracker</div>
       <div class="cover-sub">Process over outcome.</div>
     </div>
     <div class="cover-card">
@@ -192,7 +192,7 @@ body.commercial nav.tabs button[data-scr="log"]{display:none}
 </div>
 <header class="app">
   <h1>MSELA</h1>
-  <div class="sub">Unified Health Tracker · process over outcome</div>
+  <div class="sub">Health & Fitness Tracker · process over outcome</div>
 </header>
 <main>
   <section id="scr-today" class="screen active" role="tabpanel" aria-label="Today"></section>
@@ -219,7 +219,7 @@ body.commercial nav.tabs button[data-scr="log"]{display:none}
 /* ============ DATA MODEL & SEED (program is data, not code) ============ */
 const STORE_KEY = "uhs_data_v1";
 const OWNER_EMAILS = ["michelnas13@gmail.com"];   // only this account unlocks the full personal program; everyone else gets the commercial experience
-const APP_VERSION = "2026-06-22 · sync-v7 · ui-v8 (input polish)";   // visible build tag — bump on every deploy so we can confirm what's actually live on a device
+const APP_VERSION = "2026-06-22 · neutral-v9 (commercial wording)";   // visible build tag — bump on every deploy so we can confirm what's actually live on a device
 const DEFAULT_DATA = {
   schema: 1,
   profile: { name: "", heightM: 1.75 },
@@ -1281,17 +1281,19 @@ App.renderDash = function () {
     html += `<div class="note" style="margin-top:6px">Shaded band = ±0.75cm measurement noise — react to trends, not single readings.</div></div>`;
   }
 
-  /* strength curves */
-  const tpSeries = [];
-  const tpColors = ["var(--teal)", "var(--orange)", "var(--green)", "var(--input)"];
-  Object.entries(data.program.tentpoles).forEach(([key, tp], i) => {
-    const hist = Logic.tentpoleHistory(data, key);
-    if (hist.length) tpSeries.push({ label: tp.label.split("/")[0].trim(), color: tpColors[i % 4], points: hist.map(p => ({ x: Clock.parseISO(p.date).getTime(), y: Math.round(Calc.e1rm ? p.e1rm * 10 : 0) / 10 })) });
-  });
-  html += `<div class="card"><h2>Tentpole strength — e1RM</h2>`;
-  html += tpSeries.length ? Dash.chart(tpSeries, { label: "Estimated one-rep max per tentpole lift" })
-                          : `<div class="note" style="text-align:center;padding:18px 8px">Log gym sessions and the four tentpole curves appear here.</div>`;
-  html += `</div>`;
+  /* strength curves — only relevant to the structured training program (owner) */
+  if (this.isPersonal()) {
+    const tpSeries = [];
+    const tpColors = ["var(--teal)", "var(--orange)", "var(--green)", "var(--input)"];
+    Object.entries(data.program.tentpoles).forEach(([key, tp], i) => {
+      const hist = Logic.tentpoleHistory(data, key);
+      if (hist.length) tpSeries.push({ label: tp.label.split("/")[0].trim(), color: tpColors[i % 4], points: hist.map(p => ({ x: Clock.parseISO(p.date).getTime(), y: Math.round(Calc.e1rm ? p.e1rm * 10 : 0) / 10 })) });
+    });
+    html += `<div class="card"><h2>Tentpole strength — e1RM</h2>`;
+    html += tpSeries.length ? Dash.chart(tpSeries, { label: "Estimated one-rep max per tentpole lift" })
+                            : `<div class="note" style="text-align:center;padding:18px 8px">Log gym sessions and the four tentpole curves appear here.</div>`;
+    html += `</div>`;
+  }
 
   /* derived metrics */
   if (last) {
@@ -1894,8 +1896,12 @@ App.setLens = function (name) { this.insightLens = name; try { localStorage.setI
 App.renderProgress = function () {
   const data = this.data, el = document.getElementById("scr-progress"); if (!el) return;
   const ms = data.measurements, h = data.profile.heightM, now = this.now();
-  const lens = this.insightLens || "body";
-  const tabs = [["body","Body"],["strength","Strength"],["training","Training"],["activity","Activity"],["scores","Scores"]];
+  // Strength & Training lenses belong to the structured program (owner only); everyone gets Body, Activity, Scores.
+  const tabs = this.isPersonal()
+    ? [["body","Body"],["strength","Strength"],["training","Training"],["activity","Activity"],["scores","Scores"]]
+    : [["body","Body"],["activity","Activity"],["scores","Scores"]];
+  let lens = this.insightLens || "body";
+  if (!tabs.some(([k]) => k === lens)) lens = "body";   // fall back if the saved lens is hidden in this mode
   const menu = `<div class="seg" role="tablist" aria-label="Choose an analysis">` +
     tabs.map(([k,lab]) => `<button role="tab" aria-pressed="${lens === k}" onclick="App.setLens('${k}')">${lab}</button>`).join("") + `</div>`;
   const fmt = (v, dp) => v == null ? "—" : v.toFixed(dp);
@@ -2015,11 +2021,16 @@ App.lensScores = function (data, now, fmt) {
   const ex = Score.excellence(data, now);
   const head = ex.headline == null ? "—" : ex.headline;
   const headChip = ex.headline == null ? "teal" : ex.headline >= 80 ? "green" : ex.headline >= 50 ? "orange" : "red";
-  let crows = ex.comp.map(c => {
+  // The Strength component is part of the structured program; hide it for the general (non-owner) experience.
+  const comp = this.isPersonal() ? ex.comp : ex.comp.filter(c => c.k !== "Strength");
+  let crows = comp.map(c => {
     const chip = c.v == null ? "teal" : c.v >= 80 ? "green" : c.v >= 50 ? "orange" : "red";
     return `<tr><td>${esc(c.k)}</td><td style="color:var(--slate)">weight ${c.w}%</td><td><span class="chip ${chip}">${c.v == null ? "no data" : c.v}</span></td></tr>`;
   }).join("");
-  const exCard = `<div class="card"><h2 style="display:flex;justify-content:space-between;align-items:center;gap:8px">Health Excellence index <span class="chip ${headChip}">${head}</span></h2><div class="note">A weighted blend of your body, behaviour, fitness markers and strength trend — one number for the whole system.</div><table class="mini"><tr><th>Component</th><th></th><th>Score</th></tr>${crows}</table></div>`;
+  const exDesc = this.isPersonal()
+    ? "A weighted blend of your body, behaviour, fitness markers and strength trend — one number for the whole system."
+    : "A weighted blend of your body, behaviour and fitness markers — one number for the whole system.";
+  const exCard = `<div class="card"><h2 style="display:flex;justify-content:space-between;align-items:center;gap:8px">Health Excellence index <span class="chip ${headChip}">${head}</span></h2><div class="note">${exDesc}</div><table class="mini"><tr><th>Component</th><th></th><th>Score</th></tr>${crows}</table></div>`;
   const tr = Insights.processTrend(data.habitLog, data.habitsCatalog, now, 6);
   let prow = tr.map(w => `<td style="text-align:center"><span class="chip ${w.pct == null ? "teal" : w.pct >= 80 ? "green" : w.pct >= 50 ? "orange" : "red"}" style="margin:0">${w.pct == null ? "–" : w.pct}</span></td>`).join("");
   const procCard = `<div class="card"><h2>Behaviour score — last 6 weeks</h2><div class="note">Weekly habit adherence %, weighted by importance. Consistency here is what moves the body numbers.</div><div class="scrollx"><table class="mini nowrap"><tr>${tr.map(w => `<th style="text-align:center">${esc(w.week.split("-W")[1])}</th>`).join("")}</tr><tr>${prow}</tr></table></div></div>`;
