@@ -83,7 +83,10 @@ input:focus-visible,button:focus-visible{outline:3px solid var(--input); outline
   color:var(--slate); border-radius:10px; font:inherit; font-size:14px; font-weight:600; cursor:pointer}
 .seg button[aria-pressed="true"]{background:var(--teal); border-color:var(--teal); color:#fff}
 .setin{display:flex; gap:8px; align-items:center}
-.setin{flex-wrap:wrap} .setin input{width:62px; text-align:center}
+.setin{flex-wrap:wrap} .setin input{width:68px; text-align:center}
+/* hide the native number spinners — they clip decimal values like 12.5 and aren't needed here */
+.setin input::-webkit-outer-spin-button,.setin input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+.setin input[type=number]{-moz-appearance:textfield}
 .setin .x{color:var(--slate)}
 .e1rm{font-size:12px; color:var(--slate); min-width:86px; text-align:right}
 .msg{border-radius:10px; padding:10px 12px; font-size:13.5px; margin:8px 0}
@@ -216,7 +219,7 @@ body.commercial nav.tabs button[data-scr="log"]{display:none}
 /* ============ DATA MODEL & SEED (program is data, not code) ============ */
 const STORE_KEY = "uhs_data_v1";
 const OWNER_EMAILS = ["michelnas13@gmail.com"];   // only this account unlocks the full personal program; everyone else gets the commercial experience
-const APP_VERSION = "2026-06-22 · sync-v7 (no-empty-clobber)";   // visible build tag — bump on every deploy so we can confirm what's actually live on a device
+const APP_VERSION = "2026-06-22 · sync-v7 · ui-v8 (input polish)";   // visible build tag — bump on every deploy so we can confirm what's actually live on a device
 const DEFAULT_DATA = {
   schema: 1,
   profile: { name: "", heightM: 1.75 },
@@ -828,7 +831,7 @@ const App = {
         const ex = this.exFor(slot, cl);
         const stars = slot.star ? ' <span class="star">' + "★".repeat(slot.star) + "</span>" : "";
         const sug = Prog.suggest(data, this.logSession, slot, ex);
-        const kgPh = sug.kg != null ? sug.kg : "kg", rpPh = sug.reps != null ? sug.reps : "reps", setsPh = String(slot.rx).split("×")[0].trim();
+        const kgPh = sug.kg != null ? sug.kg : "kg", rpPh = sug.reps != null ? sug.reps : "reps", setsPh = String(slot.rx).split("×")[0].trim().split(/[-–]/)[0].trim();
         html += `<div class="exrow">
           <div class="n"><b>${esc(ex)}${stars}</b><span>${esc(slot.name)} • ${esc(slot.rx)}</span>
             <span class="cue ${sug.mode === "up" ? "up" : ""}">${esc(sug.text)}</span></div>
