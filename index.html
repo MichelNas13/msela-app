@@ -13,34 +13,73 @@
 <link rel="icon" type="image/png" href="icon-192.png">
 <title>Msela — Health & Fitness Tracker</title>
 <style>
+/* ============================================================
+   MSELA · "Clinical Deep" design system — single source of truth.
+   Every colour, surface and accent below is a token. Light is the
+   default; dark applies automatically with the OS AND via a manual
+   [data-theme] override (the in-app toggle). No raw hex outside here.
+   ============================================================ */
 :root{
-  --navy:#0F2A47; --slate:#4A5568; --slate2:#595959; --teal:#267474; --teal-soft:#B2DFDF;
-  --input:#0050C8; --green:#276749; --green-chip:#C6F6D5; --red:#9B2C2C; --red-chip:#FED7D7;
-  --orange:#9C4221; --orange-chip:#FEEBC8; --bg:#F7FAFC; --card:#FFFFFF; --line:#E2E8F0; --cue:#1A6A6A;
-  --shadow:0 1px 3px rgba(15,42,71,.10),0 4px 14px rgba(15,42,71,.06);
+  /* brand + accent */
+  --navy:#0F2A47;        /* primary text/headings (flips light in dark) */
+  --brand:#0F2A47;       /* navy surfaces that stay navy: header, hero */
+  --brand-2:#163A5E;
+  --accent:#12936A;      /* signature green — CTAs, active, ring */
+  --accent-ink:#0B6B4D;  /* green text on light surfaces */
+  --btn-bg:#0F2A47;      /* primary button fill */
+  --btn-ink:#FFFFFF;
+  --teal:#0E7C72; --teal-soft:#DCEFEC;
+  /* neutrals (cool clinical) */
+  --bg:#F4F7FA; --card:#FFFFFF; --line:#E6ECF2;
+  --slate:#51627A; --slate2:#8A98AC; --cue:#0E7C72;
+  --input:#0050C8;       /* focus ring */
+  /* semantic status */
+  --green:#0B7A4F; --green-chip:#DCF5E9; --red:#B42318; --red-chip:#FCE4E2;
+  --orange:#9A5B12; --orange-chip:#FBEBD2;
+  /* ring + elevation */
+  --ring:#12936A; --ring-track:#E2EAF1; --glow:0 0 0 rgba(0,0,0,0); --on-brand-mute:#9FB4CC;
+  --radius:18px;
+  --shadow:0 1px 2px rgba(15,42,71,.06),0 6px 20px rgba(15,42,71,.07);
+  color-scheme:light;
+}
+/* shared dark palette, reused by the OS query and the manual toggle */
+:root[data-theme="dark"]{
+  --navy:#E7EDF4; --brand:#101824; --brand-2:#16202c; --accent:#39E0C3; --accent-ink:#39E0C3;
+  --btn-bg:#39E0C3; --btn-ink:#06201A; --teal:#3FC9BD; --teal-soft:#16302F;
+  --bg:#0B0E13; --card:#121821; --line:#1F2935; --slate:#9AA7B6; --slate2:#6B7787; --cue:#6FE0D4;
+  --input:#7FB3FF; --green:#5FD39B; --green-chip:#13301F; --red:#F1A0A0; --red-chip:#3E1D1D;
+  --orange:#F0B074; --orange-chip:#3A2A16; --ring:#39E0C3; --ring-track:#222C38;
+  --glow:0 0 16px rgba(57,224,195,.45); --shadow:0 1px 3px rgba(0,0,0,.5); color-scheme:dark;
 }
 @media (prefers-color-scheme: dark){
-  :root{ --navy:#E2E8F0; --slate:#B6C2D0; --slate2:#A8B3BF; --bg:#0D1722; --card:#16273A;
-         --line:#2A3D52; --teal-soft:#1E3A4D; --green-chip:#1C3A2A; --red-chip:#461F1F;
-         --orange-chip:#42301A; --input:#7FB3FF; --green:#7BD8A0; --red:#F1A0A0; --orange:#F0B074; --cue:#7FD0D0;
-         --shadow:0 1px 3px rgba(0,0,0,.4); }
-  .hero{ background:#16273A !important; }
+  :root:not([data-theme="light"]){
+    --navy:#E7EDF4; --brand:#101824; --brand-2:#16202c; --accent:#39E0C3; --accent-ink:#39E0C3;
+    --btn-bg:#39E0C3; --btn-ink:#06201A; --teal:#3FC9BD; --teal-soft:#16302F;
+    --bg:#0B0E13; --card:#121821; --line:#1F2935; --slate:#9AA7B6; --slate2:#6B7787; --cue:#6FE0D4;
+    --input:#7FB3FF; --green:#5FD39B; --green-chip:#13301F; --red:#F1A0A0; --red-chip:#3E1D1D;
+    --orange:#F0B074; --orange-chip:#3A2A16; --ring:#39E0C3; --ring-track:#222C38;
+    --glow:0 0 16px rgba(57,224,195,.45); --shadow:0 1px 3px rgba(0,0,0,.5); color-scheme:dark;
+  }
 }
 *{box-sizing:border-box; -webkit-tap-highlight-color:transparent}
 html,body{margin:0; padding:0; background:var(--bg); color:var(--navy); overflow-x:hidden;
   font:16px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Calibri,sans-serif;
   -webkit-text-size-adjust:100%;}
-header.app{position:sticky; top:0; z-index:10; background:#0F2A47; color:#fff;
-  padding:calc(env(safe-area-inset-top) + 14px) 18px 12px;}
-header.app h1{margin:0; font-size:17px; letter-spacing:.4px}
-header.app .sub{font-size:12px; color:#E2E8F0; margin-top:2px}
+header.app{position:sticky; top:0; z-index:10; background:var(--brand); color:#fff;
+  padding:calc(env(safe-area-inset-top) + 14px) 18px 12px; display:flex; align-items:center; justify-content:space-between; gap:12px;}
+header.app .brandwrap{min-width:0}
+header.app h1{margin:0; font-size:18px; font-weight:800; letter-spacing:1.5px}
+header.app .sub{font-size:12px; color:#B9C8DA; margin-top:2px}
+header.app .themebtn{flex:none; width:40px; height:40px; border-radius:12px; border:1px solid rgba(255,255,255,.18);
+  background:rgba(255,255,255,.08); color:#fff; font-size:18px; cursor:pointer; display:flex; align-items:center; justify-content:center; line-height:1}
+header.app .themebtn:focus-visible{outline:3px solid var(--input); outline-offset:2px}
 main{max-width:680px; margin:0 auto; padding:16px 14px calc(86px + env(safe-area-inset-bottom));}
-.card{background:var(--card); border:1px solid var(--line); border-radius:16px;
-  box-shadow:var(--shadow); padding:16px; margin-bottom:14px; overflow-wrap:break-word;}
-.card h2{margin:0 0 4px; font-size:13px; letter-spacing:.8px; text-transform:uppercase; color:var(--slate)}
-.hero{background:linear-gradient(135deg,#0F2A47,#1B4570); color:#fff;}
-.hero h2{color:#CBD8E6} .hero .big{font-size:26px; font-weight:700; margin:4px 0}
-.hero .meta{font-size:13px; color:#E2E8F0}
+.card{background:var(--card); border:1px solid var(--line); border-radius:var(--radius);
+  box-shadow:var(--shadow); padding:18px; margin-bottom:14px; overflow-wrap:break-word;}
+.card h2{margin:0 0 4px; font-size:12px; letter-spacing:1px; text-transform:uppercase; color:var(--slate2); font-weight:700}
+.hero{background:var(--brand); color:#fff; border:none;}
+.hero h2{color:var(--on-brand-mute)} .hero .big{font-size:26px; font-weight:800; margin:4px 0; font-variant-numeric:tabular-nums}
+.hero .meta{font-size:13px; color:#C9D6E5}
 .chip{display:inline-block; padding:3px 10px; border-radius:999px; font-size:12px; font-weight:600; margin:2px 6px 2px 0}
 .chip.green{background:var(--green-chip); color:var(--green)}
 .chip.orange{background:var(--orange-chip); color:var(--orange)}
@@ -54,13 +93,37 @@ main{max-width:680px; margin:0 auto; padding:16px 14px calc(86px + env(safe-area
 .exrow .rx{font-size:12.5px; color:var(--slate); white-space:nowrap}
 .star{color:var(--orange); font-weight:700}
 .note{font-size:13px; color:var(--slate)}
+/* readable guide lists (Log progression, Measure protocol) */
+.guide{margin:8px 0 2px; padding:0; list-style:none}
+.guide li{position:relative; padding:0 0 0 22px; margin:0 0 12px; font-size:13.5px; line-height:1.5; color:var(--slate)}
+.guide li:last-child{margin-bottom:2px}
+.guide li::before{content:""; position:absolute; left:2px; top:7px; width:7px; height:7px; border-radius:50%; background:var(--accent)}
+.guide li b{color:var(--navy)}
+.guide.steps{counter-reset:gstep}
+.guide.steps li{padding-left:30px}
+.guide.steps li::before{counter-increment:gstep; content:counter(gstep); top:0; left:0; width:20px; height:20px; border-radius:50%;
+  background:var(--teal-soft); color:var(--accent-ink); font-size:11px; font-weight:700; display:flex; align-items:center; justify-content:center}
+.guide h4{margin:14px 0 6px; font-size:12px; letter-spacing:.6px; text-transform:uppercase; color:var(--slate2)}
 .cue{display:block; font-size:12px; color:var(--cue); font-weight:600; margin-top:3px}
 .cue.up{color:var(--green)}
 .kpis{display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:10px}
 .kpi{background:rgba(255,255,255,.10); border-radius:10px; padding:10px}
 .kpi .v{font-size:20px; font-weight:700} .kpi .l{font-size:11.5px; color:#CBD8E6}
 .footer-note{text-align:center; font-size:12px; color:var(--slate); margin-top:18px}
-.bigscore{font-size:44px; font-weight:800; color:var(--navy); line-height:1}
+.bigscore{font-size:44px; font-weight:800; color:var(--navy); line-height:1; font-variant-numeric:tabular-nums}
+/* ===== Health Excellence ring hero ===== */
+.ringhero{display:flex; align-items:center; gap:18px}
+.ring{--p:0; width:108px; height:108px; flex:none; border-radius:50%;
+  background:conic-gradient(var(--ring) calc(var(--p)*1%), var(--ring-track) 0); box-shadow:var(--glow);
+  display:flex; align-items:center; justify-content:center; transition:background .6s ease}
+.ring .inner{width:84px; height:84px; border-radius:50%; background:var(--brand); color:#fff;
+  display:flex; flex-direction:column; align-items:center; justify-content:center}
+.ring .inner .n{font-size:32px; font-weight:800; line-height:1; font-variant-numeric:tabular-nums}
+.ring .inner .of{font-size:10px; color:var(--on-brand-mute); letter-spacing:.5px}
+.ringhero .side{min-width:0}
+.ringhero .side .lab{font-size:11px; color:var(--on-brand-mute); letter-spacing:.6px; text-transform:uppercase}
+.ringhero .side .st{font-size:17px; font-weight:700; color:#fff; margin-top:3px}
+.ringhero .side .dl{font-size:12.5px; margin-top:4px; font-weight:600}
 .gridR{display:grid; grid-template-columns:repeat(auto-fit,minmax(132px,1fr)); gap:10px; margin-top:10px}
 .dot{display:inline-block; width:11px; height:11px; border-radius:50%; vertical-align:middle}
 .dot.good{background:var(--green)} .dot.meh{background:var(--orange)} .dot.bad{background:var(--red)} .dot.neutral{background:var(--teal)}
@@ -75,13 +138,18 @@ input:focus-visible,button:focus-visible{outline:3px solid var(--input); outline
 .grid3{display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px}
 .btn{display:inline-flex; align-items:center; justify-content:center; min-height:48px; min-width:48px;
   padding:10px 18px; border:0; border-radius:12px; font:inherit; font-weight:700; cursor:pointer;
-  background:var(--teal); color:#fff; width:100%}
-.btn.ghost{background:transparent; color:var(--teal); border:1.5px solid var(--teal); font-weight:600}
+  background:var(--btn-bg); color:var(--btn-ink); width:100%; transition:filter .15s, transform .05s}
+.btn:active{transform:translateY(1px)}
+.btn.ghost{background:transparent; color:var(--accent-ink); border:1.5px solid var(--accent); font-weight:600}
 .btn.sm{min-height:44px; width:auto; padding:8px 14px; font-size:14px}
-.seg{display:flex; gap:8px; margin:8px 0; flex-wrap:wrap}
-.seg button{flex:1; min-height:44px; min-width:44px; border:1.5px solid var(--line); background:var(--card);
-  color:var(--slate); border-radius:10px; font:inherit; font-size:14px; font-weight:600; cursor:pointer}
-.seg button[aria-pressed="true"]{background:var(--teal); border-color:var(--teal); color:#fff}
+.seg{display:flex; gap:6px; margin:10px 0; flex-wrap:wrap; background:var(--bg); padding:4px; border-radius:12px; border:1px solid var(--line)}
+.seg button{flex:1; min-height:40px; min-width:40px; border:0; background:transparent;
+  color:var(--slate); border-radius:9px; font:inherit; font-size:13.5px; font-weight:600; cursor:pointer; white-space:nowrap}
+.seg button[aria-pressed="true"]{background:var(--card); color:var(--navy); box-shadow:0 1px 3px rgba(15,42,71,.12)}
+/* Insights lens row: keep labels at natural width and scroll if they don't fit, so 'Strength'/'Training' never cramp */
+.seg.lens{flex-wrap:nowrap; overflow-x:auto; -webkit-overflow-scrolling:touch; scrollbar-width:none}
+.seg.lens::-webkit-scrollbar{display:none}
+.seg.lens button{flex:0 0 auto; padding:0 16px}
 .setin{display:flex; gap:8px; align-items:center}
 .setin{flex-wrap:wrap} .setin input{width:68px; text-align:center}
 /* hide the native number spinners — they clip decimal values like 12.5 and aren't needed here */
@@ -107,6 +175,15 @@ table.mini.nowrap th, table.mini.nowrap td{white-space:nowrap}
 .toggle[aria-pressed="true"]{border-color:var(--teal)}
 .toggle[aria-pressed="true"] .box{background:var(--teal); border-color:var(--teal)}
 .toggle .stk{margin-left:auto; font-size:12.5px; color:var(--slate); white-space:nowrap}
+/* selectable option pills (commercial activity categories) */
+.optrow{display:flex; flex-wrap:wrap; gap:8px; margin-top:10px}
+.pill{min-height:42px; padding:9px 15px; border-radius:999px; border:1.5px solid var(--line); background:var(--card);
+  color:var(--slate); font:inherit; font-size:13.5px; font-weight:600; cursor:pointer; transition:background .15s,border-color .15s}
+.pill[aria-pressed="true"]{background:var(--teal-soft); border-color:var(--accent); color:var(--accent-ink)}
+.actcat{padding:14px 0; border-bottom:1px solid var(--line)}
+.actcat:last-child{border-bottom:none; padding-bottom:2px}
+.actcat .h{display:flex; align-items:baseline; justify-content:space-between; gap:8px}
+.actcat .h b{font-size:15px; color:var(--navy)}
 .heat{display:grid; grid-template-columns:repeat(12,1fr); gap:4px; margin-top:6px}
 .heat div{aspect-ratio:1; border-radius:4px; background:var(--line)}
 .heat div.on{background:var(--teal)}
@@ -117,13 +194,15 @@ table.mini.nowrap th, table.mini.nowrap td{white-space:nowrap}
 details.proto{margin:10px 0}
 details.proto summary{cursor:pointer; font-size:13.5px; font-weight:600; color:var(--teal); min-height:44px; display:flex; align-items:center}
 nav.tabs{position:fixed; bottom:0; left:0; right:0; z-index:10; display:flex;
-  background:var(--card); border-top:1px solid var(--line); padding-bottom:env(safe-area-inset-bottom);}
-nav.tabs button{flex:1; min-height:54px; min-width:0; border:0; background:none; cursor:pointer;
-  font:inherit; font-size:10px; letter-spacing:-.1px; color:var(--slate); display:flex; flex-direction:column;
-  align-items:center; gap:2px; padding:7px 1px 6px; overflow:hidden; white-space:nowrap;
-  border-top:2px solid transparent;}
-nav.tabs button .ic{font-size:19px; line-height:1}
-nav.tabs button[aria-selected="true"]{color:var(--teal); font-weight:700; border-top-color:#EC4899}
+  background:var(--card); border-top:1px solid var(--line); padding-bottom:env(safe-area-inset-bottom);
+  box-shadow:0 -2px 12px rgba(15,42,71,.05);}
+nav.tabs button{flex:1 1 0; min-height:56px; min-width:0; border:0; background:none; cursor:pointer;
+  font:inherit; font-size:9.5px; letter-spacing:0; color:var(--slate); display:flex; flex-direction:column;
+  align-items:center; gap:3px; padding:8px 1px 7px; overflow:hidden; white-space:nowrap;}
+nav.tabs button .ic{width:34px; height:24px; display:flex; align-items:center; justify-content:center; border-radius:9px; transition:background .18s}
+nav.tabs button .ic svg{width:21px; height:21px; stroke:currentColor; fill:none; stroke-width:1.9; stroke-linecap:round; stroke-linejoin:round}
+nav.tabs button[aria-selected="true"]{color:var(--accent-ink); font-weight:700}
+nav.tabs button[aria-selected="true"] .ic{background:var(--teal-soft)}
 nav.tabs button:focus-visible{outline:3px solid var(--input); outline-offset:-3px; border-radius:10px}
 .screen{display:none} .screen.active{display:block}
 /* welcome / sign-in cover */
@@ -135,9 +214,9 @@ nav.tabs button:focus-visible{outline:3px solid var(--input); outline-offset:-3p
 .cover-brand{text-align:center; color:#fff; margin-bottom:24px}
 .cover-logo{width:88px; height:88px; border-radius:24px; box-shadow:0 10px 34px rgba(0,0,0,.40); margin-bottom:16px}
 .cover-name{font-size:36px; font-weight:800; letter-spacing:.5px; line-height:1; margin:0}
-.cover-name::after{content:""; display:block; width:48px; height:3px; background:#EC4899; border-radius:2px; margin:12px auto 0}
+.cover-name::after{content:""; display:block; width:48px; height:3px; background:#39E0C3; border-radius:2px; margin:12px auto 0}
 .cover-tag{font-size:14px; color:#D4E0EC; margin-top:14px; font-weight:600; letter-spacing:.3px}
-.cover-sub{font-size:13px; color:#9FB4CC; margin-top:3px}
+.cover-sub{font-size:13px; color:var(--on-brand-mute); margin-top:3px}
 .cover-card{background:var(--card); border:1px solid var(--line); border-radius:20px; padding:22px 18px; box-shadow:0 20px 56px rgba(0,0,0,.34)}
 .cover-card h2{margin:0 0 3px; font-size:17px; font-weight:700; color:var(--navy); letter-spacing:0; text-transform:none}
 .cover-card .cover-note{font-size:13px; color:var(--slate); margin-bottom:4px}
@@ -147,6 +226,8 @@ nav.tabs button:focus-visible{outline:3px solid var(--input); outline-offset:-3p
 .cover-foot{text-align:center; color:#8FA6BE; font-size:11.5px; margin-top:18px}
 body.commercial nav.tabs button[data-scr="log"]{display:none}
 </style>
+<script>/* apply saved theme before paint to avoid a flash; absence = follow the OS */
+try{var _t=localStorage.getItem("msela_theme"); if(_t==="dark"||_t==="light")document.documentElement.setAttribute("data-theme",_t);}catch(e){}</script>
 </head>
 <body>
 <div id="cover" class="cover" role="dialog" aria-label="Welcome to Msela" style="display:none">
@@ -191,35 +272,37 @@ body.commercial nav.tabs button[data-scr="log"]{display:none}
   </div>
 </div>
 <header class="app">
-  <h1>MSELA</h1>
-  <div class="sub">Health & Fitness Tracker · process over outcome</div>
+  <div class="brandwrap">
+    <h1>MSELA</h1>
+    <div class="sub">Health & Fitness Tracker · process over outcome</div>
+  </div>
+  <button class="themebtn" id="theme-btn" type="button" aria-label="Switch light or dark theme" onclick="App.toggleTheme()">🌙</button>
 </header>
 <main>
-  <section id="scr-today" class="screen active" role="tabpanel" aria-label="Today"></section>
+  <section id="scr-dash" class="screen active" role="tabpanel" aria-label="Dashboard"></section>
+  <section id="scr-today" class="screen" role="tabpanel" aria-label="Today"></section>
   <section id="scr-log" class="screen" role="tabpanel" aria-label="Log workout"></section>
   <section id="scr-measure" class="screen" role="tabpanel" aria-label="Measurements"></section>
   <section id="scr-habits" class="screen" role="tabpanel" aria-label="Habits"></section>
-  <section id="scr-dash" class="screen" role="tabpanel" aria-label="Dashboard">
-  </section>
   <section id="scr-progress" class="screen" role="tabpanel" aria-label="Progress over time"></section>
   <section id="scr-data" class="screen" role="tabpanel" aria-label="Data and backup"></section>
 </main>
 <div id="toast" class="toast" role="status" aria-live="polite"></div>
 <nav class="tabs" role="tablist" aria-label="Main navigation">
-  <button role="tab" aria-selected="true" data-scr="today"><span class="ic" aria-hidden="true">☀️</span>Today</button>
-  <button role="tab" aria-selected="false" data-scr="log"><span class="ic" aria-hidden="true">🏋️</span>Log</button>
-  <button role="tab" aria-selected="false" data-scr="measure"><span class="ic" aria-hidden="true">📏</span>Measure</button>
-  <button role="tab" aria-selected="false" data-scr="habits"><span class="ic" aria-hidden="true">✅</span>Habits</button>
-  <button role="tab" aria-selected="false" data-scr="dash"><span class="ic" aria-hidden="true">📊</span>Dash</button>
-  <button role="tab" aria-selected="false" data-scr="progress"><span class="ic" aria-hidden="true">📈</span>Insights</button>
-  <button role="tab" aria-selected="false" data-scr="data"><span class="ic" aria-hidden="true">💾</span>Data</button>
+  <button role="tab" aria-selected="true" data-scr="dash"><span class="ic" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></svg></span>Home</button>
+  <button role="tab" aria-selected="false" data-scr="today"><span class="ic" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M5 5l1.4 1.4M17.6 17.6L19 19M19 5l-1.4 1.4M6.4 17.6L5 19"/></svg></span>Today</button>
+  <button role="tab" aria-selected="false" data-scr="log"><span class="ic" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M6.5 6.5v11M17.5 6.5v11M3.5 9v6M20.5 9v6M6.5 12h11"/></svg></span>Log</button>
+  <button role="tab" aria-selected="false" data-scr="measure"><span class="ic" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="2.5" y="7" width="19" height="10" rx="2"/><path d="M7 7v3M11 7v4M15 7v3M19 7v4"/></svg></span>Measure</button>
+  <button role="tab" aria-selected="false" data-scr="habits"><span class="ic" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 12.5l5 5 11-11"/></svg></span>Habits</button>
+  <button role="tab" aria-selected="false" data-scr="progress"><span class="ic" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 4v16h16"/><path d="M7 14l3.5-4 3 3L20 7"/></svg></span>Insights</button>
+  <button role="tab" aria-selected="false" data-scr="data"><span class="ic" aria-hidden="true"><svg viewBox="0 0 24 24"><ellipse cx="12" cy="6" rx="7.5" ry="3"/><path d="M4.5 6v6c0 1.7 3.4 3 7.5 3s7.5-1.3 7.5-3V6M4.5 12v6c0 1.7 3.4 3 7.5 3s7.5-1.3 7.5-3v-6"/></svg></span>Data</button>
 </nav>
 <script>
 "use strict";
 /* ============ DATA MODEL & SEED (program is data, not code) ============ */
 const STORE_KEY = "uhs_data_v1";
 const OWNER_EMAILS = ["michelnas13@gmail.com"];   // only this account unlocks the full personal program; everyone else gets the commercial experience
-const APP_VERSION = "2026-06-22 · neutral-v9 (commercial wording)";   // visible build tag — bump on every deploy so we can confirm what's actually live on a device
+const APP_VERSION = "2026-06-27 · v11 (Clinical Deep + 360 QA)";   // visible build tag — bump on every deploy so we can confirm what's actually live on a device
 const DEFAULT_DATA = {
   schema: 1,
   profile: { name: "", heightM: 1.75 },
@@ -381,7 +464,10 @@ const Store = {
       // keep the last good main copy in the mirror BEFORE overwriting the main key
       if (prev) { try { if (this.parseValid(prev)) localStorage.setItem(MIRROR_KEY, prev); } catch (e) {} }
       localStorage.setItem(STORE_KEY, json);
-    } catch (e) {}
+    } catch (e) {
+      // S1-11: storage full / write blocked — never fail silently. The previous good copy is untouched.
+      if (typeof toast === "function") toast("⚠ Couldn't save on this device — storage may be full. Export a backup from Data to be safe.");
+    }
     if (typeof FileSync !== "undefined" && FileSync.handle) FileSync.write(d); // mirror to linked file if any
     if (typeof Cloud !== "undefined" && Cloud.user && !Cloud._syncing) Cloud.queuePush();   // push to cloud if signed in (not during an in-progress merge)
   }
@@ -682,7 +768,8 @@ const App = {
     this.logWeek = Math.min(Math.max(wk, 1), this.data.program.weeks);
     const day = this.data.program.schedule[now.getDay()];
     this.logSession = day && day.sessionKey ? day.sessionKey : "mon";
-    this.initNav(); this.renderAll(); this.applyMode();
+    this.initNav(); this.renderAll(); this.applyMode(); this.syncThemeBtn();
+    if (window.matchMedia) window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", () => App.syncThemeBtn());
     // backup nudge: only if there's data and it's been a while
     const hasData = (this.data.measurements.length + this.data.workouts.length) > 0;
     const lastB = this.data.lastBackupISO ? new Date(this.data.lastBackupISO) : null;
@@ -799,13 +886,18 @@ const App = {
     this.data.deloads.push({ date: Clock.toISO(this.now()) });
     Store.save(this.data); toast("Deload logged — next block unlocked 💪"); this.renderToday();
   },
-  // Wed/Fri activity logging (calisthenics, basketball) — tap to log, tap again to undo
-  logActivity(type) {
+  // Activity logging — tap to log, tap again to undo. Optional sub-type (muscle group / movement / discipline).
+  logActivity(type, sub) {
     if (!this.data.activities) this.data.activities = [];
     const today = Clock.toISO(this.now());
-    const i = this.data.activities.findIndex(a => a.date === today && a.type === type);
-    if (i >= 0) this.data.activities.splice(i, 1); else this.data.activities.push({ date: today, type });
-    Store.save(this.data); toast(i >= 0 ? type + " un-logged" : type + " logged ✓"); this.renderToday();
+    const norm = s => (s || "").toLowerCase();
+    const i = this.data.activities.findIndex(a => a.date === today && a.type === type && norm(a.sub) === norm(sub));
+    if (i >= 0) this.data.activities.splice(i, 1);
+    else this.data.activities.push(sub ? { date: today, type, sub: norm(sub) } : { date: today, type });
+    Store.save(this.data);
+    const name = sub ? sub : type;
+    toast(i >= 0 ? name + " un-logged" : name + " logged ✓");
+    this.renderToday();
   },
   activityWeek(type, now) {
     const k = Clock.isoWeekKey(now);
@@ -821,7 +913,13 @@ const App = {
       </div>
       <div class="note" style="margin-top:8px"><b>${esc(sess.title)}</b> · Cluster ${cl} of ${data.program.weeks}${blk ? " · " + esc(blk.name) : ""}. Do it and save to advance ${this.logSession.toUpperCase()} to its next cluster.</div>
       <details class="proto"><summary>How weights &amp; progression work</summary>
-        <div class="note"><b>Cluster 1 is calibration.</b> For each lift, pick a weight you could do for the top of the rep range with ~2 reps still in the tank — that's your baseline. After that it's <b>double progression</b>: hold a weight until you hit the top of the range on every set, then add the smallest increment (2.5kg compounds, 1kg isolation). The ★ tentpole lifts build the physique — drive those up cluster by cluster. Form and reps-in-reserve beat the number on screen.</div>
+        <ol class="guide steps">
+          <li><b>Cluster 1 is calibration.</b> Pick a weight you could lift for the top of the rep range with about 2 reps left in the tank. That's your baseline.</li>
+          <li><b>Then use double progression.</b> Hold that weight until you hit the top of the range on <i>every</i> set.</li>
+          <li><b>Only then add load</b> — the smallest jump: +2.5&nbsp;kg on compounds, +1&nbsp;kg on isolation lifts.</li>
+          <li><b>Drive the ★ tentpole lifts.</b> They build the physique — push those up cluster by cluster.</li>
+          <li><b>Form and reps-in-reserve beat the number on screen.</b> Clean reps win.</li>
+        </ol>
       </details></div>`;
     if (this.isBlocked(this.logSession)) {
       html += `<div class="card"><div class="msg warn">${this.logSession.toUpperCase()}'s ${this.blockEnd()} clusters are done for this block. Finish the other days + calisthenics, then deload (see Today).</div></div>`;
@@ -936,18 +1034,33 @@ const App = {
       html += `</table></div>`;
     }
     html += `<div class="card"><details class="proto"><summary>Measurement protocol — full guide</summary>
-      <div class="note" style="margin-top:8px"><b>When to measure</b><br>
-      Sunday morning, within 30 min of waking (≈6:30–7:30am). Post-bathroom (void first), pre-food, pre-water, naked or minimal underwear. Not after a high-sodium dinner. Once per week only — don't weigh between weekly readings.</div>
-      <div class="note" style="margin-top:10px"><b>Landmarks &amp; technique</b><br>
-      <b>Weight</b> — same scale, hard floor (not carpet), post-void; calibrate the scale quarterly.<br>
-      <b>Waist</b> — narrowest point above the navel and below the ribs. Stand relaxed (don't suck in), tape parallel to the floor, read at the end of a normal exhale.<br>
-      <b>Navel</b> — directly across the belly button, tape parallel, same exhale technique.<br>
-      <b>Hip</b> — widest point around the buttocks (over the greater trochanters), feet together, tape parallel.<br>
-      <b>Tape</b> — soft retractable tape; measure 3× and record the median. If readings differ &gt;1cm, re-measure all three.<br>
-      <b>Resting HR</b> — first thing on waking, before sitting up. Wearable overnight average, or count radial pulse 30 sec × 2.<br>
-      <b>Blood pressure</b> — seated 5+ min, feet flat, arm at heart level. No caffeine in the prior hour, no exercise in the prior 30 min. Take 2 readings 1 min apart, record the second.</div>
-      <div class="note" style="margin-top:10px"><b>Common errors to avoid</b><br>
-      Tape angled up/down changes the reading — check in a mirror. Pulling the tape too tight compresses tissue; snug but slide one finger under. Mark the waist landmark with a pen for 2–3 weeks to train consistency. Expect ±0.5–1 cm natural variance — trust 4-week trends, not single readings. A 200g bowel movement is 200g on the scale; same morning routine matters. Heavy sodium the day before causes fluid retention — note it.</div>
+      <h4>When to measure</h4>
+      <ul class="guide">
+        <li>Sunday morning, within 30 min of waking (≈6:30–7:30 am).</li>
+        <li>After the bathroom (void first), before food and water.</li>
+        <li>Naked or in minimal underwear.</li>
+        <li>Not after a high-sodium dinner.</li>
+        <li>Once per week only — don't weigh between weekly readings.</li>
+      </ul>
+      <h4>Landmarks &amp; technique</h4>
+      <ul class="guide">
+        <li><b>Weight</b> — same scale, hard floor (not carpet), post-void. Calibrate quarterly.</li>
+        <li><b>Waist</b> — narrowest point above the navel, below the ribs. Stand relaxed (don't suck in), tape level, read at the end of a normal exhale.</li>
+        <li><b>Navel</b> — directly across the belly button, tape level, same exhale technique.</li>
+        <li><b>Hip</b> — widest point around the buttocks, feet together, tape level.</li>
+        <li><b>Tape</b> — soft retractable tape. Measure 3× and record the median; if readings differ by &gt;1 cm, re-measure all three.</li>
+        <li><b>Resting HR</b> — on waking, before sitting up. Wearable overnight average, or count the radial pulse 30 sec × 2.</li>
+        <li><b>Blood pressure</b> — seated 5+ min, feet flat, arm at heart level. No caffeine in the prior hour, no exercise in the prior 30 min. Take 2 readings 1 min apart and record the second.</li>
+      </ul>
+      <h4>Common errors to avoid</h4>
+      <ul class="guide">
+        <li>Tape angled up or down changes the reading — check in a mirror.</li>
+        <li>Too tight compresses tissue — snug, but slide one finger under.</li>
+        <li>Mark the waist landmark with a pen for 2–3 weeks to train consistency.</li>
+        <li>Expect ±0.5–1 cm natural variance — trust 4-week trends, not single readings.</li>
+        <li>Same morning routine matters — a 200 g bowel movement is 200 g on the scale.</li>
+        <li>Heavy sodium the day before causes fluid retention — note it.</li>
+      </ul>
     </details></div>`;
     el.innerHTML = html;
   },
@@ -1209,19 +1322,28 @@ App.renderDash = function () {
   const now = this.now();
   let html = "";
 
-  /* health excellence index */
+  /* health excellence index — ring hero + transparent component rings */
   const ex = Score.excellence(data, now);
-  html += `<div class="card"><h2>Health Excellence Index</h2>`;
+  const comp = this.isPersonal() ? ex.comp : ex.comp.filter(c => c.k !== "Strength");
+  const parts = comp.map(c => c.k.toLowerCase()).join(" · ");
+  html += `<div class="card hero"><h2>Health Excellence Index</h2>`;
   if (ex.headline == null) {
-    html += `<div class="note" style="text-align:center;padding:14px 4px">Log a measurement and tick this week's habits to light up your index.</div>`;
+    const nm = ((data.profile && data.profile.name) || "").trim();
+    html += `<div class="ringhero">
+        <div class="ring" style="--p:0"><div class="inner"><span class="n">—</span><span class="of">/ 100</span></div></div>
+        <div class="side"><div class="lab">Welcome${nm ? ", " + esc(nm) : ""}</div><div class="st">Let's begin</div><div class="dl" style="color:var(--on-brand-mute)">Two taps to light up your score</div></div>
+      </div></div>
+      <div class="card"><h2>Get started</h2><div class="note">Your score builds from two things — your weekly numbers and your daily habits.</div>
+      <div class="grid2" style="margin-top:12px"><button class="btn" onclick="App.switchTab('measure')">Add your first measurement</button><button class="btn ghost" onclick="App.switchTab('habits')">Set up habits</button></div></div>`;
   } else {
-    const hb = ex.headline >= 80 ? "green" : ex.headline >= 60 ? "orange" : "red";
-    html += `<div style="text-align:center"><span class="bigscore">${ex.headline}</span><span class="note"> / 100 &nbsp;</span><span class="chip ${hb}">${ex.headline >= 80 ? "excellent" : ex.headline >= 60 ? "solid" : "needs work"}</span>
-      <div class="note">overall — body, behaviour, fitness &amp; strength combined</div></div>
-      <div class="gridR">` + ex.comp.map(c => Dash.ring(c.v != null ? c.v / 100 : 0, c.v != null ? "" : "no data", c.k, "")).join("") + `</div>
-      <div class="note" style="margin-top:8px">Transparent by design — the four rings are the real signal; the headline just flags where to look.</div>`;
+    const label = ex.headline >= 80 ? "Excellent" : ex.headline >= 60 ? "On track" : "Needs work";
+    html += `<div class="ringhero">
+        <div class="ring" style="--p:${ex.headline}"><div class="inner"><span class="n">${ex.headline}</span><span class="of">/ 100</span></div></div>
+        <div class="side"><div class="lab">Overall</div><div class="st">${label}</div><div class="dl" style="color:var(--on-brand-mute)">${esc(parts)}</div></div>
+      </div></div>
+      <div class="card"><h2>The signal</h2><div class="note">Transparent by design — these rings are the real picture; the headline just flags where to look.</div>
+      <div class="gridR">` + comp.map(c => Dash.ring(c.v != null ? c.v / 100 : 0, c.v != null ? "" : "no data", c.k, "")).join("") + `</div></div>`;
   }
-  html += `</div>`;
 
   /* behaviour process score */
   const wkKey = Clock.isoWeekKey(now), cur = Score.weekPct(data.habitLog, wkKey, data.habitsCatalog);
@@ -1712,6 +1834,24 @@ App.isPersonal = function () {
   return typeof Cloud !== "undefined" && !!Cloud.user && OWNER_EMAILS.indexOf(((Cloud.user.email) || "").toLowerCase().trim()) !== -1;
 };
 App.applyMode = function () { if (document.body) document.body.classList.toggle("commercial", !this.isPersonal()); };
+// THEME: light by default, follows the OS, or a manual override persisted in localStorage.
+App.effectiveTheme = function () {
+  const set = document.documentElement.getAttribute("data-theme");
+  if (set === "dark" || set === "light") return set;
+  return (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches) ? "dark" : "light";
+};
+App.syncThemeBtn = function () {
+  const b = document.getElementById("theme-btn"); if (!b) return;
+  const dark = this.effectiveTheme() === "dark";
+  b.textContent = dark ? "☀️" : "🌙";
+  b.setAttribute("aria-label", dark ? "Switch to light theme" : "Switch to dark theme");
+};
+App.toggleTheme = function () {
+  const next = this.effectiveTheme() === "dark" ? "light" : "dark";
+  document.documentElement.setAttribute("data-theme", next);
+  try { localStorage.setItem("msela_theme", next); } catch (e) {}
+  this.syncThemeBtn();
+};
 // Commercial Today: simple daily activity log (no gym program)
 App.commercialToday = function (now, dateStr, last, briTxt, zone) {
   const data = this.data, today = Clock.toISO(now);
@@ -1722,13 +1862,28 @@ App.commercialToday = function (now, dateStr, last, briTxt, zone) {
       <div class="kpi"><div class="v">${briTxt}</div><div class="l">BRI (waist)${zone ? " • " + esc(zone.label) : ""}</div></div>
       <div class="kpi"><div class="v">${last ? esc(last.weightKg) + " kg" : "—"}</div><div class="l">Last weigh-in</div></div>
     </div></div>`;
-  const acts = [["workout", "Workout", "🏋️"], ["walk", "Walk", "🚶"], ["basketball", "Basketball", "🏀"], ["calisthenics", "Calisthenics", "🤸"]];
-  html += `<div class="card"><h2>Log today's activity</h2><div class="note">Tap what you did today — tap again to undo.</div>`;
-  acts.forEach(([type, label, emoji]) => {
-    const doneToday = (data.activities || []).some(a => a.date === today && a.type === type);
-    const wk = this.activityWeek(type, now);
-    html += `<div class="exrow"><div class="n"><b>${emoji} ${esc(label)}</b><span>${wk} this week${doneToday ? " • done today" : ""}</span></div>
-      <button class="btn ${doneToday ? "ghost" : ""} sm" style="width:auto" onclick="App.logActivity('${type}')">${doneToday ? "✓ undo" : "Log"}</button></div>`;
+  const cats = [
+    { type: "workout", label: "Workout", emoji: "🏋️", note: "Tap the muscle groups you trained.", subs: ["Chest", "Triceps", "Biceps", "Shoulders", "Core", "Legs", "Back"] },
+    { type: "movement", label: "Movement", emoji: "🚶", note: "How did you move today?", subs: ["Walking", "Jogging", "Cycling"] },
+    { type: "sports", label: "General sports / workout", emoji: "🤾", note: "Any game or general session.", subs: null },
+    { type: "other", label: "Other workout", emoji: "🧘", note: "Pick what you did.", subs: ["Calisthenics", "Pilates", "HIIT", "Yoga"] }
+  ];
+  const norm = s => (s || "").toLowerCase();
+  html += `<div class="card"><h2>Log today's activity</h2><div class="note">Tap what you did — tap again to undo.</div>`;
+  cats.forEach(c => {
+    const wk = this.activityWeek(c.type, now);
+    if (c.subs) {
+      const pills = c.subs.map(s => {
+        const on = (data.activities || []).some(a => a.date === today && a.type === c.type && norm(a.sub) === norm(s));
+        return `<button class="pill" aria-pressed="${on}" onclick="App.logActivity('${c.type}','${norm(s)}')">${esc(s)}</button>`;
+      }).join("");
+      html += `<div class="actcat"><div class="h"><b>${c.emoji} ${esc(c.label)}</b><span class="note">${wk} this week</span></div>
+        <div class="note" style="margin-top:2px">${esc(c.note)}</div><div class="optrow">${pills}</div></div>`;
+    } else {
+      const on = (data.activities || []).some(a => a.date === today && a.type === c.type);
+      html += `<div class="actcat"><div class="h"><b>${c.emoji} ${esc(c.label)}</b><span class="note">${wk} this week${on ? " • done today" : ""}</span></div>
+        <div class="optrow"><button class="pill" aria-pressed="${on}" onclick="App.logActivity('${c.type}')">${on ? "✓ Logged today" : "Log it"}</button></div></div>`;
+    }
   });
   html += `</div>`;
   if (now.getDay() === 0) {
@@ -1902,7 +2057,7 @@ App.renderProgress = function () {
     : [["body","Body"],["activity","Activity"],["scores","Scores"]];
   let lens = this.insightLens || "body";
   if (!tabs.some(([k]) => k === lens)) lens = "body";   // fall back if the saved lens is hidden in this mode
-  const menu = `<div class="seg" role="tablist" aria-label="Choose an analysis">` +
+  const menu = `<div class="seg lens" role="tablist" aria-label="Choose an analysis">` +
     tabs.map(([k,lab]) => `<button role="tab" aria-pressed="${lens === k}" onclick="App.setLens('${k}')">${lab}</button>`).join("") + `</div>`;
   const fmt = (v, dp) => v == null ? "—" : v.toFixed(dp);
   let bodyHtml;
@@ -2010,10 +2165,13 @@ App.lensActivity = function (data, now) {
       <div class="scrollx"><table class="mini nowrap"><tr>${wk.map(w => `<th style="text-align:center">${esc(w.week.split("-W")[1])}</th>`).join("")}</tr><tr>${cells}</tr></table></div></div>`;
   };
   const has = type => (data.activities || []).some(a => a.type === type);
-  let out = block("basketball", "Basketball", "🏀") + block("calisthenics", "Calisthenics", "🤸");
-  if (has("walk")) out += block("walk", "Walking", "🚶");
-  if (has("workout")) out += block("workout", "Workout", "🏋️");
-  const note = `<div class="card"><div class="note">Your sessions by week. Basketball and calisthenics always show; walking and workouts appear once you log them.</div></div>`;
+  let out = block("workout", "Workout", "🏋️") + block("movement", "Movement", "🚶")
+          + block("sports", "Sports / workout", "🤾") + block("other", "Other workout", "🧘");
+  if (this.isPersonal()) {
+    if (has("basketball")) out += block("basketball", "Basketball", "🏀");
+    if (has("calisthenics")) out += block("calisthenics", "Calisthenics", "🤸");
+  }
+  const note = `<div class="card"><div class="note">Your sessions by week, counted across every category you log.</div></div>`;
   return out + note;
 };
 
