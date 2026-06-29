@@ -302,7 +302,7 @@ try{var _t=localStorage.getItem("msela_theme"); document.documentElement.setAttr
 /* ============ DATA MODEL & SEED (program is data, not code) ============ */
 const STORE_KEY = "uhs_data_v1";
 const OWNER_EMAILS = ["michelnas13@gmail.com"];   // only this account unlocks the full personal program; everyone else gets the commercial experience
-const APP_VERSION = "2026-06-27 · v11.1 (dark default)";   // visible build tag — bump on every deploy so we can confirm what's actually live on a device
+const APP_VERSION = "2026-06-27 · v11.2 (polish sweep)";   // visible build tag — bump on every deploy so we can confirm what's actually live on a device
 const DEFAULT_DATA = {
   schema: 1,
   profile: { name: "", heightM: 1.75 },
@@ -1226,12 +1226,14 @@ const Dash = {
     return s + `</svg>`;
   },
   ring(pct, big, label, sub) {
-    const r = 44, C = 2 * Math.PI * r, on = (pct * C).toFixed(1);
-    return `<svg viewBox="0 0 120 132" role="img" aria-label="${esc(label)}: ${Math.round(pct * 100)}% to target">
+    const noData = pct == null;                 // null → genuinely no data; show "—" not a misleading 0%
+    const p = noData ? 0 : pct;
+    const r = 44, C = 2 * Math.PI * r, on = (p * C).toFixed(1);
+    return `<svg viewBox="0 0 120 132" role="img" aria-label="${esc(label)}: ${noData ? "no data" : Math.round(p * 100) + "% to target"}">
       <circle cx="60" cy="60" r="${r}" fill="none" stroke="var(--line)" stroke-width="10"/>
       <circle cx="60" cy="60" r="${r}" fill="none" stroke="var(--teal)" stroke-width="10" stroke-linecap="round"
         stroke-dasharray="${on} ${C.toFixed(1)}" transform="rotate(-90 60 60)"/>
-      <text x="60" y="56" font-size="20" font-weight="700" fill="var(--navy)" text-anchor="middle">${Math.round(pct * 100)}%</text>
+      <text x="60" y="56" font-size="20" font-weight="700" fill="var(--navy)" text-anchor="middle">${noData ? "—" : Math.round(p * 100) + "%"}</text>
       <text x="60" y="72" font-size="10" fill="var(--slate)" text-anchor="middle">${esc(big)}</text>
       <text x="60" y="124" font-size="11" font-weight="600" fill="var(--navy)" text-anchor="middle">${esc(label)}</text>
       <text x="60" y="88" font-size="9.5" fill="var(--slate)" text-anchor="middle">${esc(sub)}</text></svg>`;
@@ -1342,12 +1344,12 @@ App.renderDash = function () {
         <div class="side"><div class="lab">Overall</div><div class="st">${label}</div><div class="dl" style="color:var(--on-brand-mute)">${esc(parts)}</div></div>
       </div></div>
       <div class="card"><h2>The signal</h2><div class="note">Transparent by design — these rings are the real picture; the headline just flags where to look.</div>
-      <div class="gridR">` + comp.map(c => Dash.ring(c.v != null ? c.v / 100 : 0, c.v != null ? "" : "no data", c.k, "")).join("") + `</div></div>`;
+      <div class="gridR">` + comp.map(c => Dash.ring(c.v != null ? c.v / 100 : null, c.v != null ? "" : "no data", c.k, "")).join("") + `</div></div>`;
   }
 
   /* behaviour process score */
   const wkKey = Clock.isoWeekKey(now), cur = Score.weekPct(data.habitLog, wkKey, data.habitsCatalog);
-  const band = cur >= 85 ? ["green", "dialled in"] : cur >= 70 ? ["orange", "tighten up"] : ["red", "results leak here"];
+  const band = cur >= 85 ? ["green", "dialled in"] : cur >= 70 ? ["orange", "tighten up"] : ["red", "off track"];
   html += `<div class="card"><h2>Behaviour — Process Score</h2>
     <div style="text-align:center"><span class="bigscore">${cur}%</span> <span class="chip ${band[0]}">${band[1]}</span>
     <div class="note">this week • ${esc(wkKey)} • the vital-few driving most of the result</div></div>
