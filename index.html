@@ -149,7 +149,7 @@ input:focus-visible,button:focus-visible{outline:3px solid var(--input); outline
 /* Insights lens row: keep labels at natural width and scroll if they don't fit, so 'Strength'/'Training' never cramp */
 .seg.lens{flex-wrap:nowrap; overflow-x:auto; -webkit-overflow-scrolling:touch; scrollbar-width:none}
 .seg.lens::-webkit-scrollbar{display:none}
-.seg.lens button{flex:0 0 auto; padding:0 16px}
+.seg.lens button{flex:1 1 auto; min-width:max-content; padding:0 14px}
 .setin{display:flex; gap:8px; align-items:center}
 .setin{flex-wrap:wrap} .setin input{width:68px; text-align:center}
 /* hide the native number spinners — they clip decimal values like 12.5 and aren't needed here */
@@ -226,8 +226,8 @@ nav.tabs button:focus-visible{outline:3px solid var(--input); outline-offset:-3p
 .cover-foot{text-align:center; color:#8FA6BE; font-size:11.5px; margin-top:18px}
 body.commercial nav.tabs button[data-scr="log"]{display:none}
 </style>
-<script>/* apply saved theme before paint to avoid a flash; absence = follow the OS */
-try{var _t=localStorage.getItem("msela_theme"); if(_t==="dark"||_t==="light")document.documentElement.setAttribute("data-theme",_t);}catch(e){}</script>
+<script>/* apply theme before paint to avoid a flash. Dark is the default; a saved choice wins. */
+try{var _t=localStorage.getItem("msela_theme"); document.documentElement.setAttribute("data-theme",(_t==="light"||_t==="dark")?_t:"dark");}catch(e){document.documentElement.setAttribute("data-theme","dark");}</script>
 </head>
 <body>
 <div id="cover" class="cover" role="dialog" aria-label="Welcome to Msela" style="display:none">
@@ -302,7 +302,7 @@ try{var _t=localStorage.getItem("msela_theme"); if(_t==="dark"||_t==="light")doc
 /* ============ DATA MODEL & SEED (program is data, not code) ============ */
 const STORE_KEY = "uhs_data_v1";
 const OWNER_EMAILS = ["michelnas13@gmail.com"];   // only this account unlocks the full personal program; everyone else gets the commercial experience
-const APP_VERSION = "2026-06-27 · v11 (Clinical Deep + 360 QA)";   // visible build tag — bump on every deploy so we can confirm what's actually live on a device
+const APP_VERSION = "2026-06-27 · v11.1 (dark default)";   // visible build tag — bump on every deploy so we can confirm what's actually live on a device
 const DEFAULT_DATA = {
   schema: 1,
   profile: { name: "", heightM: 1.75 },
