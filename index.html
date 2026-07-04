@@ -8,9 +8,18 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Msela">
+<meta name="color-scheme" content="dark light">
 <link rel="manifest" href="manifest.webmanifest">
-<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
 <link rel="icon" type="image/png" href="icon-192.png">
+<!-- iOS standalone launch splash screens (portrait); non-matching devices fall back to the dark background -->
+<link rel="apple-touch-startup-image" media="(device-width:430px) and (device-height:932px) and (-webkit-device-pixel-ratio:3) and (orientation:portrait)" href="splash/splash-1290x2796.png">
+<link rel="apple-touch-startup-image" media="(device-width:393px) and (device-height:852px) and (-webkit-device-pixel-ratio:3) and (orientation:portrait)" href="splash/splash-1179x2556.png">
+<link rel="apple-touch-startup-image" media="(device-width:390px) and (device-height:844px) and (-webkit-device-pixel-ratio:3) and (orientation:portrait)" href="splash/splash-1170x2532.png">
+<link rel="apple-touch-startup-image" media="(device-width:414px) and (device-height:896px) and (-webkit-device-pixel-ratio:3) and (orientation:portrait)" href="splash/splash-1242x2688.png">
+<link rel="apple-touch-startup-image" media="(device-width:375px) and (device-height:812px) and (-webkit-device-pixel-ratio:3) and (orientation:portrait)" href="splash/splash-1125x2436.png">
+<link rel="apple-touch-startup-image" media="(device-width:414px) and (device-height:896px) and (-webkit-device-pixel-ratio:2) and (orientation:portrait)" href="splash/splash-828x1792.png">
+<link rel="apple-touch-startup-image" media="(device-width:375px) and (device-height:667px) and (-webkit-device-pixel-ratio:2) and (orientation:portrait)" href="splash/splash-750x1334.png">
 <title>Msela — Health & Fitness Tracker</title>
 <style>
 /* ============================================================
@@ -247,7 +256,7 @@ try{var _t=localStorage.getItem("msela_theme"); document.documentElement.setAttr
       <button class="btn ghost cover-btn" onclick="App.coverSignup()">Create account</button>
       <button class="cover-skip" onclick="App.coverSkip()">Continue on this device →</button>
     </div>
-    <div class="cover-foot">Private to you · works offline · no ads</div>
+    <div class="cover-foot">Private to you · works offline · no ads · wellness tracking, not medical advice</div>
   </div>
 </div>
 <div id="onboard" class="cover" role="dialog" aria-label="Set up your profile" style="display:none">
@@ -302,7 +311,7 @@ try{var _t=localStorage.getItem("msela_theme"); document.documentElement.setAttr
 /* ============ DATA MODEL & SEED (program is data, not code) ============ */
 const STORE_KEY = "uhs_data_v1";
 const OWNER_EMAILS = ["michelnas13@gmail.com"];   // only this account unlocks the full personal program; everyone else gets the commercial experience
-const APP_VERSION = "2026-06-27 · v11.2 (polish sweep)";   // visible build tag — bump on every deploy so we can confirm what's actually live on a device
+const APP_VERSION = "2026-07-03 · v12.4 · Phase 3 (clinical honesty)";   // visible build tag — bump on every deploy so we can confirm what's actually live on a device
 const DEFAULT_DATA = {
   schema: 1,
   profile: { name: "", heightM: 1.75 },
@@ -365,7 +374,7 @@ const DEFAULT_DATA = {
   },
   habitsCatalog: [
     { id: "meals",  label: "Sodium consistency — cook 5+ meals at home", w: 3 },
-    { id: "water",  label: "Water 3–3.5L, consistent timing", w: 3 },
+    { id: "water",  label: "Water — steady daily intake", w: 3 },
     { id: "sleep",  label: "Sleep consistency — bedtime ±30 min", w: 3 },
     { id: "alcohol",label: "Alcohol-free or ≤2 units", w: 3 },
     { id: "timing", label: "Consistent meal times", w: 2 },
@@ -387,7 +396,9 @@ const DEFAULT_DATA = {
     { id: "bp2",     type: "Blood pressure — recheck", when: "~12 weeks", purpose: "Recheck after the training cycle.", status: "todo", date: "", result: "" },
     { id: "review",  type: "Measurements review",      when: "Quarterly", purpose: "Compare weight, waist, navel and BRI trends; adjust the plan if needed.", status: "todo", date: "", result: "" },
     { id: "annual",  type: "Full health panel",        when: "Annually",  purpose: "Complete blood work + DEXA + full physical.", status: "todo", date: "", result: "" }
-  ]
+  ],
+  tombstones: [],  /* {coll,key,at} — deletes that must sync and not resurrect (record-level merge) */
+  programState: { startDate: "2026-05-18" }   /* user-owned programme state, kept separate from the code template (M09/M10) */
 };
 /* ===== extend the program into a 52-week progressive macrocycle ===== */
 (function build52(p) {
@@ -422,24 +433,73 @@ const Calc = {
   whr:  (waistCm, hipCm) => waistCm / hipCm,
   bmi:  (kg, heightM) => kg / (heightM * heightM),
   e1rm: (kg, reps) => kg * (1 + reps / 30),
-  briZone(b) {
-    if (b < 3.5) return { label: "Very Lean", cls: "green" };
-    if (b < 4.5) return { label: "Lean", cls: "green" };
-    if (b < 5.5) return { label: "Normal", cls: "teal" };
-    if (b < 6.5) return { label: "Watch", cls: "orange" };
-    if (b < 7.5) return { label: "Elevated", cls: "orange" };
-    return { label: "High", cls: "red" };
-  }
+  briZone(b) { return BRI_MODEL.zone(b); }   // single source of truth (M12)
 };
+/* ============ BRI MODEL — ONE source of truth for the gauge, the zones and the score (M12) ============ */
+// Body Roundness Index is a descriptive trend, not a diagnosis. The score is U-shaped: it peaks in the
+// evidence low-risk band and declines on BOTH sides, reflecting the 2024 JAMA cohort (Nat. all-cause
+// mortality was U-shaped — the lowest BRI group also carried elevated risk). It is goal-aware, so a
+// deliberately lean personal target is never penalised.
+const BRI_MODEL = {
+  healthyLow: 4.5, healthyHigh: 5.5,                 // low-risk band (approx. middle-quintile nadir)
+  bounds: [2.5, 3.5, 4.5, 5.5, 6.5, 7.5, 8.5],       // gauge arc boundaries
+  gaugeColors: ["var(--orange)", "var(--teal)", "var(--green)", "var(--orange)", "var(--orange)", "var(--red)"],
+  bands: [
+    { lt: 3.5, label: "Very Lean", cls: "orange" },  // below the nadir — U-shape caution (context-dependent)
+    { lt: 4.5, label: "Lean",      cls: "teal"   },
+    { lt: 5.5, label: "Healthy",   cls: "green"  },   // low-risk band
+    { lt: 6.5, label: "Watch",     cls: "orange" },
+    { lt: 7.5, label: "Elevated",  cls: "orange" },
+    { lt: Infinity, label: "High", cls: "red"    },
+  ],
+  zone(b) { for (const z of this.bands) if (b < z.lt) return { label: z.label, cls: z.cls }; return { label: "High", cls: "red" }; },
+  score(bri, targetBri) {
+    if (bri == null) return null;
+    const lo = Math.min(this.healthyLow, (targetBri && targetBri > 0) ? targetBri : this.healthyLow), hi = this.healthyHigh;
+    let s = (bri >= lo && bri <= hi) ? 100 : (bri > hi) ? 100 - (bri - hi) * 16 : 100 - (lo - bri) * 12;
+    return Math.max(0, Math.min(100, Math.round(s)));
+  },
+  source: "Descriptive trend. Low-risk band per 2024 JAMA Netw. Open BRI cohort (U-shaped all-cause mortality)."
+};
+// M15: adult scope. Reference ranges/score assume adults; if a birth year says under-18, we hide the score.
+function isMinorProfile(profile, now) { const by = profile && profile.birthYear; return !!(by && ((now ? now.getFullYear() : new Date().getFullYear()) - by) < 18); }
 
 /* ============ STORAGE ============ */
 // Merge a saved/imported file with code defaults. User data wins, but program & habitsCatalog
 // always come from the current app code (so they can't be resurrected stale from an old backup).
+// Record identity: one natural key per collection — single source of truth for BOTH merge and deletes (M01/M03).
+const REC_KEYS = {
+  measurements: r => String(r.date),
+  workouts:     r => r.date + "|" + r.sessionKey + "|" + (r.cluster != null ? r.cluster : ""),
+  activities:   r => r.date + "|" + r.type + "|" + (r.sub || ""),
+  deloads:      r => String(r.date),
+  checkpoints:  r => String(r.id),
+};
+const REC_COLLS = Object.keys(REC_KEYS);
+function recKey(coll, r) { return REC_KEYS[coll](r); }
+// Deleting a record leaves a tombstone {coll,key,at} so the delete syncs and the record can't resurrect on merge.
+function addTombstone(data, coll, key) { (data.tombstones = data.tombstones || []).push({ coll, key: String(key), at: new Date().toISOString() }); }
+// Migration registry (M33): sequential, versioned, idempotent steps — covered by fixtures in the tests.
+function runMigrations(d) {
+  if (!(d.schema >= 2)) {                       // v1 → v2: record-level sync fields (updatedAt + tombstones)
+    if (!Array.isArray(d.tombstones)) d.tombstones = [];
+    for (const coll of REC_COLLS) {
+      if (!Array.isArray(d[coll])) { d[coll] = []; continue; }
+      for (const r of d[coll]) if (r && !r.updatedAt) r.updatedAt = r.date ? new Date(r.date + "T12:00:00Z").toISOString() : new Date().toISOString();
+    }
+    d.schema = 2;
+  }
+  // future: if (!(d.schema >= 3)) { …; d.schema = 3; }
+  return d;
+}
 function mergeSaved(obj) {
   const d = Object.assign(structuredClone(DEFAULT_DATA), obj || {});
-  d.program = structuredClone(DEFAULT_DATA.program);
+  d.program = structuredClone(DEFAULT_DATA.program);          // exercises/blocks/schedule always come from code (template)
   d.habitsCatalog = structuredClone(DEFAULT_DATA.habitsCatalog);
-  return d;
+  // M09/M10: user-owned programme state (start date) is kept separately and re-applied over the template, so it never reverts
+  d.programState = Object.assign({ startDate: DEFAULT_DATA.program.startDate }, d.programState || {});
+  if (d.programState.startDate) d.program.startDate = d.programState.startDate;
+  return runMigrations(d);
 }
 const MIRROR_KEY = STORE_KEY + "_mirror";   // redundant copy: survives a single corrupt write to the main key
 const Store = {
@@ -622,20 +682,39 @@ const Score = {
       .map(k => this.weekPct(habitLog, k, catalog));
     return scored.length ? Math.round(scored.reduce((a, c) => a + c, 0) / scored.length) : null;
   },
-  rhr(v) { return v == null ? null : Math.max(10, Math.min(100, Math.round(100 - (v - 50) * 3))); },
+  // M19: resting-HR scored against evidence bands (not an ad-hoc curve). Very low is NOT auto-rewarded to 100
+  // (it can be athletic OR bradycardia), and elevated is flagged for review rather than silently averaged.
+  rhr(v) {
+    if (v == null) return null;
+    if (v < 40) return 85;        // unusually low — often athletic, but worth confirming
+    if (v <= 59) return 100;      // athletic / healthy resting range
+    if (v <= 69) return 82;
+    if (v <= 79) return 62;
+    if (v <= 89) return 45;
+    return 30;                    // elevated resting HR — review
+  },
+  rhrFlag(v) { return v == null ? "" : v < 40 ? "very low — worth confirming with a clinician" : v >= 90 ? "elevated — recheck rested; review if it persists" : ""; },
   sleep(score, hrs) {
     if (score != null) return Math.max(0, Math.min(100, Math.round(score)));
     if (hrs == null) return null;
     if (hrs >= 7 && hrs <= 9) return 100;
     return hrs < 7 ? Math.max(0, Math.round(100 - (7 - hrs) * 25)) : Math.max(0, Math.round(100 - (hrs - 9) * 15));
   },
-  bp(sys, dia) { if (sys == null || dia == null) return null; if (sys < 120 && dia < 80) return 100; if (sys < 130 && dia < 80) return 85; if (sys < 140 && dia < 90) return 60; return 35; },
+  // M18: blood pressure is a clinical vital, not a fitness-score input — one reading must not move the health
+  // number. It is shown SEPARATELY with safe, non-diagnostic escalation wording instead.
+  bpFlag(sys, dia) {
+    if (sys == null || dia == null) return null;
+    if (sys >= 180 || dia >= 120) return { cls: "red", label: "very high — seek prompt medical advice" };
+    if (sys >= 140 || dia >= 90) return { cls: "orange", label: "elevated — recheck rested, and discuss with a clinician" };
+    if (sys >= 130 || dia >= 80) return { cls: "orange", label: "slightly raised — keep monitoring" };
+    return { cls: "green", label: "in range" };
+  },
   fitness(m) {
     if (!m) return null;
-    const parts = [this.rhr(m.rhr), this.sleep(m.sleepScore, m.sleepH), this.bp(m.bpSys, m.bpDia)].filter(x => x != null);
+    const parts = [this.rhr(m.rhr), this.sleep(m.sleepScore, m.sleepH)].filter(x => x != null);   // BP intentionally excluded (M18)
     return parts.length ? Math.round(parts.reduce((a, c) => a + c, 0) / parts.length) : null;
   },
-  body(briW) { return briW == null ? null : Math.max(0, Math.min(100, Math.round(100 - (briW - 2.5) * 16))); },
+  body(briW, targetBri) { return BRI_MODEL.score(briW, targetBri); },   // U-shaped, goal-aware (M12)
   strength(data) {
     let judged = 0, prog = 0, anyData = false;
     Object.keys(data.program.tentpoles).forEach(k => {
@@ -650,14 +729,16 @@ const Score = {
     const ms = data.measurements, last = ms[ms.length - 1] || null;
     const briW = last && last.waistCm ? Calc.bri(last.waistCm, data.profile.heightM) : null;
     const comp = [
-      { k: "Body", v: this.body(briW), w: 30 },
+      { k: "Body", v: this.body(briW, data.targets && data.targets.bri), w: 30 },
       { k: "Behaviour", v: this.recentProcess(data.habitLog, data.habitsCatalog, now), w: 30 },
       { k: "Fitness", v: this.fitness(last), w: 25 },
       { k: "Strength", v: this.strength(data), w: 15 }
     ];
-    let sw = 0, sv = 0;
-    comp.forEach(c => { if (c.v != null) { sw += c.w; sv += c.w * c.v; } });
-    return { headline: sw ? Math.round(sv / sw) : null, comp };
+    let sw = 0, sv = 0, present = 0;
+    comp.forEach(c => { if (c.v != null) { sw += c.w; sv += c.w * c.v; present++; } });
+    const minor = isMinorProfile(data.profile, now);   // M15: no adult score for under-18s
+    // M07: never show an authoritative headline from a single component — need ≥2 areas of real data
+    return { headline: (!minor && present >= 2 && sw) ? Math.round(sv / sw) : null, comp, present, minor };
   }
 };
 
@@ -680,19 +761,21 @@ const Insights = {
   // ETA to a target at the recent pace (last ~90 days, fallback last 4 readings)
   projection(ms, f, h, targetV, now) {
     const s = Track.series(ms, f, h);
-    if (s.length < 2 || targetV == null) return null;
+    if (targetV == null) return null;
+    if (s.length < 4) return { insufficient: true, n: s.length };              // M22: need ≥4 readings
     const latest = s[s.length - 1];
     const cut = new Date(latest.d.getTime() - 90 * 86400000);
     let win = s.filter(p => p.d >= cut);
-    if (win.length < 2) win = s.slice(-Math.min(4, s.length));
+    if (win.length < 4) win = s.slice(-Math.min(6, s.length));
     const a = win[0], b = win[win.length - 1], days = (b.d - a.d) / 86400000;
-    if (days <= 0) return null;
+    if (days < 21) return { insufficient: true, n: s.length };                 // M22: need ≥~3 weeks span
     const perMonth = (b.v - a.v) / days * 30.44, gap = targetV - latest.v;
     if (Math.abs(gap) < 1e-6) return { reached: true, latest, perMonth };
     const movingToward = (gap < 0 && perMonth < 0) || (gap > 0 && perMonth > 0);
     if (!movingToward || Math.abs(perMonth) < 1e-3) return { stalled: true, latest, perMonth, gap };
-    const months = gap / perMonth, eta = new Date(latest.d.getTime() + months * 30.44 * 86400000);
-    return { latest, perMonth, gap, months, eta };
+    const months = gap / perMonth, mk = f => new Date(latest.d.getTime() + months * f * 30.44 * 86400000);
+    // present a RANGE, not a false-precise single ETA (M22)
+    return { latest, perMonth, gap, months, eta: mk(1), etaLo: mk(0.7), etaHi: mk(1.5), estimate: true };
   },
   tonnage(workouts, since) {
     let kg = 0, sets = 0;
@@ -883,7 +966,7 @@ const App = {
   completeDeload() {
     if (!confirm("Mark this block's deload as done? It unlocks the next block — your gym days resume to their next cluster.")) return;
     if (!this.data.deloads) this.data.deloads = [];
-    this.data.deloads.push({ date: Clock.toISO(this.now()) });
+    this.data.deloads.push({ date: Clock.toISO(this.now()), updatedAt: new Date().toISOString() });
     Store.save(this.data); toast("Deload logged — next block unlocked 💪"); this.renderToday();
   },
   // Activity logging — tap to log, tap again to undo. Optional sub-type (muscle group / movement / discipline).
@@ -892,8 +975,8 @@ const App = {
     const today = Clock.toISO(this.now());
     const norm = s => (s || "").toLowerCase();
     const i = this.data.activities.findIndex(a => a.date === today && a.type === type && norm(a.sub) === norm(sub));
-    if (i >= 0) this.data.activities.splice(i, 1);
-    else this.data.activities.push(sub ? { date: today, type, sub: norm(sub) } : { date: today, type });
+    if (i >= 0) { addTombstone(this.data, "activities", recKey("activities", this.data.activities[i])); this.data.activities.splice(i, 1); }
+    else this.data.activities.push(sub ? { date: today, type, sub: norm(sub), updatedAt: new Date().toISOString() } : { date: today, type, updatedAt: new Date().toISOString() });
     Store.save(this.data);
     const name = sub ? sub : type;
     toast(i >= 0 ? name + " un-logged" : name + " logged ✓");
@@ -986,12 +1069,13 @@ const App = {
         sets.push({ slot: slot.name, exercise: this.exFor(slot, cl), setCount: st, kg, reps: rp, tent: slot.tent || null });
     });
     if (!sets.length) { toast("Enter weight × reps for at least one exercise"); return; }
-    data.workouts.push({ date: Clock.toISO(this.now()), cluster: cl, sessionKey: this.logSession, sets });
+    data.workouts.push({ date: Clock.toISO(this.now()), cluster: cl, sessionKey: this.logSession, sets, updatedAt: new Date().toISOString() });
     data.workouts.sort((a, b) => a.date < b.date ? -1 : 1);
     Store.save(data); toast(this.logSession.toUpperCase() + " · Cluster " + cl + " saved — advancing"); this.renderLog();
   },
   deleteWorkout(idx) {
     if (!confirm("Delete this session?")) return;
+    const w = this.data.workouts[idx]; if (w) addTombstone(this.data, "workouts", recKey("workouts", w));
     this.data.workouts.splice(idx, 1); Store.save(this.data); this.renderLog();
   },
 
@@ -1028,7 +1112,7 @@ const App = {
       recent.forEach(m => {
         const idx = data.measurements.indexOf(m);
         const bri = m.waistCm ? Calc.bri(m.waistCm, data.profile.heightM).toFixed(2) : "—";
-        html += `<tr><td>${esc(m.date)}</td><td>${m.weightKg ?? "—"}</td><td>${m.waistCm ?? "—"}</td><td>${bri}</td>
+        html += `<tr><td>${esc(m.date)}</td><td>${esc(m.weightKg ?? "—")}</td><td>${esc(m.waistCm ?? "—")}</td><td>${esc(bri)}</td>
           <td style="white-space:nowrap"><button class="btn ghost sm" style="width:auto" onclick="App.editMeasure(${idx})" aria-label="Edit reading ${esc(m.date)}">✎</button> <button class="btn ghost sm" style="width:auto" onclick="App.deleteMeasure(${idx})" aria-label="Delete reading ${esc(m.date)}">✕</button></td></tr>`;
       });
       html += `</table></div>`;
@@ -1084,6 +1168,7 @@ const App = {
       bpSys: numVal("m-sys"), bpDia: numVal("m-dia"), bodyFatPct: numVal("m-bf"),
       notes: (document.getElementById("m-notes").value || "").trim() || undefined
     };
+    v.updatedAt = new Date().toISOString();
     const last = data.measurements[data.measurements.length - 1];
     const { errors, warnings } = Logic.validateMeasure(v, last);
     const box = document.getElementById("m-msgs");
@@ -1108,6 +1193,7 @@ const App = {
   },
   deleteMeasure(idx) {
     if (!confirm("Delete this reading?")) return;
+    const m = this.data.measurements[idx]; if (m) addTombstone(this.data, "measurements", recKey("measurements", m));
     this.data.measurements.splice(idx, 1); Store.save(this.data); this.renderMeasure(); this.renderToday();
   },
 
@@ -1180,8 +1266,8 @@ if (typeof document !== "undefined") {
 
 /* ============ DASHBOARD GRAPHICS (hand-rolled SVG, zero deps) ============ */
 const Dash = {
-  zoneColors: ["var(--green)", "var(--green)", "var(--teal)", "var(--orange)", "var(--orange)", "var(--red)"],
-  zoneBounds: [2.5, 3.5, 4.5, 5.5, 6.5, 7.5, 8.5],
+  zoneColors: BRI_MODEL.gaugeColors,   // single source of truth (M12)
+  zoneBounds: BRI_MODEL.bounds,
   angle(v) { const c = Math.min(Math.max(v, 2.5), 8.5); return 180 * (1 - (c - 2.5) / 6); },
   pt(cx, cy, r, deg) { const a = deg * Math.PI / 180; return [cx + r * Math.cos(a), cy - r * Math.sin(a)]; },
   arc(cx, cy, r, d1, d2) {
@@ -1300,14 +1386,15 @@ const Dash = {
     });
     return s + `</svg>`;
   },
-  recompStatus(first, last) {
+  recompStatus(first, last, n, spanDays) {
     if (!first || !last || first === last) return null;
-    const dw = (last.weightKg ?? 0) - (first.weightKg ?? 0);
-    const dc = (last.waistCm ?? 0) - (first.waistCm ?? 0);
     if (first.weightKg == null || last.weightKg == null || first.waistCm == null || last.waistCm == null) return null;
-    let label, cls, msg;
-    if (dw >= 0.5 && dc <= -0.5) { label = "RECOMPOSITION"; cls = "green"; msg = "Weight up, waist down — muscle gained while belly shrinks. This is why weight isn't the target."; }
-    else if (dw <= -0.5 && dc <= -0.5) { label = "CUTTING"; cls = "green"; msg = "Weight and waist both falling."; }
+    const dw = last.weightKg - first.weightKg, dc = last.waistCm - first.waistCm;
+    if ((n || 0) < 4 || (spanDays || 0) < 28)   // M22: too little data/time to infer a composition change
+      return { label: "BUILDING DATA", cls: "teal", msg: "A body-composition read needs about 4 readings over a month — keep logging.", dw, dc };
+    let label, cls, msg;   // probabilistic language — this is an inference, not a measurement
+    if (dw >= 0.5 && dc <= -0.5) { label = "LIKELY RECOMP"; cls = "green"; msg = "Weight up, waist down — likely muscle gained while the belly shrinks. This is why weight alone isn't the target."; }
+    else if (dw <= -0.5 && dc <= -0.5) { label = "LIKELY CUTTING"; cls = "green"; msg = "Weight and waist both trending down."; }
     else if (dc >= 0.5) { label = "WATCH"; cls = "orange"; msg = "Waist trending up — check the top-4 noise controls first; trust 4-week trends."; }
     else { label = "STABLE"; cls = "teal"; msg = "Holding steady."; }
     return { label, cls, msg, dw, dc };
@@ -1329,14 +1416,22 @@ App.renderDash = function () {
   const comp = this.isPersonal() ? ex.comp : ex.comp.filter(c => c.k !== "Strength");
   const parts = comp.map(c => c.k.toLowerCase()).join(" · ");
   html += `<div class="card hero"><h2>Health Excellence Index</h2>`;
-  if (ex.headline == null) {
+  if (ex.headline == null && ex.minor) {
+    html += `<div class="ringhero"><div class="ring" style="--p:0"><div class="inner"><span class="n">—</span></div></div>
+        <div class="side"><div class="lab">Under 18</div><div class="st">Score hidden</div><div class="dl" style="color:var(--on-brand-mute)">Adult ranges don't apply</div></div></div></div>
+      <div class="card"><div class="note">Msela's health score and reference ranges are designed for adults (18+). For under-18s, please follow age-appropriate guidance from a paediatric professional — you can still log and see your raw numbers.</div></div>`;
+  } else if (ex.headline == null) {
     const nm = ((data.profile && data.profile.name) || "").trim();
+    const building = ex.present >= 1;   // M07: 1 area of data = "building", not a headline number
+    const lab = building ? "Building your score" : ("Welcome" + (nm ? ", " + esc(nm) : ""));
+    const st = building ? (ex.present + " of 2 areas ready") : "Let's begin";
+    const dl = building ? "Add one more area to complete your score" : "Two taps to light up your score";
     html += `<div class="ringhero">
         <div class="ring" style="--p:0"><div class="inner"><span class="n">—</span><span class="of">/ 100</span></div></div>
-        <div class="side"><div class="lab">Welcome${nm ? ", " + esc(nm) : ""}</div><div class="st">Let's begin</div><div class="dl" style="color:var(--on-brand-mute)">Two taps to light up your score</div></div>
+        <div class="side"><div class="lab">${lab}</div><div class="st">${st}</div><div class="dl" style="color:var(--on-brand-mute)">${dl}</div></div>
       </div></div>
-      <div class="card"><h2>Get started</h2><div class="note">Your score builds from two things — your weekly numbers and your daily habits.</div>
-      <div class="grid2" style="margin-top:12px"><button class="btn" onclick="App.switchTab('measure')">Add your first measurement</button><button class="btn ghost" onclick="App.switchTab('habits')">Set up habits</button></div></div>`;
+      <div class="card"><h2>${building ? "Almost there" : "Get started"}</h2><div class="note">Your score needs at least two areas of real data — your weekly numbers and your daily habits — so a single reading can't skew it.</div>
+      <div class="grid2" style="margin-top:12px"><button class="btn" onclick="App.switchTab('measure')">Add a measurement</button><button class="btn ghost" onclick="App.switchTab('habits')">Set up habits</button></div></div>`;
   } else {
     const label = ex.headline >= 80 ? "Excellent" : ex.headline >= 60 ? "On track" : "Needs work";
     html += `<div class="ringhero">
@@ -1374,8 +1469,9 @@ App.renderDash = function () {
   if (briW != null) {
     const z = Calc.briZone(briW);
     html += `<div style="text-align:center"><span class="chip ${z.cls}">${esc(z.label)}</span>`;
-    if (briN != null) html += `<span class="chip orange">▲ navel ${briN.toFixed(2)} (NHANES-comparable)</span>`;
-    html += `<div class="note" style="margin-top:6px">Target ${data.targets.bri.toFixed(2)} (waist ~${data.targets.waistCm}cm) • waist landmark reads leaner than navel</div></div>`;
+    if (briN != null) html += `<span class="chip orange">▲ navel ${briN.toFixed(2)} (personal reference)</span>`;
+    html += `<div class="note" style="margin-top:6px">Target ${data.targets.bri.toFixed(2)} (waist ~${data.targets.waistCm}cm) • waist landmark reads leaner than navel</div>`;
+    html += `<div class="note" style="margin-top:4px;font-size:11.5px">${esc(BRI_MODEL.source)}</div></div>`;
   }
   html += `</div>`;
 
@@ -1399,7 +1495,8 @@ App.renderDash = function () {
       { label: "Weight (kg)", color: "var(--teal)", points: wPts },
       { label: "Waist (cm)", color: "var(--orange)", points: cPts, band: 0.75 }
     ], { dual: true, label: "Weight versus waist over time" });
-    const rc = Dash.recompStatus(first, last);
+    const spanDays = (Clock.parseISO(last.date) - Clock.parseISO(first.date)) / 86400000;
+    const rc = Dash.recompStatus(first, last, ms.length, spanDays);
     if (rc) html += `<div style="margin-top:8px"><span class="chip ${rc.cls}">${esc(rc.label)}</span>
       <span class="note">${rc.dw >= 0 ? "+" : ""}${rc.dw.toFixed(1)} kg, ${rc.dc >= 0 ? "+" : ""}${rc.dc.toFixed(1)} cm waist since start. ${esc(rc.msg)}</span></div>`;
     html += `<div class="note" style="margin-top:6px">Shaded band = ±0.75cm measurement noise — react to trends, not single readings.</div></div>`;
@@ -1426,13 +1523,18 @@ App.renderDash = function () {
     if (last.waistCm) { const v = Calc.whtr(last.waistCm, h); rows.push(["Waist-to-Height", v.toFixed(3), v < 0.45 ? ["LEAN", "green"] : v < 0.50 ? ["GOOD", "green"] : v < 0.55 ? ["IMPROVING", "orange"] : ["FOCUS", "red"]]); }
     if (last.navelCm && last.waistCm) { const v = last.navelCm - last.waistCm; rows.push(["Navel−waist gap", v.toFixed(1) + " cm", v < 3 ? ["TIGHT", "green"] : v < 6 ? ["GOOD", "green"] : v < 10 ? ["PROGRESSING", "orange"] : ["FOCUS", "red"]]); }
     if (last.rhr) rows.push(["Resting HR", last.rhr + " bpm", last.rhr < 50 ? ["EXCELLENT", "green"] : last.rhr < 60 ? ["ATHLETIC", "green"] : last.rhr < 70 ? ["GOOD", "teal"] : ["TRACK", "orange"]]);
-    if (last.bpSys && last.bpDia) rows.push(["Blood pressure", last.bpSys + "/" + last.bpDia, (last.bpSys < 120 && last.bpDia < 80) ? ["OPTIMAL", "green"] : (last.bpSys < 130 && last.bpDia < 80) ? ["GOOD", "green"] : (last.bpSys < 140 && last.bpDia < 90) ? ["TRACK", "orange"] : ["FOCUS", "red"]]);
+    if (last.bpSys && last.bpDia) { const bf = Score.bpFlag(last.bpSys, last.bpDia); rows.push(["Blood pressure", last.bpSys + "/" + last.bpDia, [bf.cls === "red" ? "REVIEW" : bf.cls === "orange" ? "ELEVATED" : "IN RANGE", bf.cls]]); }
     if (last.bodyFatPct != null) { const v = last.bodyFatPct; rows.push(["Body fat % (DEXA)", v.toFixed(1) + "%", v < 15 ? ["EXCELLENT", "green"] : v < 20 ? ["LEAN", "green"] : v < 25 ? ["GOOD", "teal"] : ["FOCUS", "red"]]); }
     if (last.weightKg) rows.push(["BMI (limited use)", Calc.bmi(last.weightKg, h).toFixed(1), ["REFERENCE", "teal"]]);
     if (rows.length) {
       html += `<div class="card"><h2>Derived metrics — ${esc(last.date)}</h2><table class="mini"><tr><th>Metric</th><th>Value</th><th>Status</th></tr>`;
       rows.forEach(([m, v, [lab, cls]]) => { html += `<tr><td>${esc(m)}</td><td><b>${esc(v)}</b></td><td><span class="chip ${cls}">${esc(lab)}</span></td></tr>`; });
-      html += `</table></div>`;
+      html += `</table>`;
+      const notes = [];
+      if (last.rhr) { const rf = Score.rhrFlag(last.rhr); if (rf) notes.push("Resting HR — " + rf); }
+      if (last.bpSys && last.bpDia) { const bf = Score.bpFlag(last.bpSys, last.bpDia); if (bf.cls !== "green") notes.push("Blood pressure — " + bf.label); }
+      notes.forEach(n => { html += `<div class="msg warn" style="margin-top:8px">${esc(n)}</div>`; });
+      html += `<div class="note" style="margin-top:6px;font-size:11.5px">Blood pressure is shown for awareness only — it is not part of your score, and none of this is a diagnosis.</div></div>`;
     }
   }
   if (!ms.length) html += `<div class="card"><div class="note" style="text-align:center;padding:20px">Add your first measurement to light up the dashboard.</div></div>`;
@@ -1516,11 +1618,74 @@ const DataIO = {
     if (!rows.length) return toast("No workouts logged yet");
     this.download("msela-workouts-" + this.stamp() + ".csv", [this.csvRow(head)].concat(rows).join("\r\n"), "text/csv");
   },
+  // M32: minimal RFC-style CSV parser (handles quoted fields, escaped quotes, CRLF).
+  parseCSV(text) {
+    const rows = []; let field = "", row = [], inQ = false;
+    const pushF = () => { row.push(field); field = ""; }, pushR = () => { pushF(); rows.push(row); row = []; };
+    for (let i = 0; i < text.length; i++) {
+      const c = text[i];
+      if (inQ) { if (c === '"') { if (text[i + 1] === '"') { field += '"'; i++; } else inQ = false; } else field += c; }
+      else { if (c === '"') inQ = true; else if (c === ",") pushF(); else if (c === "\n") pushR(); else if (c === "\r") {} else field += c; }
+    }
+    if (field.length || row.length) pushR();
+    return rows;
+  },
+  // M32: import measurements from a CSV (same columns the app exports); merges by date, sanitised.
+  importMeasurementsCSV(file) {
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      try {
+        const rows = this.parseCSV(reader.result).filter(r => r.length && r.some(c => c !== ""));
+        if (rows.length < 2) return toast("CSV has no data rows");
+        const head = rows[0].map(h => h.trim()), idx = n => head.indexOf(n);
+        const di = idx("date"); if (di < 0) return toast("CSV needs a 'date' column");
+        const num = v => { const n = parseFloat(v); return Number.isFinite(n) ? n : undefined; };
+        const isDate = s => /^\d{4}-\d{2}-\d{2}$/.test(s);
+        const RAW = ["weightKg", "waistCm", "navelCm", "hipCm", "bodyFatPct", "sleepH", "sleepScore", "rhr", "bpSys", "bpDia"];
+        const data = App.data; let added = 0;
+        rows.slice(1).forEach(r => {
+          const date = (r[di] || "").trim(); if (!isDate(date)) return;
+          const m = { date, updatedAt: new Date().toISOString() };
+          RAW.forEach(f => { const c = idx(f); if (c >= 0) { const n = num(r[c]); if (n !== undefined) m[f] = n; } });
+          const ni = idx("notes"); if (ni >= 0 && r[ni]) m.notes = String(r[ni]).slice(0, 500);
+          const ex = data.measurements.findIndex(x => x.date === date);
+          if (ex >= 0) data.measurements[ex] = Object.assign({}, data.measurements[ex], m); else data.measurements.push(m);
+          added++;
+        });
+        data.measurements.sort((a, b) => a.date < b.date ? -1 : 1);
+        Store.save(data); App.renderAll(); App.switchTab("measure");
+        toast(added ? ("Imported " + added + " measurement row" + (added === 1 ? "" : "s")) : "No valid rows found");
+      } catch (e) { toast("CSV import failed — check the file format"); }
+    };
+    reader.readAsText(file);
+  },
+  // M14/M04: coerce every numeric field to a finite number (or drop it) and cap strings, so a hand-edited
+  // or malicious backup can never inject a non-numeric payload or produce NaN in Calc.* or the render tables.
+  sanitizeImport(o) {
+    const num = v => { const n = (typeof v === "number") ? v : parseFloat(v); return Number.isFinite(n) ? n : undefined; };
+    const str = (v, n) => (v == null ? undefined : String(v).slice(0, n || 200));
+    const isDate = s => typeof s === "string" && /^\d{4}-\d{2}-\d{2}$/.test(s);
+    const MF = ["weightKg", "waistCm", "navelCm", "hipCm", "sleepH", "sleepScore", "rhr", "bpSys", "bpDia", "bodyFatPct"];
+    if (Array.isArray(o.measurements)) o.measurements = o.measurements.filter(m => m && isDate(m.date)).map(m => {
+      const c = { date: m.date }; MF.forEach(f => { const n = num(m[f]); if (n !== undefined) c[f] = n; });
+      if (m.notes != null) c.notes = str(m.notes, 500); if (m.updatedAt) c.updatedAt = str(m.updatedAt, 40); return c;
+    });
+    if (Array.isArray(o.workouts)) o.workouts = o.workouts.filter(w => w && isDate(w.date)).map(w => ({
+      date: w.date, cluster: num(w.cluster), sessionKey: str(w.sessionKey, 20), updatedAt: w.updatedAt ? str(w.updatedAt, 40) : undefined,
+      sets: Array.isArray(w.sets) ? w.sets.map(s => ({ slot: str(s.slot, 60), exercise: str(s.exercise, 80), setCount: num(s.setCount), kg: num(s.kg), reps: num(s.reps), tent: s.tent ? str(s.tent, 20) : null })) : []
+    }));
+    if (Array.isArray(o.activities)) o.activities = o.activities.filter(a => a && isDate(a.date)).map(a => ({ date: a.date, type: str(a.type, 30), sub: a.sub ? str(a.sub, 30) : undefined, updatedAt: a.updatedAt ? str(a.updatedAt, 40) : undefined }));
+    if (o.profile) { const h = num(o.profile.heightM); o.profile = { name: str(o.profile.name, 80) || "", heightM: (h && h > 0.5 && h < 2.6) ? h : 1.75 }; }
+    if (o.targets) { const t = o.targets; o.targets = { weightKg: num(t.weightKg), waistCm: num(t.waistCm) ?? 85, navelCm: num(t.navelCm) ?? 90, bri: num(t.bri) ?? 0 }; }
+    return o;
+  },
   importText(str) {
     let obj;
     try { obj = JSON.parse(str); } catch (e) { toast("Import failed: not valid JSON"); return false; }
     if (obj && obj._meta) delete obj._meta;                 // drop export metadata before merging
     if (!obj || !Array.isArray(obj.measurements) || !obj.program) { toast("Import failed: not a Msela backup"); return false; }
+    obj = this.sanitizeImport(obj);   // M14/M04: coerce numeric fields, drop non-numeric payloads before anything is stored/rendered
     if (!confirm("Replace ALL current data with this backup?\n" + obj.measurements.length + " measurements, " + (obj.workouts || []).length + " workouts.")) return false;
     App.data = mergeSaved(obj);
     App.data.targets.bri = +Calc.bri(App.data.targets.waistCm, App.data.profile.heightM).toFixed(2);
@@ -1588,7 +1753,7 @@ const DataIO = {
 
 /* ============ FILE-FIRST SYNC (File System Access API) ============ */
 const FileSync = {
-  handle: null,
+  handle: null, _writing: false, _pending: null,
   supported() { return typeof window !== "undefined" && "showSaveFilePicker" in window; },
   async link() {
     try {
@@ -1609,10 +1774,18 @@ const FileSync = {
       App.fileName = h.name; Store.save(App.data); App.renderAll(); App.switchTab("data"); toast("Opened " + h.name);
     } catch (e) { if (e.name !== "AbortError") toast("Could not open file"); }
   },
+  // M34: serialise writes and coalesce to the latest state, so rapid edits can't race or interleave.
   async write(data) {
-    if (!this.handle) return;
-    try { const w = await this.handle.createWritable(); await w.write(JSON.stringify(data, null, 2)); await w.close(); }
-    catch (e) { toast("File write failed — data is still saved on this device"); }
+    this._pending = data;
+    if (this._writing) return;            // an in-flight write will pick up the latest _pending
+    this._writing = true;
+    try {
+      while (this._pending && this.handle) {
+        const d = this._pending; this._pending = null;
+        try { const w = await this.handle.createWritable(); await w.write(JSON.stringify(d, null, 2)); await w.close(); }
+        catch (e) { toast("File write failed — data is still saved on this device"); break; }
+      }
+    } finally { this._writing = false; }
   }
 };
 
@@ -1620,7 +1793,13 @@ const FileSync = {
 const Cloud = {
   URL: "https://vygjkcgjdbddrcaysjle.supabase.co",
   KEY: "sb_publishable_XySZ48FKLjI8RNea4GZtlg_NzW1lWad",
-  sb: null, user: null, status: "", _pushT: null, _busy: false, _syncing: false, _skip: false,
+  sb: null, user: null, status: "", syncState: "synced", _pushT: null, _busy: false, _syncing: false, _skip: false,
+  // M38: a single, visible sync state — Synced / Syncing / Offline / Error.
+  syncChip() {
+    if (!this.online()) return { cls: "orange", label: "offline" };
+    const s = this.syncState || "synced";
+    return s === "pending" ? { cls: "teal", label: "syncing…" } : s === "error" ? { cls: "red", label: "sync error" } : { cls: "green", label: "synced" };
+  },
   async client() {
     if (this.sb) return this.sb;
     const mod = await import("https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm");
@@ -1643,12 +1822,13 @@ const Cloud = {
   async signUp(email, pw) {
     email = (email || "").trim();
     if (!email || !pw) return toast("Enter an email and a password");
-    if (pw.length < 6) return toast("Password needs at least 6 characters");
+    if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return toast("Enter a valid email address");
+    if (pw.length < 8) return toast("Password needs at least 8 characters");
     this._busy = true; toast("Creating your account…");
     try {
       const sb = await this.client();
       const { data, error } = await sb.auth.signUp({ email, password: pw });
-      if (error) { toast(error.message); return; }
+      if (error) { toast("Couldn't create the account — try logging in instead, or use a different email."); return; }
       if (data.session) this.user = data.user;
       else { const r = await sb.auth.signInWithPassword({ email, password: pw }); if (r.error) { toast("Account created — now tap Log in"); return; } this.user = r.data.user; }
       this.prepLocalForUser(this.user.id);
@@ -1660,11 +1840,12 @@ const Cloud = {
   async signIn(email, pw) {
     email = (email || "").trim();
     if (!email || !pw) return toast("Enter your email and password");
+    if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return toast("Enter a valid email address");
     this._busy = true; toast("Signing in…");
     try {
       const sb = await this.client();
       const { data, error } = await sb.auth.signInWithPassword({ email, password: pw });
-      if (error) { toast(error.message); return; }
+      if (error) { toast("Couldn't sign in — check your email and password."); return; }
       this.user = data.user;
       this.prepLocalForUser(this.user.id);
       await this.pullMerge("Synced");
@@ -1696,7 +1877,7 @@ const Cloud = {
     const nw = ((document.getElementById("cp-new") || {}).value || "");
     const cf = ((document.getElementById("cp-confirm") || {}).value || "");
     if (!cur || !nw) return toast("Enter your current and new password");
-    if (nw.length < 6) return toast("New password needs at least 6 characters");
+    if (nw.length < 8) return toast("New password needs at least 8 characters");
     if (nw !== cf) return toast("New passwords don't match");
     if (nw === cur) return toast("New password must be different from the current one");
     this._busy = true; this.render();
@@ -1724,7 +1905,8 @@ const Cloud = {
       const sb = await this.client();
       const { error } = await sb.from("msela_data").upsert({ user_id: this.user.id, data: App.data, updated_at: new Date().toISOString() }, { onConflict: "user_id" });
       this.status = error ? "Sync error — will retry" : "Synced " + new Date().toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" });
-    } catch (e) { this.status = "Sync error — will retry"; }
+      this.syncState = error ? "error" : "synced";
+    } catch (e) { this.status = "Sync error — will retry"; this.syncState = "error"; }
     this.render();
   },
   async pullMerge(label) {
@@ -1734,21 +1916,24 @@ const Cloud = {
       const remote = await this.pull();
       let adopted = false;
       if (remote && remote.data) {
-        adopted = this.pickRemote(App.data, remote.data, remote.updated_at);   // remote actually taken → re-render
-        App.data = mergeSaved(Cloud.merge(App.data, remote.data, remote.updated_at));
+        const sig = d => JSON.stringify([d.measurements, d.workouts, d.activities, d.deloads, d.checkpoints, d.tombstones, d.habitLog, d.profile, d.targets]);
+        const before = sig(App.data);
+        App.data = mergeSaved(Cloud.merge(App.data, remote.data));
         App.data.targets.bri = +Calc.bri(App.data.targets.waistCm, App.data.profile.heightM).toFixed(2);
+        adopted = sig(App.data) !== before;   // re-render only if real records actually changed
       }
       Store.save(App.data);            // writes locally (and via the hook re-pushes the merged set)
       await this.push();
       if (adopted) App.renderAll();    // only re-render when newer data actually arrived — never disrupt your current screen mid-edit
       if (label) this.status = label + " " + new Date().toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" });
       this.render();
-    } catch (e) { this.status = "Sync error — will retry"; this.render(); }
+    } catch (e) { this.status = "Sync error — will retry"; this.syncState = "error"; this.render(); }
     finally { this._syncing = false; }
   },
   queuePush() {
     if (!this.user) return;
     clearTimeout(this._pushT);
+    this.syncState = "pending"; this.render();   // M38: show pending until the push confirms
     // pull-merge-then-push so a local change never clobbers another device's recent edits
     this._pushT = setTimeout(() => this.pullMerge("Synced"), 1500);
   },
@@ -1779,14 +1964,45 @@ const Cloud = {
     const rUp = remoteUpdated ? new Date(remoteUpdated).getTime() : 0;
     return rUp > lUp;
   },
-  merge(local, remote, remoteUpdated) {
-    const out = structuredClone(this.pickRemote(local, remote, remoteUpdated) ? remote : local);
+  // Record-level merge (M01/M02/M03): union every collection by its natural key so two devices'
+  // different edits both survive; per-key conflicts resolve to the newer record version; deletes are
+  // honoured via tombstones so a removed record can't resurrect. An empty side can never overwrite a
+  // populated one. (habitLog + profile use whole-object newer-wins for now — M21/M02 refine later.)
+  merge(local, remote) {
+    const A = local || {}, B = remote || {};
+    const ts = x => (x && x.updatedAt) ? new Date(x.updatedAt).getTime() : 0;
+    const out = structuredClone(A);
+    // 1) union record collections by key; newer record version wins on conflict
+    for (const coll of REC_COLLS) {
+      const map = new Map();
+      for (const r of (A[coll] || [])) map.set(recKey(coll, r), r);
+      for (const r of (B[coll] || [])) { const k = recKey(coll, r); const cur = map.get(k); if (!cur || ts(r) > ts(cur)) map.set(k, r); }
+      out[coll] = [...map.values()];
+    }
+    // 2) union tombstones (keep the newest delete per key)
+    const tMap = new Map();
+    const addT = t => { const k = t.coll + "::" + t.key; const cur = tMap.get(k); if (!cur || new Date(t.at).getTime() > new Date(cur.at).getTime()) tMap.set(k, t); };
+    (A.tombstones || []).forEach(addT); (B.tombstones || []).forEach(addT);
+    out.tombstones = [...tMap.values()];
+    // 3) apply tombstones — a delete removes a record only if the delete is newer than that record's version
+    const delAt = new Map(out.tombstones.map(t => [t.coll + "::" + t.key, new Date(t.at).getTime()]));
+    for (const coll of REC_COLLS) out[coll] = out[coll].filter(r => { const d = delAt.get(coll + "::" + recKey(coll, r)); return !(d != null && d >= ts(r)); });
+    // 4) singletons — never let an empty side overwrite a populated one; else the newer blob wins
+    const lUp = ts(A), rUp = ts(B), newer = rUp > lUp ? B : A;
+    const nmA = ((A.profile && A.profile.name) || "").trim(), nmB = ((B.profile && B.profile.name) || "").trim();
+    out.profile = structuredClone(nmA && !nmB ? A.profile : (nmB && !nmA ? B.profile : (newer.profile || A.profile)));
+    const ticks = hl => hl && Object.keys(hl).some(wk => Object.values(hl[wk] || {}).some(Boolean));
+    const tkA = ticks(A.habitLog), tkB = ticks(B.habitLog);
+    out.habitLog = structuredClone(tkA && !tkB ? A.habitLog : (tkB && !tkA ? B.habitLog : (newer.habitLog || A.habitLog || {})));
+    out.targets = structuredClone(newer.targets || A.targets);
+    out.programState = structuredClone(newer.programState || A.programState || { startDate: (A.program && A.program.startDate) });
     out.updatedAt = new Date().toISOString();
     return out;
   },
   card() {
     if (this.user) {
-      return `<div class="card"><h2 style="display:flex;justify-content:space-between;align-items:center;gap:8px">Cloud sync <span class="chip green">on</span></h2>
+      const sc = this.syncChip();
+      return `<div class="card"><h2 style="display:flex;justify-content:space-between;align-items:center;gap:8px">Cloud sync <span class="chip ${sc.cls}">${sc.label}</span></h2>
         <div class="note">Signed in as <b>${esc(this.user.email || "you")}</b>. Your data syncs automatically across every device you log in on.${this.status ? " <br>" + esc(this.status) + "." : ""}</div>
         <div class="grid2" style="margin-top:12px">
           <button class="btn" ${this._busy ? "disabled" : ""} onclick="Cloud.pullMerge('Synced')">Sync now</button>
@@ -1950,8 +2166,10 @@ App.renderData = function () {
         <button class="btn ghost" onclick="DataIO.pasteRestore()">Paste to restore</button>
         <button class="btn ghost" onclick="DataIO.exportMeasurementsCSV()">Measurements (CSV)</button>
         <button class="btn ghost" onclick="DataIO.exportWorkoutsCSV()">Workouts (CSV)</button>
+        <button class="btn ghost" onclick="document.getElementById('import-csv').click()">Import measurements (CSV)</button>
       </div>
       <input id="import-file" type="file" accept="application/json,.json" style="position:absolute;width:1px;height:1px;opacity:0" aria-label="Choose a backup file to import" onchange="DataIO.importJSON(this.files[0]); this.value='';">
+      <input id="import-csv" type="file" accept="text/csv,.csv" style="position:absolute;width:1px;height:1px;opacity:0" aria-label="Choose a measurements CSV to import" onchange="DataIO.importMeasurementsCSV(this.files[0]); this.value='';">
       <div class="note" style="margin-top:12px">${data.lastBackup ? "Last export: " + esc(data.lastBackup) : "No export yet — back up now to be safe."}</div>
     </div>
     <div class="card"><h2>Reminders calendar</h2>
@@ -1964,6 +2182,7 @@ App.renderData = function () {
       <div class="grid2" style="margin-top:10px">
         <div class="fld"><label for="p-name">Name</label><input type="text" id="p-name" maxlength="40" value="${esc(data.profile.name || "")}"></div>
         <div class="fld"><label for="p-height">Height (m)</label><input type="number" inputmode="decimal" step="0.01" id="p-height" value="${data.profile.heightM || ""}"></div>
+        <div class="fld"><label for="p-birthyear">Year of birth (optional)</label><input type="number" inputmode="numeric" step="1" id="p-birthyear" placeholder="e.g. 1990" value="${data.profile.birthYear || ""}"></div>
         <div class="fld"><label for="p-start">Program start (a Monday)</label><input type="date" id="p-start" value="${esc(data.program.startDate || "")}"></div>
         <div class="fld"><label for="p-twt">Target weight (kg)</label><input type="number" inputmode="decimal" step="0.1" id="p-twt" value="${data.targets.weightKg || ""}"></div>
         <div class="fld"><label for="p-tw">Target waist (cm)</label><input type="number" inputmode="decimal" step="0.1" id="p-tw" value="${data.targets.waistCm || ""}"></div>
@@ -2003,7 +2222,7 @@ App.checkpointsCard = function () {
   }).join("");
   const doneN = cps.filter(c => c.status === "done").length;
   return `<div class="card"><h2 style="display:flex;justify-content:space-between;align-items:center;gap:8px">Health checkpoints <span class="chip teal">${doneN}/${cps.length} done</span></h2>
-    <div class="note">DEXA, blood panel, BP, chiropractor and physio. Tap the status to cycle Book → Booked → Done, set a date, and record results — so your scans and bloods live here, not in a spreadsheet.</div>
+    <div class="note">Optional suggestions — decide what's right for you with your own clinician. DEXA, blood panel, BP, chiropractor and physio. Tap the status to cycle Book → Booked → Done, set a date, and record results — so your scans and bloods live here, not in a spreadsheet.</div>
     ${rows}</div>`;
 };
 App.cycleCheckpoint = function (i) {
@@ -2029,22 +2248,31 @@ App.renderAll = function () { this._renderAllData(); this.renderData(); };
 App.saveProfile = function () {
   const d = this.data;
   const name = (document.getElementById("p-name").value || "").trim();
-  const hh = numVal("p-height"), sd = document.getElementById("p-start").value;
+  const hh = numVal("p-height"), sd = document.getElementById("p-start").value, by = numVal("p-birthyear");
   const twt = numVal("p-twt"), tw = numVal("p-tw"), tn = numVal("p-tn");
   if (name) d.profile.name = name;
   if (hh && hh > 0.5 && hh < 2.6) d.profile.heightM = hh;
-  if (sd) d.program.startDate = sd;
+  d.profile.birthYear = (by && by >= 1900 && by <= new Date().getFullYear()) ? by : undefined;   // M15: optional adult-scope
+  if (sd) { d.programState = d.programState || {}; d.programState.startDate = sd; d.program.startDate = sd; }
   if (twt) d.targets.weightKg = twt;
   if (tw) d.targets.waistCm = tw;
   if (tn) d.targets.navelCm = tn;
   d.targets.bri = +Calc.bri(d.targets.waistCm, d.profile.heightM).toFixed(2);
   Store.save(d); this.renderAll(); toast("Profile saved");
 };
-App.startFresh = function () {
-  if (!confirm("Start fresh? This erases ALL measurements, workouts and habit ticks on THIS device so a new person can begin (your program stays). Export a backup first if unsure.")) return;
-  const d = this.data;
-  d.measurements = []; d.workouts = []; d.habitLog = {}; d.profile.name = "";
-  Store.save(d); this.renderAll(); this.switchTab("data"); toast("Cleared — set the profile above, then start logging");
+// M11: a single, unambiguous reset. Signs out of any account first (so no partial reset ever propagates to
+// the cloud), then fully clears THIS device to a clean default — every collection, not a partial subset.
+App.startFresh = async function () {
+  if (!confirm("Start fresh for a new person? This signs out of any account and clears ALL logged data on THIS device (your programme stays). Export a backup first if unsure.")) return;
+  if (typeof Cloud !== "undefined" && Cloud.user) {
+    await Cloud.signOut();                       // blanks local to a clean default + unlinks the account; nothing is pushed
+  } else {
+    const d = structuredClone(DEFAULT_DATA);
+    d.targets.bri = +Calc.bri(d.targets.waistCm, d.profile.heightM).toFixed(2);
+    Store.save(d); this.data = d; this.renderAll();
+  }
+  this.switchTab("data");
+  toast("Fresh start — set the profile above, then begin");
 };
 
 App.insightLens = (function () { try { return localStorage.getItem("msela_lens") || "body"; } catch (e) { return "body"; } })();
@@ -2079,14 +2307,18 @@ App.lensBody = function (ms, h, now, fmt) {
   let prows = "";
   for (const [label,f,unit,dp,tgt] of projDefs) {
     const p = Insights.projection(ms, f, h, tgt, now); if (!p) continue;
-    let chip, txt;
-    if (p.reached) { chip = "green"; txt = "target met 🎉"; }
-    else if (p.stalled) { chip = "orange"; txt = "holding — " + (p.gap > 0 ? "+" : "") + fmt(p.gap, dp) + (unit ? " " + unit : "") + " to go"; }
-    else { chip = "teal"; const wks = Math.max(1, Math.round(p.months * 4.345)); txt = "≈ " + wks + " wks → " + mon(p.eta); }
-    const pace = p.perMonth != null ? (p.perMonth > 0 ? "+" : "") + fmt(p.perMonth, dp) + (unit ? " " + unit : "") + "/mo" : "—";
-    prows += `<tr><td>${esc(label)}</td><td>${fmt(p.latest.v,dp)}${unit?" "+esc(unit):""} → ${fmt(tgt,dp)}${unit?" "+esc(unit):""}</td><td>${esc(pace)}</td><td><span class="chip ${chip}">${esc(txt)}</span></td></tr>`;
+    let chip, txt, pace = "—";
+    if (p.insufficient) { chip = "teal"; txt = "need ≥4 readings over ~3 wks"; }   // M22: honest about too-little data
+    else {
+      pace = p.perMonth != null ? (p.perMonth > 0 ? "+" : "") + fmt(p.perMonth, dp) + (unit ? " " + unit : "") + "/mo" : "—";
+      if (p.reached) { chip = "green"; txt = "target met 🎉"; }
+      else if (p.stalled) { chip = "orange"; txt = "holding — " + (p.gap > 0 ? "+" : "") + fmt(p.gap, dp) + (unit ? " " + unit : "") + " to go"; }
+      else { chip = "teal"; const loW = Math.max(1, Math.round(p.months * 0.7 * 4.345)), hiW = Math.max(1, Math.round(p.months * 1.5 * 4.345)); txt = "est. " + loW + "–" + hiW + " wks"; }
+    }
+    const nowV = p.latest ? fmt(p.latest.v, dp) + (unit ? " " + esc(unit) : "") : "—";
+    prows += `<tr><td>${esc(label)}</td><td>${nowV} → ${fmt(tgt,dp)}${unit?" "+esc(unit):""}</td><td>${esc(pace)}</td><td><span class="chip ${chip}">${esc(txt)}</span></td></tr>`;
   }
-  let html = prows ? `<div class="card"><h2>Projection to target</h2><div class="note">At your recent pace (last ~90 days), here's the runway to each target. ETA assumes the trend holds.</div><table class="mini"><tr><th>Metric</th><th>Now → target</th><th>Pace</th><th>ETA</th></tr>${prows}</table></div>` : "";
+  let html = prows ? `<div class="card"><h2>Projection to target</h2><div class="note">A rough estimate from your recent pace — a range, not a promise, and only once there's enough data. It assumes the trend holds.</div><table class="mini"><tr><th>Metric</th><th>Now → target</th><th>Pace</th><th>Est. runway</th></tr>${prows}</table></div>` : "";
   const y = now.getFullYear(), mo = now.getMonth(), q = Math.floor(mo / 3) * 3;
   const periods = [["All-time",new Date(1970,0,1)],["This month",new Date(y,mo,1)],["This quarter",new Date(y,q,1)],["Year to date",new Date(y,0,1)],["Last 12 months",new Date(now.getTime()-365*86400000)]];
   const RULES = { weightKg:{good:-0.2,bad:0.2}, waistCm:{good:-0.5,bad:0.3}, navelCm:{good:-0.5,bad:0.3}, bri:{good:-0.05,bad:0.03}, bodyFatPct:{good:-0.3,bad:0.2} };
@@ -2188,8 +2420,8 @@ App.lensScores = function (data, now, fmt) {
     return `<tr><td>${esc(c.k)}</td><td style="color:var(--slate)">weight ${c.w}%</td><td><span class="chip ${chip}">${c.v == null ? "no data" : c.v}</span></td></tr>`;
   }).join("");
   const exDesc = this.isPersonal()
-    ? "A weighted blend of your body, behaviour, fitness markers and strength trend — one number for the whole system."
-    : "A weighted blend of your body, behaviour and fitness markers — one number for the whole system.";
+    ? "A weighted blend of your body, behaviour, fitness markers and strength trend — a guide to where to look, not a diagnosis."
+    : "A weighted blend of your body, behaviour and fitness markers — a guide to where to look, not a diagnosis.";
   const exCard = `<div class="card"><h2 style="display:flex;justify-content:space-between;align-items:center;gap:8px">Health Excellence index <span class="chip ${headChip}">${head}</span></h2><div class="note">${exDesc}</div><table class="mini"><tr><th>Component</th><th></th><th>Score</th></tr>${crows}</table></div>`;
   const tr = Insights.processTrend(data.habitLog, data.habitsCatalog, now, 6);
   let prow = tr.map(w => `<td style="text-align:center"><span class="chip ${w.pct == null ? "teal" : w.pct >= 80 ? "green" : w.pct >= 50 ? "orange" : "red"}" style="margin:0">${w.pct == null ? "–" : w.pct}</span></td>`).join("");
