@@ -3,8 +3,22 @@
     "relation": ["delegate_permission/common.handle_all_urls"],
     "target": {
       "namespace": "android_app",
+      "package_name": "io.github.michelnas13.twa",
+      "sha256_cert_fingerprints": [
+        "C4:0F:85:D7:F3:3F:C7:AA:F2:D7:6F:0F:22:E7:D9:5A:B0:EE:09:66:F5:20:E3:02:CA:DF:98:8F:26:F2:7D:2E",
+        "49:92:BB:3E:0E:D6:CD:12:57:AE:A7:B1:87:7C:DE:30:1A:98:5E:45:EF:F2:ED:A8:2D:14:12:1C:BA:6E:68:F8"
+      ]
+    }
+  },
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
       "package_name": "app.netlify.msela.twa",
-      "sha256_cert_fingerprints": ["49:92:BB:3E:0E:D6:CD:12:57:AE:A7:B1:87:7C:DE:30:1A:98:5E:45:EF:F2:ED:A8:2D:14:12:1C:BA:6E:68:F8"]
+      "sha256_cert_fingerprints": [
+        "49:92:BB:3E:0E:D6:CD:12:57:AE:A7:B1:87:7C:DE:30:1A:98:5E:45:EF:F2:ED:A8:2D:14:12:1C:BA:6E:68:F8",
+        "C4:0F:85:D7:F3:3F:C7:AA:F2:D7:6F:0F:22:E7:D9:5A:B0:EE:09:66:F5:20:E3:02:CA:DF:98:8F:26:F2:7D:2E"
+      ]
     }
   }
 ]
