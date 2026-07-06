@@ -202,6 +202,9 @@ table.mini.nowrap th, table.mini.nowrap td{white-space:nowrap}
 .toast.show{opacity:1}
 details.proto{margin:10px 0}
 details.proto summary{cursor:pointer; font-size:13.5px; font-weight:600; color:var(--teal); min-height:44px; display:flex; align-items:center}
+.segbar{display:inline-flex; gap:2px; background:var(--line); border-radius:10px; padding:3px; margin:2px 0 10px}
+.segbar .seg{border:0; background:transparent; color:var(--slate); font-size:12.5px; font-weight:600; padding:6px 14px; min-height:36px; border-radius:8px; cursor:pointer}
+.segbar .seg.on{background:var(--card); color:var(--navy); box-shadow:var(--shadow)}
 nav.tabs{position:fixed; bottom:0; left:0; right:0; z-index:10; display:flex;
   background:var(--card); border-top:1px solid var(--line); padding-bottom:env(safe-area-inset-bottom);
   box-shadow:0 -2px 12px rgba(15,42,71,.05);}
@@ -294,8 +297,14 @@ try{var _t=localStorage.getItem("msela_theme"); document.documentElement.setAttr
   <section id="scr-dash" class="screen active" role="tabpanel" aria-label="Dashboard"></section>
   <section id="scr-today" class="screen" role="tabpanel" aria-label="Today"></section>
   <section id="scr-log" class="screen" role="tabpanel" aria-label="Log workout"></section>
-  <section id="scr-measure" class="screen" role="tabpanel" aria-label="Measurements"></section>
-  <section id="scr-habits" class="screen" role="tabpanel" aria-label="Habits"></section>
+  <section id="scr-track" class="screen" role="tabpanel" aria-label="Track measurements and habits">
+    <div class="segbar" role="group" aria-label="Track view" style="margin:2px 0 6px">
+      <button type="button" class="seg" id="tv-measure" onclick="App.setTrackView('measure')">Measurements</button>
+      <button type="button" class="seg" id="tv-habits" onclick="App.setTrackView('habits')">Habits</button>
+    </div>
+    <div id="scr-measure"></div>
+    <div id="scr-habits"></div>
+  </section>
   <section id="scr-progress" class="screen" role="tabpanel" aria-label="Progress over time"></section>
   <section id="scr-data" class="screen" role="tabpanel" aria-label="Data and backup"></section>
 </main>
@@ -304,8 +313,7 @@ try{var _t=localStorage.getItem("msela_theme"); document.documentElement.setAttr
   <button role="tab" aria-selected="true" data-scr="dash"><span class="ic" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></svg></span>Home</button>
   <button role="tab" aria-selected="false" data-scr="today"><span class="ic" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M5 5l1.4 1.4M17.6 17.6L19 19M19 5l-1.4 1.4M6.4 17.6L5 19"/></svg></span>Today</button>
   <button role="tab" aria-selected="false" data-scr="log"><span class="ic" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M6.5 6.5v11M17.5 6.5v11M3.5 9v6M20.5 9v6M6.5 12h11"/></svg></span>Log</button>
-  <button role="tab" aria-selected="false" data-scr="measure"><span class="ic" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="2.5" y="7" width="19" height="10" rx="2"/><path d="M7 7v3M11 7v4M15 7v3M19 7v4"/></svg></span>Measure</button>
-  <button role="tab" aria-selected="false" data-scr="habits"><span class="ic" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 12.5l5 5 11-11"/></svg></span>Habits</button>
+  <button role="tab" aria-selected="false" data-scr="track"><span class="ic" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="4.5" y="3" width="15" height="18" rx="2"/><path d="M8.5 8.5l1.5 1.5 2.5-3M8.5 15l1.5 1.5 2.5-3M15 8h1.5M15 14.5h1.5"/></svg></span>Track</button>
   <button role="tab" aria-selected="false" data-scr="progress"><span class="ic" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 4v16h16"/><path d="M7 14l3.5-4 3 3L20 7"/></svg></span>Insights</button>
 </nav>
 <script>
@@ -313,7 +321,7 @@ try{var _t=localStorage.getItem("msela_theme"); document.documentElement.setAttr
 /* ============ DATA MODEL & SEED (program is data, not code) ============ */
 const STORE_KEY = "uhs_data_v1";
 const OWNER_EMAILS = ["michelnas13@gmail.com"];   // only this account unlocks the full personal program; everyone else gets the commercial experience
-const APP_VERSION = "2026-07-06 · v12.8 · Phases 5-7 (IA + charts + QA)";   // visible build tag — bump on every deploy so we can confirm what's actually live on a device
+const APP_VERSION = "2026-07-06 · v12.9 · Track tab + charts + icon + dynamic calendar";   // visible build tag — bump on every deploy so we can confirm what's actually live on a device
 const DEFAULT_DATA = {
   schema: 1,
   profile: { name: "", heightM: 1.75 },
@@ -910,19 +918,34 @@ const App = {
     if (hasData && ageDays >= 14)
       setTimeout(() => toast(lastB ? "Backup is " + Math.round(ageDays) + " days old — open Data to Copy/Export" : "No backup yet — open Data to Copy/Export your history"), 1400);
   },
-  renderAll() { this.renderToday(); this.renderLog(); this.renderMeasure(); this.renderHabits(); },
+  trackView: "measure",   // Track tab sub-view (M45): "measure" | "habits"
+  renderAll() { this.renderToday(); this.renderLog(); this.renderMeasure(); this.renderHabits(); this.applyTrackView(); },
   initNav() {
     const btns = document.querySelectorAll("nav.tabs button");
     btns.forEach(btn => btn.addEventListener("click", () => this.switchTab(btn.dataset.scr)));
   },
+  setTrackView(v) { this.trackView = v; this.applyTrackView(); },
+  applyTrackView() {
+    const m = document.getElementById("scr-measure"), h = document.getElementById("scr-habits");
+    if (!m || !h) return;
+    const showM = this.trackView !== "habits";
+    m.style.display = showM ? "block" : "none";
+    h.style.display = showM ? "none" : "block";
+    const bm = document.getElementById("tv-measure"), bh = document.getElementById("tv-habits");
+    if (bm) bm.classList.toggle("on", showM);
+    if (bh) bh.classList.toggle("on", !showM);
+  },
   switchTab(name) {
+    // Measure & Habits now live inside the single Track tab (M45); route legacy calls there.
+    if (name === "measure" || name === "habits") { this.trackView = name; name = "track"; }
     document.querySelectorAll("nav.tabs button").forEach(b => b.setAttribute("aria-selected", b.dataset.scr === name ? "true" : "false"));
     document.querySelectorAll(".screen").forEach(s => s.classList.remove("active"));
     document.getElementById("scr-" + name).classList.add("active");
     // re-render read-only views each time they're opened so they always reflect the latest data
-    const fn = { today: "renderToday", habits: "renderHabits", dash: "renderDash", progress: "renderProgress", data: "renderData" }[name];
+    const fn = { today: "renderToday", track: "renderTrack", dash: "renderDash", progress: "renderProgress", data: "renderData" }[name];
     if (fn && typeof this[fn] === "function") this[fn]();
   },
+  renderTrack() { this.renderMeasure(); this.renderHabits(); this.applyTrackView(); },
 
   /* ---- TODAY ---- */
   renderToday() {
@@ -1390,32 +1413,49 @@ const Dash = {
     pct = Math.max(0, Math.min(1, pct));
     return `<svg viewBox="0 0 100 8" preserveAspectRatio="none" role="img" aria-label="${Math.round(pct * 100)} percent to target" style="width:100%;height:8px;display:block"><rect width="100" height="8" rx="4" fill="var(--line)"/><rect width="${(pct * 100).toFixed(1)}" height="8" rx="4" fill="${color}"/></svg>`;
   },
+  /* Reusable trend chart (M47/M24/M41): single shared scale by default (dual only when
+     axes are genuinely different units), hover tooltips via native <title>, per-series
+     units, a readable y-axis, and an accessible data-table fallback. */
   chart(series, opts = {}) {
-    const W = 600, H = 240, pl = 42, pr = 42, pt_ = 16, pb = 28;
+    const W = 600, H = 240, pl = 44, pr = 44, pt_ = 22, pb = 30;
+    // optional period window (M24): keep only points newer than `opts.days` before the latest reading
+    if (opts.days) {
+      const latest = Math.max(...series.flatMap(s => s.points.map(p => p.x)).concat([0]));
+      const cut = latest - opts.days * 86400000;
+      series = series.map(s => ({ ...s, points: s.points.filter(p => p.x >= cut) }));
+    }
     const allX = series.flatMap(s => s.points.map(p => p.x));
-    if (!allX.length) return "";
+    if (!allX.length) return `<div class="note" style="text-align:center;padding:14px 8px">No readings in this window.</div>`;
     let xmin = Math.min(...allX), xmax = Math.max(...allX);
     if (xmin === xmax) { xmin -= 3 * 86400000; xmax += 3 * 86400000; }
     const fx = x => pl + (x - xmin) / (xmax - xmin) * (W - pl - pr);
-    const scaled = series.map((s, si) => {
+    const scaled = series.map((s) => {
       let ys = s.points.map(p => p.y);
       if (s.band) ys = ys.concat(s.points.map(p => p.y + s.band), s.points.map(p => p.y - s.band));
       let lo, hi;
       if (opts.dual) { lo = Math.min(...ys); hi = Math.max(...ys); }
-      else {
-        const ally = series.flatMap(z => z.points.map(p => p.y));
-        lo = Math.min(...ally); hi = Math.max(...ally);
-      }
+      else { const ally = series.flatMap(z => z.points.map(p => p.y)); lo = Math.min(...ally); hi = Math.max(...ally); }
       const pad = (hi - lo || 1) * 0.18; lo -= pad; hi += pad;
       const fy = y => H - pb - (y - lo) / (hi - lo) * (H - pt_ - pb);
       return { ...s, fy, lo, hi };
     });
     const dfmt = ms => { const d = new Date(ms); return d.getDate() + "/" + (d.getMonth() + 1); };
+    const uOf = sr => sr.unit != null ? sr.unit : (opts.unit || "");
     let s = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(opts.label || "trend chart")}">`;
-    s += `<line x1="${pl}" y1="${H - pb}" x2="${W - pr}" y2="${H - pb}" stroke="var(--line)" stroke-width="1"/>`;
+    // shared y-axis grid + labels (only meaningful when a single scale is shared)
+    if (!opts.dual) {
+      const g = scaled[0]; const mid = (g.lo + g.hi) / 2;
+      [g.hi, mid, g.lo].forEach(v => {
+        const y = g.fy(v);
+        s += `<line x1="${pl}" y1="${y.toFixed(1)}" x2="${W - pr}" y2="${y.toFixed(1)}" stroke="var(--line)" stroke-width="1" opacity="0.5"/>
+              <text x="${pl - 6}" y="${(y + 3).toFixed(1)}" font-size="10" fill="var(--slate)" text-anchor="end">${(Math.round(v * 10) / 10)}</text>`;
+      });
+    }
+    s += `<line x1="${pl}" y1="${H - pb}" x2="${W - pr}" y2="${H - pb}" stroke="var(--line)" stroke-width="1.2"/>`;
     s += `<text x="${pl}" y="${H - 8}" font-size="10" fill="var(--slate)">${dfmt(xmin)}</text>
           <text x="${W - pr}" y="${H - 8}" font-size="10" fill="var(--slate)" text-anchor="end">${dfmt(xmax)}</text>`;
     scaled.forEach((sr, si) => {
+      const u = uOf(sr);
       const pts = sr.points.map(p => fx(p.x).toFixed(1) + "," + sr.fy(p.y).toFixed(1)).join(" ");
       if (sr.band) {
         const up = sr.points.map(p => fx(p.x).toFixed(1) + "," + sr.fy(p.y + sr.band).toFixed(1));
@@ -1423,19 +1463,24 @@ const Dash = {
         s += `<polygon points="${up.concat(dn).join(" ")}" fill="${sr.color}" opacity="0.13"/>`;
       }
       if (sr.points.length > 1) s += `<polyline points="${pts}" fill="none" stroke="${sr.color}" stroke-width="2.5" stroke-linejoin="round"/>`;
-      sr.points.forEach(p => { s += `<circle cx="${fx(p.x).toFixed(1)}" cy="${sr.fy(p.y).toFixed(1)}" r="4" fill="${sr.color}"/>`; });
+      sr.points.forEach(p => {
+        const cx = fx(p.x).toFixed(1), cy = sr.fy(p.y).toFixed(1);
+        // visible dot + a larger transparent hit-target carrying the native tooltip (date + value + unit)
+        s += `<circle cx="${cx}" cy="${cy}" r="4" fill="${sr.color}"/>`;
+        s += `<circle cx="${cx}" cy="${cy}" r="11" fill="transparent"><title>${esc(sr.label)}: ${p.y}${esc(u)} · ${dfmt(p.x)}</title></circle>`;
+      });
       const lastP = sr.points[sr.points.length - 1];
-      s += `<text x="${(fx(lastP.x) + 6).toFixed(1)}" y="${(sr.fy(lastP.y) - 8).toFixed(1)}" font-size="11" font-weight="700" fill="${sr.color}">${lastP.y}</text>`;
+      s += `<text x="${(fx(lastP.x) + 6).toFixed(1)}" y="${(sr.fy(lastP.y) - 8).toFixed(1)}" font-size="11" font-weight="700" fill="${sr.color}">${lastP.y}${esc(u)}</text>`;
       if (opts.dual) {
         const ax = si === 0 ? pl - 6 : W - pr + 6, anchor = si === 0 ? "end" : "start";
-        s += `<text x="${ax}" y="${pt_ + 8}" font-size="10" fill="${sr.color}" text-anchor="${anchor}">${sr.hi.toFixed(0)}</text>
+        s += `<text x="${ax}" y="${pt_ + 6}" font-size="10" fill="${sr.color}" text-anchor="${anchor}">${sr.hi.toFixed(0)}</text>
               <text x="${ax}" y="${H - pb}" font-size="10" fill="${sr.color}" text-anchor="${anchor}">${sr.lo.toFixed(0)}</text>`;
       }
-      s += `<text x="${pl + si * 110}" y="${pt_ - 4}" font-size="11" font-weight="600" fill="${sr.color}">${esc(sr.label)}</text>`;
+      s += `<text x="${pl + si * 120}" y="${pt_ - 8}" font-size="11" font-weight="600" fill="${sr.color}">${esc(sr.label)}</text>`;
     });
     s += `</svg>`;
     // M47/M41: an accessible data-table alternative, so the numbers aren't trapped inside the SVG
-    const rows = series.map(sr => `<tr><th style="text-align:left">${esc(sr.label)}</th><td>${sr.points.map(p => esc(String(p.y))).join(", ")}</td></tr>`).join("");
+    const rows = series.map(sr => `<tr><th style="text-align:left">${esc(sr.label)}${uOf(sr) ? " (" + esc(uOf(sr)) + ")" : ""}</th><td>${sr.points.map(p => esc(String(p.y))).join(", ")}</td></tr>`).join("");
     return s + `<details class="proto"><summary>View data as a table</summary><table class="mini"><tr><th>Series</th><th>Values (oldest → newest)</th></tr>${rows}</table></details>`;
   },
   recompStatus(first, last, n, spanDays) {
@@ -1453,8 +1498,10 @@ const Dash = {
   }
 };
 
+App.setTrend = function (days) { this.trendDays = days; this.renderDash(); };
 App.renderDash = function () {
   const data = this.data, el = document.getElementById("scr-dash");
+  const trendDays = this.trendDays || null;   // null = all-time (default)
   const h = data.profile.heightM, ms = data.measurements;
   const last = ms[ms.length - 1] || null, first = ms[0] || null;
   const briW = last && last.waistCm ? Calc.bri(last.waistCm, h) : null;
@@ -1510,8 +1557,8 @@ App.renderDash = function () {
   const ow = ms.filter(m => m.waistCm != null).map(m => ({ x: Clock.parseISO(m.date).getTime(), w: m.waistCm, p: Score.weekPct(data.habitLog, Clock.isoWeekKey(Clock.parseISO(m.date)), data.habitsCatalog) }));
   if (ow.length >= 2) {
     html += `<h2 style="margin-top:14px">Behaviour vs waist</h2>` + Dash.chart([
-      { label: "Process %", color: "var(--teal)", points: ow.map(p => ({ x: p.x, y: p.p })) },
-      { label: "Waist cm", color: "var(--orange)", points: ow.map(p => ({ x: p.x, y: p.w })) }
+      { label: "Process", unit: "%", color: "var(--teal)", points: ow.map(p => ({ x: p.x, y: p.p })) },
+      { label: "Waist", unit: "cm", color: "var(--orange)", points: ow.map(p => ({ x: p.x, y: p.w })) }
     ], { dual: true, label: "Process score versus waist over time" })
     + `<div class="note">Exploratory view — an <b>association</b>, not proof of cause: weeks with higher adherence often sit alongside a lower waist, but many things move the waist. Watch the broad pattern over time, not week to week.</div>`;
   }
@@ -1544,10 +1591,13 @@ App.renderDash = function () {
   const cPts = ms.filter(m => m.waistCm != null).map(m => ({ x: Clock.parseISO(m.date).getTime(), y: m.waistCm }));
   if (wPts.length || cPts.length) {
     html += `<div class="card"><h2>Weight vs waist — the recomp view</h2>`;
+    const periods = [[30, "30d"], [90, "90d"], [null, "All"]];
+    html += `<div class="segbar" role="group" aria-label="Chart period">` + periods.map(([d, lbl]) =>
+      `<button type="button" class="seg${(trendDays || null) === d ? " on" : ""}" onclick="App.setTrend(${d})">${lbl}</button>`).join("") + `</div>`;
     html += Dash.chart([
-      { label: "Weight (kg)", color: "var(--teal)", points: wPts },
-      { label: "Waist (cm)", color: "var(--orange)", points: cPts, band: 0.75 }
-    ], { dual: true, label: "Weight versus waist over time" });
+      { label: "Weight", unit: "kg", color: "var(--teal)", points: wPts },
+      { label: "Waist", unit: "cm", color: "var(--orange)", points: cPts, band: 0.75 }
+    ], { dual: true, days: trendDays, label: "Weight versus waist over time" });
     const spanDays = (Clock.parseISO(last.date) - Clock.parseISO(first.date)) / 86400000;
     const rc = Dash.recompStatus(first, last, ms.length, spanDays);
     if (rc) html += `<div style="margin-top:8px"><span class="chip ${rc.cls}">${esc(rc.label)}</span>
@@ -1765,10 +1815,15 @@ const DataIO = {
     }
     return out + (out ? "\r\n " : "") + cur;
   },
-  buildICS(data) {
+  buildICS(data, opts) {
+    opts = opts || {};
     const pad = n => String(n).padStart(2, "0");
     const fmt = dt => dt.getFullYear() + pad(dt.getMonth() + 1) + pad(dt.getDate()) + "T" + pad(dt.getHours()) + pad(dt.getMinutes()) + "00";
     const start = Clock.parseISO(data.program.startDate);
+    // Dynamic window (M44): default to the current week forward, so the file always
+    // reflects where you actually are in the programme — no dead past events.
+    const nowWk = Clock.week(data, opts.now || new Date());
+    const fromWk = Math.min(Math.max(opts.fromWeek != null ? opts.fromWeek : nowWk, 1), data.program.weeks);
     const dayAt = (wk, off, hh, mm) => { const d = new Date(start); d.setDate(d.getDate() + (wk - 1) * 7 + off); d.setHours(hh, mm, 0, 0); return d; };
     const ev = []; let uid = 0;
     const push = (s0, s1, summary, desc, alarmMin) => {
@@ -1780,7 +1835,7 @@ const DataIO = {
       ev.push(s + "END:VEVENT");
     };
     const gym = [["mon", 0, "Pull + Rear + Arms"], ["tue", 1, "Push + Shoulders + Arms"], ["thu", 3, "Accessory + Weak Points"]];
-    for (let wk = 1; wk <= data.program.weeks; wk++) {
+    for (let wk = fromWk; wk <= data.program.weeks; wk++) {
       const deload = Clock.isDeload(data, wk), blk = Clock.block(data, wk);
       if (!deload) gym.forEach(([key, off, lbl]) => {
         const sess = data.program.sessions[key];
@@ -1802,7 +1857,11 @@ const DataIO = {
     const cal = "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//Msela//Health Tracker//EN\r\nCALSCALE:GREGORIAN\r\nMETHOD:PUBLISH\r\n" + ev.join("\r\n") + "\r\nEND:VCALENDAR";
     return cal.split("\r\n").map(l => this.icsFold(l)).join("\r\n") + "\r\n";
   },
-  exportICS() { this.download("msela-16week-calendar.ics", this.buildICS(App.data), "text/calendar"); toast("Calendar downloaded"); }
+  exportICS() {
+    const data = App.data, wk = Math.max(Clock.week(data, new Date()), 1), rem = Math.max(data.program.weeks - wk + 1, 0);
+    this.download("msela-plan-week" + wk + "-to-" + data.program.weeks + ".ics", this.buildICS(data), "text/calendar");
+    toast("Calendar downloaded · weeks " + wk + "–" + data.program.weeks + " (" + rem + " weeks)");
+  }
 };
 
 /* ============ FILE-FIRST SYNC (File System Access API) ============ */
