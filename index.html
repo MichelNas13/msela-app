@@ -203,7 +203,7 @@ table.mini.nowrap th, table.mini.nowrap td{white-space:nowrap}
 details.proto{margin:10px 0}
 details.proto summary{cursor:pointer; font-size:13.5px; font-weight:600; color:var(--teal); min-height:44px; display:flex; align-items:center}
 .segbar{display:inline-flex; gap:2px; background:var(--line); border-radius:10px; padding:3px; margin:2px 0 10px}
-.segbar .seg{border:0; background:transparent; color:var(--slate); font-size:12.5px; font-weight:600; padding:6px 14px; min-height:36px; border-radius:8px; cursor:pointer}
+.segbar .seg{margin:0; display:inline-flex; align-items:center; justify-content:center; border:0; background:transparent; color:var(--slate); font-size:12.5px; font-weight:600; padding:6px 14px; min-height:36px; border-radius:8px; cursor:pointer}
 .segbar .seg.on{background:var(--card); color:var(--navy); box-shadow:var(--shadow)}
 nav.tabs{position:fixed; bottom:0; left:0; right:0; z-index:10; display:flex;
   background:var(--card); border-top:1px solid var(--line); padding-bottom:env(safe-area-inset-bottom);
@@ -321,7 +321,7 @@ try{var _t=localStorage.getItem("msela_theme"); document.documentElement.setAttr
 /* ============ DATA MODEL & SEED (program is data, not code) ============ */
 const STORE_KEY = "uhs_data_v1";
 const OWNER_EMAILS = ["michelnas13@gmail.com"];   // only this account unlocks the full personal program; everyone else gets the commercial experience
-const APP_VERSION = "2026-07-06 · v12.9 · Track tab + charts + icon + dynamic calendar";   // visible build tag — bump on every deploy so we can confirm what's actually live on a device
+const APP_VERSION = "2026-07-07 · v12.10 · review pass (non-punitive activity + control polish)";   // visible build tag — bump on every deploy so we can confirm what's actually live on a device
 const DEFAULT_DATA = {
   schema: 1,
   profile: { name: "", heightM: 1.75 },
@@ -2557,7 +2557,7 @@ App.lensActivity = function (data, now) {
   const block = (type, label, emoji) => {
     const wk = Insights.weeklyCount(data.activities, type, now, N), streak = Insights.streak(data.activities, type, now);
     const total = wk.reduce((a, c) => a + c.n, 0), avg = (total / N).toFixed(1);
-    let cells = wk.map(w => `<td style="text-align:center"><span class="chip ${w.n > 0 ? "green" : "red"}" style="margin:0">${w.n}</span></td>`).join("");
+    let cells = wk.map(w => `<td style="text-align:center">${w.n > 0 ? `<span class="chip green" style="margin:0">${w.n}</span>` : `<span style="color:var(--slate2)">0</span>`}</td>`).join("");
     return `<div class="card"><h2>${emoji} ${esc(label)}</h2><div class="note">Sessions per week, last ${N} weeks. Current streak: <b>${streak}</b> week${streak === 1 ? "" : "s"} • avg ${avg}/wk.</div>
       <div class="scrollx"><table class="mini nowrap"><tr>${wk.map(w => `<th style="text-align:center">${esc(w.week.split("-W")[1])}</th>`).join("")}</tr><tr>${cells}</tr></table></div></div>`;
   };
