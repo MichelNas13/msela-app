@@ -321,7 +321,7 @@ try{var _t=localStorage.getItem("msela_theme"); document.documentElement.setAttr
 /* ============ DATA MODEL & SEED (program is data, not code) ============ */
 const STORE_KEY = "uhs_data_v1";
 const OWNER_EMAILS = ["michelnas13@gmail.com"];   // only this account unlocks the full personal program; everyone else gets the commercial experience
-const APP_VERSION = "2026-07-07 · v12.10 · review pass (non-punitive activity + control polish)";   // visible build tag — bump on every deploy so we can confirm what's actually live on a device
+const APP_VERSION = "2026-07-10 · v12.12 · Monday measurement + Sunday weekly steps (Mon–Sun week)";   // visible build tag — bump on every deploy so we can confirm what's actually live on a device
 const DEFAULT_DATA = {
   schema: 1,
   profile: { name: "", heightM: 1.75 },
@@ -409,7 +409,7 @@ const DEFAULT_DATA = {
   ],
   tombstones: [],  /* {coll,key,at} — deletes that must sync and not resurrect (record-level merge) */
   programState: { startDate: "2026-05-18" },  /* user-owned programme state, kept separate from the code template (M09/M10) */
-  stepsLog: {}     /* { "2026-W28": 62000 } — weekly total steps (confirmed Sunday) */
+  stepsLog: {}     /* { "2026-W28": 62000 } — weekly total steps, Mon–Sun (confirmed Sunday) */
 };
 /* ===== extend the program into a 52-week progressive macrocycle ===== */
 (function build52(p) {
@@ -1000,8 +1000,8 @@ const App = {
         ${grow("Monday clusters", bp.days.mon, bp.end)}${grow("Tuesday clusters", bp.days.tue, bp.end)}${grow("Thursday clusters", bp.days.thu, bp.end)}${grow("Calisthenics", bp.cal, bp.calNeed)}
         <div class="note" style="margin-top:8px">Hit all four to earn your deload.</div></div>`;
     }
-    if (now.getDay() === 0) {
-      html += `<div class="card"><h2>Measurement day</h2><div class="note">Within 30 min of waking • post-bathroom • pre-food/water • same scale, hard floor.</div>
+    if (now.getDay() === 1) {
+      html += `<div class="card"><h2>Measurement morning</h2><div class="note">Within 30 min of waking • post-bathroom • pre-food/water • same scale, hard floor. Do it before you eat or train today.</div>
         <div style="margin-top:12px"><button class="btn ghost" onclick="App.switchTab('measure')">Enter measurements</button></div></div>`;
     }
     html += `<div class="footer-note">Local-first • your data stays on this device</div>`;
@@ -1155,9 +1155,9 @@ const App = {
   renderMeasure() {
     const data = this.data, el = document.getElementById("scr-measure");
     const today = Clock.toISO(this.now());
-    let html = `<div class="card"><h2>Sunday measurement</h2>
+    let html = `<div class="card"><h2>Monday measurement</h2>
       <details class="proto"><summary>Protocol checklist</summary>
-        <div class="note">Sunday, within 30 min of waking • post-bathroom • pre-food/water • naked, hard floor •
+        <div class="note">Monday morning, within 30 min of waking • post-bathroom • pre-food/water • naked, hard floor •
         tape parallel to floor, end of normal exhale • measure 3×, record median • waist = narrowest point, navel = across umbilicus, hip = widest point.</div>
       </details>
       <div class="fld"><label for="m-date">Date</label><input type="date" id="m-date" value="${today}"></div>
@@ -1192,7 +1192,7 @@ const App = {
     html += `<div class="card"><details class="proto"><summary>Measurement protocol — full guide</summary>
       <h4>When to measure</h4>
       <ul class="guide">
-        <li>Sunday morning, within 30 min of waking (≈6:30–7:30 am).</li>
+        <li>Monday morning, within 30 min of waking (≈6:30–7:30 am) — before food, water or training.</li>
         <li>After the bathroom (void first), before food and water.</li>
         <li>Naked or in minimal underwear.</li>
         <li>Not after a high-sodium dinner.</li>
@@ -1851,7 +1851,10 @@ const DataIO = {
       if (wk === 1) desc += "\nBOOK: DEXA baseline + blood panel + BP.";
       else if (wk % 26 === 0) desc += "\nBOOK: DEXA + blood panel + BP check (every 26 weeks).";
       else if (wk % 12 === 0) desc += "\nBOOK: BP recheck + progress review.";
-      push(dayAt(wk, 6, 6, 30), dayAt(wk, 6, 7, 0), "W" + wk + " Sunday measurement", desc, 30);
+      // Monday morning (offset 0): measurement on waking, before food/water or training.
+      push(dayAt(wk, 0, 6, 30), dayAt(wk, 0, 7, 0), "W" + wk + " Monday measurement", desc, 30);
+      // Sunday evening (offset 6): the Mon–Sun week is done — log its total steps.
+      push(dayAt(wk, 6, 19, 0), dayAt(wk, 6, 19, 15), "W" + wk + " Log weekly steps", "Read your watch's Mon–Sun step total and log it on the Today tab.", 30);
     }
     // floating local time is intentional: reminders should fire at that wall-clock time wherever you are.
     const cal = "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//Msela//Health Tracker//EN\r\nCALSCALE:GREGORIAN\r\nMETHOD:PUBLISH\r\n" + ev.join("\r\n") + "\r\nEND:VCALENDAR";
@@ -2172,15 +2175,14 @@ App.dayPlan = function (now, day) {
   const data = this.data, today = Clock.toISO(now), d = now.getDay();
   const has = t => (data.activities || []).some(a => a.date === today && a.type === t);
   const plan = [];
+  // Measurement is a MONDAY-MORNING job (on waking, pre-food/water) — the start of the training week.
+  if (d === 1) plan.push({ t: "measure", l: "Measure", e: "📏", done: data.measurements.some(m => m.date === today), link: "measure" });
   if (day.kind === "gym") {
     plan.push({ t: "strength", l: "Strength", e: "🏋️", done: data.workouts.some(w => w.date === today), link: "log", sess: day.sessionKey });
     plan.push({ t: "walk", l: "Walk", e: "🚶", done: has("walk"), toggle: true });
   } else if (day.kind === "mixed") {
     (day.logs || []).forEach(t => plan.push({ t, l: t.charAt(0).toUpperCase() + t.slice(1), e: t === "basketball" ? "🏀" : "🤸", done: has(t), toggle: true }));
-  } else if (d === 6) {
-    plan.push({ t: "recovery", l: "Recovery walk", e: "🚶", done: has("recovery"), toggle: true });
-  } else if (d === 0) {
-    plan.push({ t: "measure", l: "Measure", e: "📏", done: data.measurements.some(m => m.date === today), link: "measure" });
+  } else if (d === 6 || d === 0) {
     plan.push({ t: "recovery", l: "Recovery walk", e: "🚶", done: has("recovery"), toggle: true });
   }
   return plan;
@@ -2197,11 +2199,12 @@ App.todayPlanCard = function (now, day) {
   }).join("");
   const doneN = plan.filter(p => p.done).length;
   let steps = "";
-  if (d === 0) {
+  if (d === 0) {   // Sunday: the week (Mon–Sun) is complete — close out its total steps
     const wkKey = Clock.isoWeekKey(now), cur = (data.stepsLog && data.stepsLog[wkKey]) || "";
     steps = `<div class="fld" style="margin-top:12px"><label for="wk-steps">This week's total steps</label>
       <div style="display:flex;gap:8px"><input type="number" inputmode="numeric" step="100" id="wk-steps" placeholder="e.g. 62000" value="${cur}">
-      <button class="btn sm" style="width:auto" onclick="App.saveWeekSteps()">Save</button></div></div>`;
+      <button class="btn sm" style="width:auto" onclick="App.saveWeekSteps()">Save</button></div>
+      <div class="note" style="margin-top:6px">${cur ? "Saved ✓ — edit any time today." : "Week's done — read your watch's Mon–Sun total and log it here."}</div></div>`;
   }
   return `<div class="card"><h2 style="display:flex;justify-content:space-between;align-items:center;gap:8px">Today's plan <span class="chip ${doneN === plan.length ? "green" : "teal"}">${doneN}/${plan.length} done</span></h2>
     <div class="note">Tap to confirm what you actually did — your process, honestly logged.</div>
@@ -2265,11 +2268,11 @@ App.commercialToday = function (now, dateStr, last, briTxt, zone) {
     }
   });
   html += `</div>`;
-  if (now.getDay() === 0) {
-    html += `<div class="card"><h2>Measurement day</h2><div class="note">Within 30 min of waking • post-bathroom • pre-food/water • same scale, hard floor.</div>
+  if (now.getDay() === 1) {
+    html += `<div class="card"><h2>Measurement morning</h2><div class="note">Within 30 min of waking • post-bathroom • pre-food/water • same scale, hard floor.</div>
       <div style="margin-top:12px"><button class="btn ghost" onclick="App.switchTab('measure')">Enter measurements</button></div></div>`;
   } else {
-    html += `<div class="card"><div class="note">Measure weekly on Sundays and tick your habits daily — consistency is what moves your numbers.</div></div>`;
+    html += `<div class="card"><div class="note">Measure weekly on Monday mornings and tick your habits daily — consistency is what moves your numbers.</div></div>`;
   }
   html += `<div class="footer-note">Private to your account · synced across your devices</div>`;
   return html;
@@ -2334,7 +2337,7 @@ App.renderData = function () {
       <div class="note" style="margin-top:12px">${data.lastBackup ? "Last export: " + esc(data.lastBackup) : "No export yet — back up now to be safe."}</div>
     </div>
     <div class="card"><h2>Reminders calendar</h2>
-      <div class="note">A <b>.ics</b> for your whole program you import once into your phone calendar: Sunday measurement reminders and Mon/Tue/Thu sessions that name each week's exercises, plus basketball, deloads and DEXA/blood/BP checkpoints — each with a 30-minute alert. Native notifications, even offline.</div>
+      <div class="note">A <b>.ics</b> for your whole program you import once into your phone calendar: Monday-morning measurement reminders, Sunday weekly-steps prompts, and Mon/Tue/Thu sessions that name each week's exercises, plus basketball, deloads and DEXA/blood/BP checkpoints — each with a 30-minute alert. Native notifications, even offline.</div>
       <div style="margin-top:12px"><button class="btn" onclick="DataIO.exportICS()">Download .ics calendar</button></div>
     </div>
     ${this.checkpointsCard()}
@@ -2572,7 +2575,7 @@ App.lensActivity = function (data, now) {
     for (let i = N - 1; i >= 0; i--) { const d = new Date(now.getTime() - i * 7 * 86400000), k = Clock.isoWeekKey(d); wks.push({ k, v: (data.stepsLog && data.stepsLog[k]) || 0 }); }
     if (wks.some(w => w.v > 0)) {
       out += `<div class="card"><h2>🚶 Weekly steps</h2><div class="scrollx"><table class="mini nowrap"><tr>${wks.map(w => `<th style="text-align:center">${esc(w.k.split("-W")[1])}</th>`).join("")}</tr>
-        <tr>${wks.map(w => `<td style="text-align:center">${w.v ? Math.round(w.v / 1000) + "k" : "—"}</td>`).join("")}</tr></table></div><div class="note">Total steps per week (enter on Sunday).</div></div>`;
+        <tr>${wks.map(w => `<td style="text-align:center">${w.v ? Math.round(w.v / 1000) + "k" : "—"}</td>`).join("")}</tr></table></div><div class="note">Total steps per week, Mon–Sun (enter on Sunday).</div></div>`;
     }
     out += block("walk", "Walk", "🚶") + block("basketball", "Basketball", "🏀") + block("calisthenics", "Calisthenics", "🤸") + block("recovery", "Recovery walk", "🥾");
   } else {
