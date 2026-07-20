@@ -321,7 +321,7 @@ try{var _t=localStorage.getItem("msela_theme"); document.documentElement.setAttr
 /* ============ DATA MODEL & SEED (program is data, not code) ============ */
 const STORE_KEY = "uhs_data_v1";
 const OWNER_EMAILS = ["michelnas13@gmail.com"];   // only this account unlocks the full personal program; everyone else gets the commercial experience
-const APP_VERSION = "2026-07-10 · v12.12 · Monday measurement + Sunday weekly steps (Mon–Sun week)";   // visible build tag — bump on every deploy so we can confirm what's actually live on a device
+const APP_VERSION = "2026-07-10 · v13.2 · Back-date sessions + catch-up panel (steps & activities)";   // visible build tag — bump on every deploy so we can confirm what's actually live on a device
 const DEFAULT_DATA = {
   schema: 1,
   profile: { name: "", heightM: 1.75 },
@@ -337,49 +337,64 @@ const DEFAULT_DATA = {
       { weeks: [9, 12], name: "HYPERTROPHY", params: "Reps 8-12 • 4 sets tentpoles • RIR 1-2" },
       { weeks: [13, 16],name: "REFINEMENT",  params: "Mixed 6-15 • isolation focus" }
     ],
+    coreDays: ["pushA", "pullA", "pushB", "pullB"],   // the 4 progressive strength days that gate deloads (pump days don't)
     /* weekday: 0=Sun..6=Sat */
     schedule: {
-      1: { type: "PULL + HINGE",  kind: "gym",  sessionKey: "mon", note: "Walk 4.5km to gym as warm-up" },
-      2: { type: "PUSH + ARMS",   kind: "gym",  sessionKey: "tue", note: "Walk 4.5km; the suit-fitting day" },
-      3: { type: "CALISTHENICS + BASKETBALL", kind: "mixed", logs: ["calisthenics", "basketball"], note: "Calisthenics primer, then ~3 hrs basketball (6-9pm) • snack 5pm • post-game meal within 90 min" },
-      4: { type: "PULL FOCUS",    kind: "gym",  sessionKey: "thu", note: "Light gym ~50 min + 6pm mobility class" },
-      5: { type: "CALISTHENICS + BASKETBALL", kind: "mixed", logs: ["calisthenics", "basketball"], note: "Calisthenics primer, then ~3 hrs basketball (6-9pm) • snack 5pm • post-game meal within 90 min" },
-      6: { type: "ACTIVE RECOVERY", kind: "recovery", note: "10km walk, <5.5 km/h — true recovery pace" },
-      0: { type: "REST + MEASURE", kind: "rest", note: "Measurements before food/water • 8km slow walk" }
+      1: { type: "PUSH A · Chest focus",       kind: "gym", sessionKey: "pushA", note: "Measure first thing (before food/water), then train. Walk ~3–4km." },
+      2: { type: "PULL A · Back width",        kind: "gym", sessionKey: "pullA", note: "Walk ~3–4km." },
+      3: { type: "ARMS & CHEST PUMP + BASKETBALL", kind: "gym", sessionKey: "pump", gated: false, activity: "basketball", note: "Short pump 8–9am (biceps · triceps · chest). Basketball 6pm • snack 5pm • post-game meal within 90 min." },
+      4: { type: "PUSH B · Shoulder focus",    kind: "gym", sessionKey: "pushB", note: "Walk ~3–4km. Add the delt finisher if you're fresh." },
+      5: { type: "ARMS & CHEST PUMP + BASKETBALL", kind: "gym", sessionKey: "pump", gated: false, activity: "basketball", note: "Short pump 8–9am (biceps · triceps · chest). Basketball 6pm • snack 5pm • post-game meal within 90 min." },
+      6: { type: "PULL B · Thickness + legs",  kind: "gym", sessionKey: "pullB", note: "Add the leg + delt finishers. Long recovery walk 7–10km." },
+      0: { type: "REST — completely off",      kind: "rest", note: "No gym today. Recovery walk 7–10km, log the week's total steps, stretch." }
     },
     sessions: {
-      mon: { title: "Monday — Pull (Back · Rear Delts · Biceps)", slots: [
-        { name: "Vertical Pull", star: 1, rx: "3-4 × 6-12", tent: "pulldown", w: ["Lat pulldown","Pull-up","Lat pulldown (neutral grip)","Weighted pull-up","Pull-up (assisted)"] },
-        { name: "Horizontal Row", rx: "3 × 8-12", w: ["Seated cable row","Barbell row","Chest-supported row","T-bar row"] },
-        { name: "Single-arm Row", rx: "3 × 10-12", w: ["Single-arm DB row","Single-arm cable row","Meadows row"] },
-        { name: "Rear Delts", rx: "3 × 12-15", w: ["Face pull","Reverse pec deck","Cable rear fly"] },
-        { name: "Biceps Curl", rx: "3 × 8-12", w: ["Barbell curl","EZ-bar curl","DB curl","Cable curl"] },
-        { name: "Hammer Curl", rx: "3 × 10-15", w: ["Hammer curl","Incline DB curl","Cable hammer curl"] },
-        { name: "Core", rx: "3 × 12-15", w: ["Hanging leg raise","Cable crunch","Pallof press","Plank"] }
+      pushA: { title: "Mon — Push A (Chest focus · Shoulders · Triceps)", slots: [
+        { name: "Incline Press", star: 1, rx: "3 × 8-10", tent: "incline", w: ["Incline DB press","Incline machine press","Incline Smith press"] },
+        { name: "Chest Press", rx: "3 × 10-12", w: ["Machine chest press","Flat DB press","Weighted dip"] },
+        { name: "Shoulder Press", star: 1, rx: "3 × 8-10", tent: "ohp", w: ["Seated DB shoulder press","Machine shoulder press","Arnold press"] },
+        { name: "Lateral Raise", star: 2, rx: "3 × 12-15", tent: "lateral", w: ["Cable lateral raise","DB lateral raise","Machine lateral raise"] },
+        { name: "Triceps Pushdown", rx: "3 × 10-12", w: ["Rope pushdown","Bar pushdown","Single-arm pushdown"] },
+        { name: "Overhead Triceps", rx: "2 × 12-15", w: ["Overhead cable extension","DB overhead extension"] }
       ]},
-      tue: { title: "Tuesday — Push (Chest · Shoulders · Triceps)", slots: [
-        { name: "Incline Press", star: 1, rx: "3-4 × 6-12", tent: "incline", w: ["Incline DB press","Incline barbell press","Incline Smith press"] },
-        { name: "Chest", rx: "3 × 8-12", w: ["Flat DB press","Weighted dip","Machine chest press","Flat barbell press"] },
-        { name: "Chest Fly", rx: "3 × 12-15", w: ["Cable fly","Pec deck","Incline cable fly"] },
-        { name: "Shoulder Press", star: 1, rx: "3 × 6-12", tent: "ohp", w: ["Seated DB press","Smith shoulder press","Machine shoulder press","Arnold press"] },
-        { name: "Lateral Raise", star: 2, rx: "4 × 12-15", tent: "lateral", w: ["DB lateral raise","Cable lateral raise","Machine lateral raise","Lean-away cable lateral"] },
-        { name: "Triceps Pushdown", rx: "3 × 10-15", w: ["Rope pushdown","Bar pushdown","Single-arm pushdown"] },
-        { name: "Overhead Triceps", rx: "3 × 10-15", w: ["Overhead cable extension","DB overhead extension","Skull crusher"] }
-      ]},
-      thu: { title: "Thursday — Delts · Arms · Core", slots: [
-        { name: "Lateral Raise", star: 2, rx: "4 × 12-20", w: ["Cable lateral raise","DB lateral raise","Lean-away cable lateral","Machine lateral raise"] },
+      pullA: { title: "Tue — Pull A (Back width · Rear delts · Biceps)", slots: [
+        { name: "Vertical Pull", star: 1, rx: "3 × 8-10", tent: "pulldown", w: ["Lat pulldown (wide)","Pull-up","Neutral-grip pulldown"] },
+        { name: "Chest-Supported Row", rx: "3 × 10-12", w: ["Chest-supported row","Machine row","Seal row"] },
+        { name: "Cable Row", rx: "3 × 10-12", w: ["Seated cable row (neutral)","Wide-grip cable row"] },
         { name: "Rear Delts", rx: "3 × 12-15", w: ["Reverse pec deck","Face pull","Cable rear fly"] },
-        { name: "Biceps", rx: "3 × 8-12", w: ["DB curl","Cable curl","Preacher curl","EZ-bar curl"] },
-        { name: "Triceps", rx: "3 × 10-15", w: ["Rope pushdown","Overhead extension","Cable kickback"] },
-        { name: "Hamstrings", rx: "3 × 10-12", w: ["Romanian deadlift","Lying leg curl","Seated leg curl"] },
-        { name: "Core", rx: "3 × 12-15", w: ["Hanging leg raise","Cable crunch","Ab wheel","Hollow hold"] }
+        { name: "Biceps Curl", star: 1, rx: "3 × 8-12", tent: "curl", w: ["DB curl","Cable curl","EZ-bar curl"] },
+        { name: "Hammer Curl", rx: "3 × 10-12", w: ["Hammer curl","Cable hammer curl","Incline DB curl"] }
+      ]},
+      pump: { title: "Wed/Fri AM — Arms & Chest pump (before basketball)", slots: [
+        { name: "Pump Chest", rx: "3 × 10-12", w: ["Machine chest press","Incline DB press","Pec deck"] },
+        { name: "Pump Biceps", rx: "3 × 10-12", w: ["DB curl","Cable curl","Preacher curl"] },
+        { name: "Pump Triceps", rx: "3 × 10-12", w: ["Rope pushdown","Overhead cable extension","Cable kickback"] },
+        { name: "Pump Chest Fly", rx: "2 × 12-15", w: ["Cable fly","Pec deck","Incline cable fly"] }
+      ]},
+      pushB: { title: "Thu — Push B (Shoulder focus · Chest · Triceps)", slots: [
+        { name: "Shoulder Press", star: 1, rx: "3 × 8-10", tent: "ohp", w: ["Seated DB shoulder press","Machine shoulder press","Arnold press"] },
+        { name: "Upper Chest", rx: "3 × 10-12", w: ["Incline machine press","Low-to-high cable fly","Incline DB press"] },
+        { name: "Lateral Raise", star: 2, rx: "4 × 12-15", tent: "lateral", w: ["DB lateral raise","Cable lateral raise","Lean-away cable lateral"] },
+        { name: "Chest Fly", rx: "3 × 12-15", w: ["Cable fly","Pec deck","Incline cable fly"] },
+        { name: "Triceps", rx: "3 × 10-12", w: ["Close-grip machine press","Dip machine","Rope pushdown"] },
+        { name: "Delt Finisher (optional)", rx: "3 × 15-20", w: ["Reverse pec deck","Cable Y-raise","Face pull"] }
+      ]},
+      pullB: { title: "Sat — Pull B (Back thickness · Biceps) + legs + delts", slots: [
+        { name: "Vertical Pull", star: 1, rx: "3 × 8-10", tent: "pulldown", w: ["Neutral-grip pulldown","Assisted pull-up","Wide lat pulldown"] },
+        { name: "Row (thickness)", rx: "3 × 10-12", w: ["Machine row","Single-arm DB row","T-bar row"] },
+        { name: "Wide Cable Row", rx: "3 × 12", w: ["Wide-grip cable row","Seated cable row"] },
+        { name: "Biceps Curl", star: 1, rx: "3 × 10-12", tent: "curl", w: ["Incline DB curl","Preacher curl","Cable curl"] },
+        { name: "Leg Curl (hamstrings)", rx: "3 × 12-15", w: ["Seated leg curl","Lying leg curl"] },
+        { name: "Calf Raise", rx: "3 × 15-20", w: ["Standing calf raise","Seated calf raise","Leg-press calf press"] },
+        { name: "Delt Finisher (optional)", rx: "3 × 15", w: ["Face pull","Reverse pec deck","Cable Y-raise"] }
       ]}
     },
     tentpoles: {
-      pulldown: { label: "Vertical Pull (pulldown / pull-up)", targetW16: "BW pull-up ×10-12 or 80 kg pulldown ×8 (1-yr)" },
-      incline:  { label: "Incline DB press",        targetW16: "36-40 kg/hand ×8-10 (1-yr)" },
-      ohp:      { label: "Seated DB shoulder press", targetW16: "28-30 kg/hand ×8-10 (1-yr)" },
-      lateral:  { label: "DB lateral raise",         targetW16: "14-16 kg strict ×12+ (1-yr)" }
+      incline:  { label: "Incline DB press",         start: 18, goal: 26, unit: "kg/hand", targetW16: "≈24-28 kg/hand ×8-10" },
+      ohp:      { label: "Seated DB shoulder press",  start: 14, goal: 21, unit: "kg/hand", targetW16: "≈20-22 kg/hand ×8-10" },
+      lateral:  { label: "DB lateral raise",          start: 8,  goal: 13, unit: "kg/hand", targetW16: "≈12-14 kg strict ×12+" },
+      pulldown: { label: "Vertical pull (pulldown / pull-up)", start: 55, goal: 70, unit: "kg", targetW16: "BW pull-up ×8-10 or ≈65-70 kg pulldown ×8" },
+      curl:     { label: "Biceps curl",               start: 10, goal: 15, unit: "kg/hand", targetW16: "≈14-16 kg/hand ×10" }
     }
   },
   habitsCatalog: [
@@ -392,7 +407,7 @@ const DEFAULT_DATA = {
   ],
   measurements: [],
   workouts: [],   /* {date, cluster, sessionKey, sets:[{slot, exercise, kg, reps}]} */
-  activities: [], /* {date, type:"calisthenics"|"basketball"} — Wed/Fri loggable sessions */
+  activities: [], /* {date, type:"walk"|"basketball"|"pilates"|"recovery"} — loggable daily confirmations */
   deloads: [],    /* {date} — each completed block deload */
   habitLog: {},   /* { "2026-W24": {meals:true,...} } */
   checkpoints: [  /* health checkpoints — status: todo|booked|done • date + result are user-entered */
@@ -636,7 +651,15 @@ const Logic = {
 
 /* ============ PROGRESSION COACH (week-1 calibration + double progression) ============ */
 // Seeds derived from the lifts you gave (bench ~50kg, curl 12.5kg/arm). Estimates — adjust to feel.
-const SEED_WEIGHTS = { "Incline Press": 16, "Chest": 18, "Shoulder Press": 14, "Lateral Raise": 7.5, "Triceps Pushdown": 15, "Overhead Triceps": 10, "Horizontal Row": 20, "Single-arm Row": 18, "Biceps Curl": 12.5, "Biceps": 12.5, "Hammer Curl": 10, "Hamstrings": 20 };
+// Starting anchors (by slot name) — DB moves are per-hand; machines/cables are the stack. Calibrate set 1 to ~2 reps in reserve.
+const SEED_WEIGHTS = {
+  "Incline Press": 18, "Chest Press": 52.5, "Shoulder Press": 14, "Lateral Raise": 8,
+  "Triceps Pushdown": 25, "Overhead Triceps": 12, "Vertical Pull": 55, "Chest-Supported Row": 20,
+  "Cable Row": 55, "Rear Delts": 15, "Biceps Curl": 10, "Hammer Curl": 12,
+  "Pump Chest": 52.5, "Pump Biceps": 10, "Pump Triceps": 25, "Pump Chest Fly": 12,
+  "Upper Chest": 40, "Chest Fly": 15, "Triceps": 25, "Row (thickness)": 45, "Wide Cable Row": 50,
+  "Leg Curl (hamstrings)": 40, "Calf Raise": 60, "Delt Finisher (optional)": 8
+};
 const Prog = {
   range(rx) {
     const tail = String(rx).split("×").pop();
@@ -771,9 +794,8 @@ const Score = {
       const dISO = Clock.toISO(dt), wd = dt.getDay(), day = data.program.schedule[wd];
       let types = [];
       if (!day) types = [];
-      else if (day.kind === "gym") types = ["strength", "walk"];
-      else if (day.kind === "mixed") types = (day.logs || []);
-      else if (wd === 6 || wd === 0) types = ["recovery"];
+      else if (day.kind === "gym") types = ["strength", day.activity || "walk"];   // Wed/Fri pair with basketball, others with a walk
+      else types = ["recovery"];   // Sunday rest / recovery
       planned += types.length;
       types.forEach(t => { if (has(dISO, t)) done++; });
     }
@@ -897,7 +919,7 @@ function numVal(id) {
 /* ============ APP STATE & RENDERERS ============ */
 const App = {
   data: null, now: () => new Date(),
-  logSession: "mon", logWeek: 1,
+  logSession: "pushA", logWeek: 1,
 
   boot() {
     this.data = Store.load();
@@ -908,7 +930,7 @@ const App = {
     const wk = Clock.week(this.data, now);
     this.logWeek = Math.min(Math.max(wk, 1), this.data.program.weeks);
     const day = this.data.program.schedule[now.getDay()];
-    this.logSession = day && day.sessionKey ? day.sessionKey : "mon";
+    this.logSession = day && day.sessionKey ? day.sessionKey : "pushA";
     this.initNav(); this.renderAll(); this.applyMode(); this.syncThemeBtn();
     if (window.matchMedia) window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", () => App.syncThemeBtn());
     // backup nudge: only if there's data and it's been a while
@@ -971,7 +993,7 @@ const App = {
     html += this.todayPlanCard(now, day);   // clean daily confirmation chips (Phase 4)
     if (isGym && this.isBlocked(day.sessionKey)) {
       const sess = data.program.sessions[day.sessionKey];
-      html += `<div class="card"><h2>${esc(sess.title)} — done for this block ✓</h2><div class="note">You've finished your ${this.blockEnd()} ${day.sessionKey.toUpperCase()} clusters. Recover — finish the other days + calisthenics to unlock the deload.</div></div>`;
+      html += `<div class="card"><h2>${esc(sess.title)} — done for this block ✓</h2><div class="note">You've finished this day's ${this.blockEnd()} clusters. Recover — finish the other strength days to unlock the deload.</div></div>`;
     } else if (isGym) {
       const sess = data.program.sessions[day.sessionKey];
       html += `<div class="card"><h2>${esc(sess.title)} — Cluster ${cl}</h2>`;
@@ -992,18 +1014,20 @@ const App = {
     const bp = this.blockProgress();
     if (bp.ready) {
       html += `<div class="card hero" style="background:linear-gradient(135deg,#1B4570,#267474)"><h2>BLOCK ${bp.block} COMPLETE 🎉</h2>
-        <div class="meta">All days hit ${bp.end} clusters and ${bp.calNeed} calisthenics. Take a deload week — calisthenics + walks, lighter — then mark it done:</div>
+        <div class="meta">All four strength days hit ${bp.end} clusters. Take a deload week — lighter loads, keep your walks and basketball — then mark it done:</div>
         <div style="margin-top:12px"><button class="btn" onclick="App.completeDeload()">Mark deload done → unlock Block ${bp.block + 1}</button></div></div>`;
     } else {
       const grow = (lbl, have, need) => `<div class="exrow"><div class="n"><b>${lbl}</b></div><span class="chip ${have >= need ? "green" : "teal"}">${Math.min(have, need)}/${need}</span></div>`;
+      const LBL = { pushA: "Push A clusters", pullA: "Pull A clusters", pushB: "Push B clusters", pullB: "Pull B clusters" };
       html += `<div class="card"><h2>Block ${bp.block} → deload progress</h2>
-        ${grow("Monday clusters", bp.days.mon, bp.end)}${grow("Tuesday clusters", bp.days.tue, bp.end)}${grow("Thursday clusters", bp.days.thu, bp.end)}${grow("Calisthenics", bp.cal, bp.calNeed)}
-        <div class="note" style="margin-top:8px">Hit all four to earn your deload.</div></div>`;
+        ${bp.keys.map(k => grow(LBL[k] || k, bp.days[k], bp.end)).join("")}
+        <div class="note" style="margin-top:8px">Hit all four strength days to earn your deload.</div></div>`;
     }
     if (now.getDay() === 1) {
       html += `<div class="card"><h2>Measurement morning</h2><div class="note">Within 30 min of waking • post-bathroom • pre-food/water • same scale, hard floor. Do it before you eat or train today.</div>
         <div style="margin-top:12px"><button class="btn ghost" onclick="App.switchTab('measure')">Enter measurements</button></div></div>`;
     }
+    html += this.catchUpCard(now);
     html += `<div class="footer-note">Local-first • your data stays on this device</div>`;
     el.innerHTML = html;
   },
@@ -1024,14 +1048,14 @@ const App = {
     if (cl > this.data.program.weeks) return { name: "MAINTENANCE & ATHLETIC", params: "hold gains • minimum effective dose • re-build focus 2-3×/yr" };
     return Clock.block(this.data, cl);
   },
-  calDone() { return (this.data.activities || []).filter(a => a.type === "calisthenics").length; },
+  coreDays() { return (this.data.program.coreDays || ["pushA", "pullA", "pushB", "pullB"]); },
   clusterOf(key) { return Math.min(this.dayDone(key) + 1, this.blockEnd()); },
-  isBlocked(key) { return this.dayDone(key) >= this.blockEnd(); },
+  isBlocked(key) { return this.coreDays().includes(key) && this.dayDone(key) >= this.blockEnd(); },  // pump days are never gated
   blockProgress() {
-    const end = this.blockEnd(), calNeed = end * 2;   // 2 calisthenics/week, aligned to the block length (M28)
-    const days = { mon: this.dayDone("mon"), tue: this.dayDone("tue"), thu: this.dayDone("thu") };
-    const daysOk = ["mon", "tue", "thu"].every(k => days[k] >= end), cal = this.calDone();
-    return { block: this.deloadsDone() + 1, end, days, cal, calNeed, daysOk, calOk: cal >= calNeed, ready: daysOk && cal >= calNeed };
+    const end = this.blockEnd(), keys = this.coreDays();
+    const days = {}; keys.forEach(k => { days[k] = this.dayDone(k); });
+    const daysOk = keys.every(k => days[k] >= end);
+    return { block: this.deloadsDone() + 1, end, keys, days, daysOk, ready: daysOk };
   },
   completeDeload() {
     if (!confirm("Mark this block's deload as done? It unlocks the next block — your gym days resume to their next cluster.")) return;
@@ -1040,16 +1064,19 @@ const App = {
     Store.save(this.data); toast("Deload logged — next block unlocked 💪"); this.renderToday();
   },
   // Activity logging — tap to log, tap again to undo. Optional sub-type (muscle group / movement / discipline).
-  logActivity(type, sub) {
+  // Log/undo an activity on ANY date (used by both today's chips and the catch-up panel). Returns true if added.
+  logActivityOn(type, dISO, sub) {
     if (!this.data.activities) this.data.activities = [];
-    const today = Clock.toISO(this.now());
     const norm = s => (s || "").toLowerCase();
-    const i = this.data.activities.findIndex(a => a.date === today && a.type === type && norm(a.sub) === norm(sub));
+    const i = this.data.activities.findIndex(a => a.date === dISO && a.type === type && norm(a.sub) === norm(sub));
     if (i >= 0) { addTombstone(this.data, "activities", recKey("activities", this.data.activities[i])); this.data.activities.splice(i, 1); }
-    else this.data.activities.push(sub ? { date: today, type, sub: norm(sub), updatedAt: new Date().toISOString() } : { date: today, type, updatedAt: new Date().toISOString() });
+    else this.data.activities.push(sub ? { date: dISO, type, sub: norm(sub), updatedAt: new Date().toISOString() } : { date: dISO, type, updatedAt: new Date().toISOString() });
     Store.save(this.data);
-    const name = sub ? sub : type;
-    toast(i >= 0 ? name + " un-logged" : name + " logged ✓");
+    return i < 0;
+  },
+  logActivity(type, sub) {
+    const added = this.logActivityOn(type, Clock.toISO(this.now()), sub);
+    toast((sub || type) + (added ? " logged ✓" : " un-logged"));
     this.renderToday();
   },
   activityWeek(type, now) {
@@ -1062,9 +1089,10 @@ const App = {
     const cl = this.clusterOf(this.logSession), blk = this.phaseFor(cl);
     let html = `<div class="card"><h2>Log a session</h2>
       <div class="seg" role="group" aria-label="Day">
-        ${["mon","tue","thu"].map(k => `<button aria-pressed="${k === this.logSession}" onclick="App.setLogSession('${k}')">${k.toUpperCase()}</button>`).join("")}
+        ${[["pushA","Push A"],["pullA","Pull A"],["pump","Pump"],["pushB","Push B"],["pullB","Pull B"]].map(([k,lab]) => `<button aria-pressed="${k === this.logSession}" onclick="App.setLogSession('${k}')">${lab}</button>`).join("")}
       </div>
       <div class="note" style="margin-top:8px"><b>${esc(sess.title)}</b> · Cluster ${cl} of ${data.program.weeks}${blk ? " · " + esc(blk.name) : ""}. Do it and save to advance ${this.logSession.toUpperCase()} to its next cluster.</div>
+      <div class="fld" style="margin-top:8px"><label for="log-date">Session date (back-date a forgotten one)</label><input type="date" id="log-date" value="${Clock.toISO(this.now())}" max="${Clock.toISO(this.now())}"></div>
       <details class="proto"><summary>How weights &amp; progression work</summary>
         <ol class="guide steps">
           <li><b>Cluster 1 is calibration.</b> Pick a weight you could lift for the top of the rep range with about 2 reps left in the tank. That's your baseline.</li>
@@ -1075,7 +1103,7 @@ const App = {
         </ol>
       </details></div>`;
     if (this.isBlocked(this.logSession)) {
-      html += `<div class="card"><div class="msg warn">${this.logSession.toUpperCase()}'s ${this.blockEnd()} clusters are done for this block. Finish the other days + calisthenics, then deload (see Today).</div></div>`;
+      html += `<div class="card"><div class="msg warn">This day's ${this.blockEnd()} clusters are done for this block. Finish the other strength days, then deload (see Today).</div></div>`;
     } else {
       html += `<div class="card"><h2>${esc(sess.title)} — Cluster ${cl}</h2>`;
       sess.slots.forEach((slot, i) => {
@@ -1141,9 +1169,12 @@ const App = {
         sets.push({ slot: slot.name, exercise: this.exFor(slot, cl), setCount: st, kg, reps: rp, rir: (rir != null ? rir : undefined), tent: slot.tent || null });
     });
     if (!sets.length) { toast("Enter weight × reps for at least one exercise"); return; }
-    data.workouts.push({ date: Clock.toISO(this.now()), cluster: cl, sessionKey: this.logSession, sets, updatedAt: new Date().toISOString() });
+    const todayISO = Clock.toISO(this.now());
+    let date = ((document.getElementById("log-date") || {}).value) || todayISO;
+    if (date > todayISO) date = todayISO;   // never future-date a session
+    data.workouts.push({ date, cluster: cl, sessionKey: this.logSession, sets, updatedAt: new Date().toISOString() });
     data.workouts.sort((a, b) => a.date < b.date ? -1 : 1);
-    Store.save(data); toast(this.logSession.toUpperCase() + " · Cluster " + cl + " saved — advancing"); this.renderLog();
+    Store.save(data); toast(this.logSession.toUpperCase() + " · Cluster " + cl + (date === todayISO ? "" : " (" + date + ")") + " saved"); this.renderLog();
   },
   deleteWorkout(idx) {
     if (!confirm("Delete this session?")) return;
@@ -1834,18 +1865,25 @@ const DataIO = {
       if (alarmMin) s += "BEGIN:VALARM\r\nACTION:DISPLAY\r\nDESCRIPTION:" + this.icsEsc(summary) + "\r\nTRIGGER:-PT" + alarmMin + "M\r\nEND:VALARM\r\n";
       ev.push(s + "END:VEVENT");
     };
-    const gym = [["mon", 0, "Pull + Rear + Arms"], ["tue", 1, "Push + Shoulders + Arms"], ["thu", 3, "Accessory + Weak Points"]];
+    // [sessionKey, day-offset (0=Mon), hour, duration min, label]
+    const gym = [
+      ["pushA", 0, 18, 60, "Push A · chest focus"],
+      ["pullA", 1, 18, 60, "Pull A · back width"],
+      ["pump",  2,  8, 30, "Arms & chest pump (AM)"],
+      ["pushB", 3, 18, 60, "Push B · shoulders"],
+      ["pump",  4,  8, 30, "Arms & chest pump (AM)"],
+      ["pullB", 5, 10, 70, "Pull B · thickness + legs"]
+    ];
     for (let wk = fromWk; wk <= data.program.weeks; wk++) {
       const deload = Clock.isDeload(data, wk), blk = Clock.block(data, wk);
-      if (!deload) gym.forEach(([key, off, lbl]) => {
+      if (!deload) gym.forEach(([key, off, hr, dur, lbl]) => {
         const sess = data.program.sessions[key];
-        const exs = sess.slots.map(sl => sl.w[wk - 1]).filter(x => x && x !== "—");
-        const dur = key === "thu" ? 50 : 90;
-        const s0 = dayAt(wk, off, 18, 0);
-        push(s0, new Date(s0.getTime() + dur * 60000), "W" + wk + " " + key.toUpperCase() + ": " + lbl,
+        const exs = sess.slots.map(sl => sl.w[(wk - 1) % sl.w.length]).filter(x => x && x !== "—");
+        const s0 = dayAt(wk, off, hr, 0);
+        push(s0, new Date(s0.getTime() + dur * 60000), "W" + wk + " " + lbl,
           (blk ? blk.name + " block • " + blk.params + "\n" : "") + "Exercises: " + exs.join(", "), 30);
       });
-      else { const s0 = dayAt(wk, 0, 18, 0); push(s0, new Date(s0.getTime() + 45 * 60000), "W" + wk + " DELOAD — calisthenics + walks", wk === 6 ? "Book chiropractor + physio assessment." : "Book DEXA follow-up + BP recheck.", 0); }
+      else { const s0 = dayAt(wk, 0, 18, 0); push(s0, new Date(s0.getTime() + 45 * 60000), "W" + wk + " DELOAD — light lifting + walks + basketball", wk === 6 ? "Book chiropractor + physio assessment." : "Book DEXA follow-up + BP recheck.", 0); }
       [2, 4].forEach(off => { const s0 = dayAt(wk, off, 18, 0); push(s0, dayAt(wk, off, 21, 0), "W" + wk + " Basketball", "Snack 5pm • post-game meal within 90 min.", 60); });
       let desc = "Within 30 min waking • post-bathroom • pre-food/water • naked, hard floor • tape parallel, end of exhale • measure 3×, record median.";
       if (wk === 1) desc += "\nBOOK: DEXA baseline + blood panel + BP.";
@@ -2179,12 +2217,14 @@ App.dayPlan = function (now, day) {
   if (d === 1) plan.push({ t: "measure", l: "Measure", e: "📏", done: data.measurements.some(m => m.date === today), link: "measure" });
   if (day.kind === "gym") {
     plan.push({ t: "strength", l: "Strength", e: "🏋️", done: data.workouts.some(w => w.date === today), link: "log", sess: day.sessionKey });
-    plan.push({ t: "walk", l: "Walk", e: "🚶", done: has("walk"), toggle: true });
-  } else if (day.kind === "mixed") {
-    (day.logs || []).forEach(t => plan.push({ t, l: t.charAt(0).toUpperCase() + t.slice(1), e: t === "basketball" ? "🏀" : "🤸", done: has(t), toggle: true }));
-  } else if (d === 6 || d === 0) {
+    // Wed/Fri pump days pair with basketball; the other gym days pair with the day's walk.
+    if (day.activity === "basketball") plan.push({ t: "basketball", l: "Basketball", e: "🏀", done: has("basketball"), toggle: true });
+    else plan.push({ t: "walk", l: "Walk", e: "🚶", done: has("walk"), toggle: true });
+  } else {
     plan.push({ t: "recovery", l: "Recovery walk", e: "🚶", done: has("recovery"), toggle: true });
   }
+  // Pilates — optional cross-training, loggable any day; doesn't count toward the daily total.
+  plan.push({ t: "pilates", l: "Pilates", e: "🧘", done: has("pilates"), toggle: true, optional: true });
   return plan;
 };
 App.todayPlanCard = function (now, day) {
@@ -2197,7 +2237,8 @@ App.todayPlanCard = function (now, day) {
       : "App.switchTab('measure')";
     return `<button class="pill" aria-pressed="${on}" onclick="${click}">${p.e} ${esc(p.l)}${on ? " ✓" : ""}</button>`;
   }).join("");
-  const doneN = plan.filter(p => p.done).length;
+  const core = plan.filter(p => !p.optional);
+  const doneN = core.filter(p => p.done).length, total = core.length;
   let steps = "";
   if (d === 0) {   // Sunday: the week (Mon–Sun) is complete — close out its total steps
     const wkKey = Clock.isoWeekKey(now), cur = (data.stepsLog && data.stepsLog[wkKey]) || "";
@@ -2206,7 +2247,7 @@ App.todayPlanCard = function (now, day) {
       <button class="btn sm" style="width:auto" onclick="App.saveWeekSteps()">Save</button></div>
       <div class="note" style="margin-top:6px">${cur ? "Saved ✓ — edit any time today." : "Week's done — read your watch's Mon–Sun total and log it here."}</div></div>`;
   }
-  return `<div class="card"><h2 style="display:flex;justify-content:space-between;align-items:center;gap:8px">Today's plan <span class="chip ${doneN === plan.length ? "green" : "teal"}">${doneN}/${plan.length} done</span></h2>
+  return `<div class="card"><h2 style="display:flex;justify-content:space-between;align-items:center;gap:8px">Today's plan <span class="chip ${doneN === total ? "green" : "teal"}">${doneN}/${total} done</span></h2>
     <div class="note">Tap to confirm what you actually did — your process, honestly logged.</div>
     <div class="optrow">${pills}</div>${steps}</div>`;
 };
@@ -2215,6 +2256,44 @@ App.saveWeekSteps = function () {
   this.data.stepsLog = this.data.stepsLog || {};
   if (v && v > 0) this.data.stepsLog[wkKey] = Math.round(v); else delete this.data.stepsLog[wkKey];
   Store.save(this.data); toast(v ? "Weekly steps saved ✓" : "Steps cleared"); this.renderToday();
+};
+// #1 CATCH-UP: back-fill a forgotten day — confirm that day's activities and/or enter its week's steps.
+App.catchDate = null;
+App.catchOpen = false;
+App.catchUpCard = function (now) {
+  const data = this.data, todayISO = Clock.toISO(now);
+  const minISO = Clock.toISO(new Date(now.getTime() - 14 * 86400000));
+  const cd = this.catchDate || Clock.toISO(new Date(now.getTime() - 86400000));   // default: yesterday
+  const dt = Clock.parseISO(cd), wd = dt.getDay(), day = data.program.schedule[wd];
+  const has = t => (data.activities || []).some(a => a.date === cd && a.type === t);
+  const opts = [];
+  if (day && day.kind === "gym") opts.push(day.activity === "basketball" ? ["basketball", "🏀 Basketball"] : ["walk", "🚶 Walk"]);
+  else opts.push(["recovery", "🚶 Recovery walk"]);
+  opts.push(["pilates", "🧘 Pilates"]);
+  const chips = opts.map(([t, l]) => `<button class="pill" aria-pressed="${has(t)}" onclick="App.catchToggle('${t}')">${l}${has(t) ? " ✓" : ""}</button>`).join("");
+  const wk = Clock.isoWeekKey(dt), cur = (data.stepsLog && data.stepsLog[wk]) || "";
+  return `<div class="card"><details class="proto" ${this.catchOpen ? "open" : ""} ontoggle="App.catchOpen = this.open">
+    <summary>Missed a day? Catch up</summary>
+    <div class="note" style="margin-top:6px">Pick the day you forgot, then confirm what you did — or enter that week's steps.</div>
+    <div class="fld" style="margin-top:8px"><label for="catch-date">Day</label><input type="date" id="catch-date" value="${cd}" min="${minISO}" max="${todayISO}" onchange="App.setCatchDate(this.value)"></div>
+    <div class="optrow" style="margin-top:6px">${chips}</div>
+    <div class="fld" style="margin-top:10px"><label for="catch-steps">That week's total steps · ${esc(wk)}</label>
+      <div style="display:flex;gap:8px"><input type="number" inputmode="numeric" step="100" id="catch-steps" placeholder="e.g. 62000" value="${cur}">
+        <button class="btn sm" style="width:auto" onclick="App.saveCatchSteps()">Save</button></div></div>
+  </details></div>`;
+};
+App.setCatchDate = function (v) { this.catchDate = v; this.catchOpen = true; this.renderToday(); };
+App.catchToggle = function (t) {
+  const now = this.now(), cd = this.catchDate || Clock.toISO(new Date(now.getTime() - 86400000));
+  const added = this.logActivityOn(t, cd);
+  this.catchOpen = true; toast((added ? "Logged " : "Un-logged ") + t + " · " + cd); this.renderToday();
+};
+App.saveCatchSteps = function () {
+  const now = this.now(), cd = this.catchDate || Clock.toISO(new Date(now.getTime() - 86400000));
+  const wk = Clock.isoWeekKey(Clock.parseISO(cd)), v = numVal("catch-steps");
+  this.data.stepsLog = this.data.stepsLog || {};
+  if (v && v > 0) this.data.stepsLog[wk] = Math.round(v); else delete this.data.stepsLog[wk];
+  Store.save(this.data); this.catchOpen = true; toast(v ? "Steps saved · " + wk + " ✓" : "Steps cleared"); this.renderToday();
 };
 // THEME: light by default, follows the OS, or a manual override persisted in localStorage.
 App.effectiveTheme = function () {
@@ -2512,8 +2591,21 @@ App.lensBody = function (ms, h, now, fmt) {
 };
 
 App.lensStrength = function (data, now, fmt) {
+  // Projected path — a target ladder per key lift, shown even before you've logged. Front-loaded curve
+  // (strength climbs faster early): weight at week w = start + (goal-start) × (w/52)^0.7.
+  const curKg = key => { for (let i = (data.workouts || []).length - 1; i >= 0; i--) { const s = (data.workouts[i].sets || []).find(x => x.tent === key && isFinite(x.kg)); if (s) return s.kg; } return null; };
+  const r05 = v => Math.round(v * 2) / 2;
+  let prows = "";
+  for (const [key, tp] of Object.entries(data.program.tentpoles)) {
+    if (tp.start == null || tp.goal == null) continue;
+    const cur = curKg(key), base = tp.start, goal = tp.goal, at = w => r05(base + (goal - base) * Math.pow(w / 52, 0.7));
+    const pct = cur != null ? Math.max(0, Math.min(100, Math.round((cur - base) / (goal - base) * 100))) : 0;
+    const chip = cur == null ? "teal" : pct >= 100 ? "green" : pct >= 50 ? "teal" : "orange";
+    prows += `<tr><td><b>${esc(tp.label)}</b><br><span style="color:var(--slate);font-size:11px">${esc(tp.unit || "kg")}</span></td><td>${cur != null ? cur : base}</td><td>${at(12)}</td><td>${at(26)}</td><td><b>${goal}</b></td><td><span class="chip ${chip}">${cur != null ? pct + "%" : "start"}</span></td></tr>`;
+  }
+  const projCard = prows ? `<div class="card"><h2>Projected path to your goals</h2><div class="note">A guide, not a promise — where steady, earned progress could put you (front-loaded, since strength climbs faster early). Your live Log cues are what actually move you there.</div><div class="scrollx"><table class="mini nowrap"><tr><th>Lift</th><th>Now</th><th>~12wk</th><th>~26wk</th><th>Goal</th><th>To goal</th></tr>${prows}</table></div></div>` : "";
   if (!data.workouts.length)
-    return `<div class="card"><div class="note" style="text-align:center;padding:20px">Log a few gym sessions and your strength trends appear here — e1RM per key lift, stalls, and training tonnage.</div></div>`;
+    return projCard + `<div class="card"><div class="note" style="text-align:center;padding:20px">Log a few gym sessions and your live e1RM trends, stalls and tonnage appear here.</div></div>`;
   let trows = "";
   for (const [key, tp] of Object.entries(data.program.tentpoles)) {
     const hist = Logic.tentpoleHistory(data, key), st = Logic.stallStatus(hist);
@@ -2531,28 +2623,28 @@ App.lensStrength = function (data, now, fmt) {
     <tr><th>Window</th><th>Volume</th><th>Sets</th><th></th></tr>
     <tr><td>Last 28 days</td><td><b>${t28.kg.toLocaleString()} kg</b></td><td>${t28.sets}</td><td><span class="chip ${volChip}">${esc(volTxt)}</span></td></tr>
     <tr><td>Prior 28 days</td><td>${tPrev.kg.toLocaleString()} kg</td><td>${tPrev.sets}</td><td></td></tr></table></div>`;
-  return `<div class="card"><h2>Key lifts (e1RM)</h2><div class="note">Estimated 1-rep max from your best logged set — rising means real strength gain. "Stalled" = no progress in 3 sessions; check recovery, sleep, food.</div><table class="mini"><tr><th>Lift</th><th>e1RM trail</th><th>Status</th></tr>${trows}</table></div>` + ton;
+  return projCard + `<div class="card"><h2>Key lifts (e1RM)</h2><div class="note">Estimated 1-rep max from your best logged set — rising means real strength gain. "Stalled" = no progress in 3 sessions; check recovery, sleep, food.</div><table class="mini"><tr><th>Lift</th><th>e1RM trail</th><th>Status</th></tr>${trows}</table></div>` + ton;
 };
 
 App.lensTraining = function (data, now) {
-  const days = ["mon","tue","thu"], names = { mon:"Monday · Pull", tue:"Tuesday · Push", thu:"Thursday · Delts/Arms" };
+  const days = this.coreDays(), names = { pushA:"Mon · Push A", pullA:"Tue · Pull A", pushB:"Thu · Push B", pullB:"Sat · Pull B" };
   const end = this.blockEnd();
   let crows = "";
   days.forEach(k => {
     const cl = this.clusterOf(k), pct = Math.round(cl / end * 100), chip = cl >= end ? "green" : pct >= 50 ? "teal" : "orange";
-    crows += `<tr><td>${esc(names[k])}</td><td>cluster <b>${cl}</b> / ${end}</td><td><span class="chip ${chip}">${this.isBlocked(k) ? "block done ✓" : pct + "%"}</span></td></tr>`;
+    crows += `<tr><td>${esc(names[k] || k)}</td><td>cluster <b>${cl}</b> / ${end}</td><td><span class="chip ${chip}">${this.isBlocked(k) ? "block done ✓" : pct + "%"}</span></td></tr>`;
   });
   const s7 = Insights.sessionsInWindow(data.workouts, now, 7), s28 = Insights.sessionsInWindow(data.workouts, now, 28);
-  const consChip = s7 >= 3 ? "green" : s7 >= 2 ? "orange" : "red";
+  const consChip = s7 >= 4 ? "green" : s7 >= 3 ? "orange" : "red";
   const allTon = Insights.tonnage(data.workouts, null);
-  const cal = this.calDone();
+  const pumpN = data.workouts.filter(w => w.sessionKey === "pump").length;
   const cons = `<div class="card"><h2>Consistency</h2><table class="mini">
-    <tr><td>Sessions this week</td><td><b>${s7}</b> / 3 target</td><td><span class="chip ${consChip}">${s7 >= 3 ? "on track" : "keep going"}</span></td></tr>
+    <tr><td>Gym sessions this week</td><td><b>${s7}</b> / 4 core</td><td><span class="chip ${consChip}">${s7 >= 4 ? "on track" : "keep going"}</span></td></tr>
     <tr><td>Sessions last 28 days</td><td><b>${s28}</b></td><td><span class="chip teal">≈ ${(s28/4).toFixed(1)}/wk</span></td></tr>
     <tr><td>Total sessions logged</td><td><b>${data.workouts.length}</b></td><td></td></tr>
-    <tr><td>Calisthenics logged</td><td><b>${cal}</b></td><td></td></tr>
+    <tr><td>Pump sessions logged</td><td><b>${pumpN}</b></td><td></td></tr>
     <tr><td>Total volume (all lifts)</td><td><b>${allTon.kg.toLocaleString()} kg</b></td><td></td></tr></table></div>`;
-  return `<div class="card"><h2>Where each day stands</h2><div class="note">Your three gym days progress independently. Each climbs to ${end} clusters this block, then holds for an earned deload.</div><table class="mini"><tr><th>Day</th><th>Cluster</th><th>Block</th></tr>${crows}</table></div>` + cons;
+  return `<div class="card"><h2>Where each day stands</h2><div class="note">Your four strength days progress independently. Each climbs to ${end} clusters this block, then holds for an earned deload. Pump days aren't gated.</div><table class="mini"><tr><th>Day</th><th>Cluster</th><th>Block</th></tr>${crows}</table></div>` + cons;
 };
 
 App.lensActivity = function (data, now) {
@@ -2577,7 +2669,7 @@ App.lensActivity = function (data, now) {
       out += `<div class="card"><h2>🚶 Weekly steps</h2><div class="scrollx"><table class="mini nowrap"><tr>${wks.map(w => `<th style="text-align:center">${esc(w.k.split("-W")[1])}</th>`).join("")}</tr>
         <tr>${wks.map(w => `<td style="text-align:center">${w.v ? Math.round(w.v / 1000) + "k" : "—"}</td>`).join("")}</tr></table></div><div class="note">Total steps per week, Mon–Sun (enter on Sunday).</div></div>`;
     }
-    out += block("walk", "Walk", "🚶") + block("basketball", "Basketball", "🏀") + block("calisthenics", "Calisthenics", "🤸") + block("recovery", "Recovery walk", "🥾");
+    out += block("walk", "Walk", "🚶") + block("basketball", "Basketball", "🏀") + block("pilates", "Pilates", "🧘") + block("recovery", "Recovery walk", "🥾");
   } else {
     out += block("workout", "Workout", "🏋️") + block("movement", "Movement", "🚶") + block("sports", "Sports / workout", "🤾") + block("other", "Other workout", "🧘");
   }
