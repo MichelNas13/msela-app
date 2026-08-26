@@ -321,7 +321,7 @@ try{var _t=localStorage.getItem("msela_theme"); document.documentElement.setAttr
 /* ============ DATA MODEL & SEED (program is data, not code) ============ */
 const STORE_KEY = "uhs_data_v1";
 const OWNER_EMAILS = ["michelnas13@gmail.com"];   // only this account unlocks the full personal program; everyone else gets the commercial experience
-const APP_VERSION = "2026-07-10 · v13.2 · Back-date sessions + catch-up panel (steps & activities)";   // visible build tag — bump on every deploy so we can confirm what's actually live on a device
+const APP_VERSION = "2026-08-26 · v14.0 · The Frame Year — 52-block upper-body macrocycle";   // visible build tag — bump on every deploy so we can confirm what's actually live on a device
 const DEFAULT_DATA = {
   schema: 1,
   profile: { name: "", heightM: 1.75 },
@@ -423,7 +423,7 @@ const DEFAULT_DATA = {
     { id: "annual",  type: "Full health panel",        when: "Annually",  purpose: "Complete blood work + DEXA + full physical.", status: "todo", date: "", result: "" }
   ],
   tombstones: [],  /* {coll,key,at} — deletes that must sync and not resurrect (record-level merge) */
-  programState: { startDate: "2026-05-18" },  /* user-owned programme state, kept separate from the code template (M09/M10) */
+  programState: { startDate: "2026-08-31", programEpoch: "2026-08-31" },  /* user-owned; programEpoch (C4) resets the cluster counter for the Frame Year swap without touching load history */
   stepsLog: {}     /* { "2026-W28": 62000 } — weekly total steps, Mon–Sun (confirmed Sunday) */
 };
 /* ===== extend the program into a 52-week progressive macrocycle ===== */
@@ -526,6 +526,14 @@ function mergeSaved(obj) {
   d.habitsCatalog = structuredClone(DEFAULT_DATA.habitsCatalog);
   // M09/M10: user-owned programme state (start date) is kept separately and re-applied over the template, so it never reverts
   d.programState = Object.assign({ startDate: DEFAULT_DATA.program.startDate }, d.programState || {});
+  // C4: the Frame Year swap forces its epoch + start once, overriding any stale saved startDate, so the
+  // cluster counter resets (dayDone/deloadsDone filter by programEpoch). Idempotent — once the epoch
+  // matches, later user edits to startDate stick. Load history (Prog.lastSet) is never filtered.
+  const frameEpoch = (DEFAULT_DATA.programState && DEFAULT_DATA.programState.programEpoch) || "";
+  if (frameEpoch && d.programState.programEpoch !== frameEpoch) {
+    d.programState.programEpoch = frameEpoch;
+    d.programState.startDate = frameEpoch;
+  }
   if (d.programState.startDate) d.program.startDate = d.programState.startDate;
   return runMigrations(d);
 }
@@ -660,6 +668,210 @@ const SEED_WEIGHTS = {
   "Upper Chest": 40, "Chest Fly": 15, "Triceps": 25, "Row (thickness)": 45, "Wide Cable Row": 50,
   "Leg Curl (hamstrings)": 40, "Calf Raise": 60, "Delt Finisher (optional)": 8
 };
+
+/* =============================================================================
+   MSELA — "The Frame Year" programme pack
+   52-week upper-body-priority macrocycle · starts Mon 31 Aug 2026
+   ADDITIVE INSTALL. Nothing above is deleted or rewritten. Inserted here (after
+   SEED_WEIGHTS, before Prog) so both DEFAULT_DATA and SEED_WEIGHTS are already
+   initialised when FRAME.install() runs — pasting after build52 would hit the
+   SEED_WEIGHTS temporal dead zone and crash at parse time.
+   ============================================================================ */
+const FRAME = (function () {
+  "use strict";
+
+  const START_DATE = "2026-08-31";   // Monday of Week 1
+  const WEEKS = 52;
+
+  const BLOCKS = [
+    { weeks: [1,  6],  name: "BASE I",        params: "Reps 8-12 • RIR 2-3 • controlled eccentrics, groove the form" },
+    { weeks: [7,  12], name: "BASE II",       params: "Reps 8-12 • RIR 2-3 • volume climbing" },
+    { weeks: [13, 18], name: "BUILD I",       params: "Reps 6-10 primaries • RIR 1-2" },
+    { weeks: [19, 24], name: "BUILD II",      params: "Reps 6-10 primaries • RIR 1-2 • peak volume" },
+    { weeks: [25, 30], name: "BUILD III",     params: "Reps 6-10 primaries • RIR 1-2 • hold the peak" },
+    { weeks: [31, 36], name: "INTENSIFY I",   params: "Reps 5-8 primaries • RIR 0-2 • 3 min rest on ★ lifts" },
+    { weeks: [37, 42], name: "INTENSIFY II",  params: "Reps 5-8 primaries • one intensity technique per session" },
+    { weeks: [43, 48], name: "INTENSIFY III", params: "Reps 5-8 primaries • RIR 0-1 on final sets" },
+    { weeks: [49, 52], name: "REFINEMENT",    params: "Mixed 6-15 • isolation focus • laterals and rear delts lead" }
+  ];
+
+  const DELOAD_WEEKS = [];   // EMPTY BY DESIGN — the block gate earns the deload
+
+  const SCHEDULE = {
+    1: { type: "DELTS & CHEST · width first",   kind: "gym",  sessionKey: "pushA",
+         note: "Measure first thing (before food/water), then train. Laterals go FIRST while you're fresh — that ordering is the point. ~7k steps." },
+    2: { type: "BACK · width then thickness",   kind: "gym",  sessionKey: "pullA",
+         note: "Full stretch at the top of every pulldown rep. ~7k steps." },
+    3: { type: "WIDTH & SLEEVES AM + BASKETBALL", kind: "gym", sessionKey: "pump", gated: false, activity: "basketball",
+         note: "Short session 8–9am (delts · triceps · back · biceps). Basketball 6pm • snack 5pm • post-game meal within 90 min." },
+    4: { type: "CHEST & DELTS · press first",   kind: "gym",  sessionKey: "pushB",
+         note: "Heaviest press of the week. Order flips from Monday so chest also gets one fresh exposure. ~7k steps." },
+    5: { type: "WIDTH & SLEEVES AM + BASKETBALL", kind: "gym", sessionKey: "pump", gated: false, activity: "basketball",
+         note: "Short session 8–9am (delts · triceps · back · biceps). Basketball 6pm • snack 5pm • post-game meal within 90 min." },
+    6: { type: "BACK & LEGS · legs last",       kind: "gym",  sessionKey: "pullB",
+         note: "Legs go last, and only today — 4 clear days from the next basketball session. Maintenance volume only. Recovery walk ~14k steps." },
+    0: { type: "REST — completely off",         kind: "rest",
+         note: "No gym. Recovery walk ~14k steps, log the week's total steps, stretch." }
+  };
+
+  const SESSIONS = {
+    pushA: {
+      title: "Mon — Delts & Chest (lateral delts · upper chest · triceps)",
+      slots: [
+        { name: "Lateral Raise",     star: 2, tent: "lateral",  rx: "4 × 12-20",
+          w: ["Cable lateral raise", "DB lateral raise", "Lean-away cable lateral"] },
+        { name: "Incline Press",     star: 1, tent: "incline",  rx: "3 × 6-10",
+          w: ["Incline DB press", "Incline machine press", "Incline Smith press"] },
+        { name: "Chest Press",                                  rx: "2 × 8-12",
+          w: ["Machine chest press", "Weighted dip", "Flat DB press"] },
+        { name: "Overhead Triceps",                             rx: "3 × 10-15",
+          w: ["Overhead cable extension", "DB overhead extension"] },
+        { name: "Lateral Finisher",                             rx: "2 × 15-25",
+          w: ["Lean-away cable lateral", "DB lateral raise", "Machine lateral raise"] }
+      ]
+    },
+    pullA: {
+      title: "Tue — Back (lats · mid-back · rear delts · biceps)",
+      slots: [
+        { name: "Vertical Pull",       star: 1, tent: "pulldown", rx: "3 × 8-12",
+          w: ["Lat pulldown (wide)", "Pull-up", "Neutral-grip pulldown"] },
+        { name: "Chest-Supported Row", star: 1, tent: "row",      rx: "3 × 8-12",
+          w: ["Chest-supported row", "Machine row", "Seal row"] },
+        { name: "Lat Isolation",                                  rx: "2 × 12-15",
+          w: ["Straight-arm pulldown", "Cable pullover"] },
+        { name: "Rear Delts",                                     rx: "3 × 15-20",
+          w: ["Reverse pec deck", "Cable rear fly", "Face pull"] },
+        { name: "Biceps Curl",         star: 1, tent: "curl",     rx: "3 × 8-12",
+          w: ["Incline DB curl", "DB curl", "Cable curl"] }
+      ]
+    },
+    pump: {
+      title: "Wed/Fri AM — Width & sleeves (before basketball)",
+      slots: [
+        { name: "Pump Lateral",      rx: "3 × 12-20",
+          w: ["Cable lateral raise", "DB lateral raise", "Machine lateral raise"] },
+        { name: "Pump Triceps",      rx: "3 × 10-15",
+          w: ["Rope pushdown", "Overhead cable extension", "Cable kickback"] },
+        { name: "Pump Back",         rx: "3 × 10-15",
+          w: ["Neutral-grip pulldown", "Single-arm cable row", "Wide-grip cable row"] },
+        { name: "Pump Biceps",       rx: "3 × 10-15",
+          w: ["Cable curl", "Hammer curl", "Preacher curl"] },
+        { name: "Pump Rear Delts (optional)", rx: "2 × 15-20",
+          w: ["Face pull", "Reverse pec deck", "Cable rear fly"] }
+      ]
+    },
+    pushB: {
+      title: "Thu — Chest & Delts (upper chest · lateral delts · triceps)",
+      slots: [
+        { name: "Incline Press",  star: 1, tent: "incline", rx: "4 × 6-10",
+          w: ["Incline machine press", "Incline DB press", "Incline Smith press"] },
+        { name: "Shoulder Press", star: 1, tent: "ohp",     rx: "3 × 8-12",
+          w: ["Seated DB shoulder press", "Machine shoulder press", "Arnold press"] },
+        { name: "Chest Fly",                                rx: "2 × 12-15",
+          w: ["Low-to-high cable fly", "Pec deck", "Incline cable fly"] },
+        { name: "Lateral Raise",  star: 2, tent: "lateral", rx: "3 × 12-20",
+          w: ["DB lateral raise", "Cable lateral raise", "Machine lateral raise"] },
+        { name: "Triceps",                                  rx: "2 × 8-12",
+          w: ["EZ-bar overhead extension", "Close-grip machine press", "Skull crusher"] }
+      ]
+    },
+    pullB: {
+      title: "Sat — Back & Legs (mid-back · lats · legs last)",
+      slots: [
+        { name: "Row (thickness)",     star: 1, tent: "row", rx: "3 × 8-12",
+          w: ["T-bar row", "Chest-supported row", "Machine row"] },
+        { name: "Vertical Pull",                             rx: "2 × 10-15",
+          w: ["Underhand lat pulldown", "Neutral-grip pulldown", "Assisted pull-up"] },
+        { name: "Leg Press",                                 rx: "3 × 10-15",
+          w: ["Leg press", "Hack squat", "Machine squat"] },
+        { name: "Leg Curl (hamstrings)",                     rx: "3 × 10-15",
+          w: ["Seated leg curl", "Lying leg curl"] },
+        { name: "Biceps Curl",                               rx: "2 × 10-15",
+          w: ["Preacher curl", "Cable curl", "Incline DB curl"] }
+      ]
+    }
+  };
+
+  const NEW_TENTPOLES = {
+    row: { label: "Chest-supported row / T-bar row", start: 20, goal: 34,
+           unit: "kg", targetW16: "≈32-36 kg × 8-10 strict, chest never leaving the pad" }
+  };
+
+  const NEW_SEEDS = {
+    "Lateral Finisher": 6,
+    "Lat Isolation":    25,
+    "Pump Lateral":     8,
+    "Pump Back":        45,
+    "Pump Rear Delts (optional)": 12,
+    "Leg Press":        100
+  };
+
+  function expandRotation(sessions, weeks) {
+    for (const k of Object.keys(sessions)) {
+      for (const slot of sessions[k].slots) {
+        const pool = slot.w.filter(x => x && x !== "—");
+        const out = [];
+        for (let c = 0; c < weeks; c++) out.push(pool[c % pool.length]);
+        slot.w = out;
+      }
+    }
+    return sessions;
+  }
+
+  function install(DEFAULT_DATA, SEED_WEIGHTS) {
+    const p = DEFAULT_DATA.program;
+    p.name         = "The Frame Year — 52-Week Upper-Body Macrocycle";
+    p.startDate    = START_DATE;
+    p.weeks        = WEEKS;
+    p.blocks       = structuredClone(BLOCKS);
+    p.deloadWeeks  = DELOAD_WEEKS.slice();
+    p.schedule     = structuredClone(SCHEDULE);
+    p.sessions     = expandRotation(structuredClone(SESSIONS), WEEKS);
+    p.coreDays     = ["pushA", "pullA", "pushB", "pullB"];   // unchanged — pump stays ungated
+    Object.assign(p.tentpoles, structuredClone(NEW_TENTPOLES));
+    DEFAULT_DATA.programState = Object.assign(
+      {}, DEFAULT_DATA.programState || {}, { startDate: START_DATE }
+    );
+    if (SEED_WEIGHTS) Object.assign(SEED_WEIGHTS, NEW_SEEDS);
+    return p;
+  }
+
+  function splitPump(DEFAULT_DATA, SEED_WEIGHTS) {
+    const p = DEFAULT_DATA.program;
+    p.sessions.pump.title = "Wed AM — Delt width & sleeves (before basketball)";
+    p.sessions.pump.slots = expandRotation({ x: { slots: [
+      { name: "Pump Lateral", rx: "4 × 12-20",
+        w: ["Cable lateral raise", "DB lateral raise", "Machine lateral raise"] },
+      { name: "Pump Triceps", rx: "4 × 10-15",
+        w: ["Rope pushdown", "Overhead cable extension", "Cable kickback"] },
+      { name: "Pump Biceps",  rx: "3 × 10-15",
+        w: ["Cable curl", "Hammer curl", "Preacher curl"] }
+    ]}}, WEEKS).x.slots;
+    p.sessions.pumpB = expandRotation({ x: {
+      title: "Fri AM — Back width & rear delts (before basketball)",
+      slots: [
+        { name: "Pump Back",       rx: "4 × 10-15",
+          w: ["Neutral-grip pulldown", "Wide-grip cable row", "Lat pulldown (wide)"] },
+        { name: "Pump Rear Delts", rx: "4 × 15-20",
+          w: ["Cable rear fly", "Face pull", "Reverse pec deck"] },
+        { name: "Pump Row",        rx: "2 × 10-15",
+          w: ["Single-arm cable row", "Machine row"] }
+      ]
+    }}, WEEKS).x;
+    p.schedule[5].sessionKey = "pumpB";
+    p.schedule[5].type = "BACK WIDTH AM + BASKETBALL";
+    p.schedule[5].note = "Short session 8–9am (lats · rear delts). Basketball 6pm • snack 5pm • post-game meal within 90 min.";
+    if (SEED_WEIGHTS) Object.assign(SEED_WEIGHTS, { "Pump Row": 30 });
+    return p;
+  }
+
+  return { install, splitPump, BLOCKS, DELOAD_WEEKS, SESSIONS, START_DATE, WEEKS };
+})();
+
+/* ---- ACTIVATE (the only executing line) ---- */
+FRAME.install(DEFAULT_DATA, SEED_WEIGHTS);
+// FRAME.splitPump(DEFAULT_DATA, SEED_WEIGHTS);   // C5 — optional, ship separately (see brief §4)
+
 const Prog = {
   range(rx) {
     const tail = String(rx).split("×").pop();
@@ -1035,8 +1247,15 @@ const App = {
   /* ---- LOG (workout) ---- */
   setLogSession(k) { this.logSession = k; this.renderLog(); },
   // current cluster for a day-type = how many of that day's sessions you've logged, + 1 (completion-based)
-  dayDone(key) { return this.data.workouts.filter(w => w.sessionKey === key).length; },
-  deloadsDone() { return (this.data.deloads || []).length; },
+  epoch() { return (this.data.programState && this.data.programState.programEpoch) || ""; },   // C4: cluster counter starts here; load history (Prog.lastSet) stays unfiltered
+  dayDone(key) {
+    const ep = this.epoch();
+    return this.data.workouts.filter(w => w.sessionKey === key && (!ep || w.date >= ep)).length;
+  },
+  deloadsDone() {
+    const ep = this.epoch();
+    return (this.data.deloads || []).filter(d => !ep || d.date >= ep).length;
+  },
   // M27: the deload gate now uses the SAME block lengths as the documented periodisation (the 6-week
   // programme blocks), so the gate and the phase labels never disagree. Past week 52, 6-cluster maintenance blocks.
   blockEnd() {
