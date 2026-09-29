@@ -159,6 +159,8 @@ input:focus-visible,button:focus-visible,select:focus-visible{outline:3px solid 
 .seg.lens{flex-wrap:nowrap; overflow-x:auto; -webkit-overflow-scrolling:touch; scrollbar-width:none}
 .seg.lens::-webkit-scrollbar{display:none}
 .seg.lens button{flex:1 1 auto; min-width:max-content; padding:0 14px}
+/* Day picker: size buttons to their label and wrap to a second row so labels never overlap on narrow phones */
+.seg.days button{flex:1 1 auto; min-width:max-content; padding:0 14px}
 .setin{display:flex; gap:8px; align-items:center}
 .setin{flex-wrap:wrap} .setin input{width:68px; text-align:center}
 /* hide the native number spinners — they clip decimal values like 12.5 and aren't needed here */
@@ -321,7 +323,7 @@ try{var _t=localStorage.getItem("msela_theme"); document.documentElement.setAttr
 /* ============ DATA MODEL & SEED (program is data, not code) ============ */
 const STORE_KEY = "uhs_data_v1";
 const OWNER_EMAILS = ["michelnas13@gmail.com"];   // only this account unlocks the full personal program; everyone else gets the commercial experience
-const APP_VERSION = "2026-09-11 · v14.1 · Sculpt Split — chest · arms · V-taper";   // visible build tag — bump on every deploy so we can confirm what's actually live on a device
+const APP_VERSION = "2026-09-29 · v14.3 · 3-day split — Mon off, Sat = back + legs + biceps";   // visible build tag — bump on every deploy so we can confirm what's actually live on a device
 const DEFAULT_DATA = {
   schema: 1,
   profile: { name: "", heightM: 1.75 },
@@ -329,13 +331,13 @@ const DEFAULT_DATA = {
   program: {
     // Programme content (name, startDate, blocks, schedule, sessions) is installed by the FRAME pack below;
     // only coreDays and the tentpole definitions live here. FRAME overwrites the rest and merges in its row tentpole.
-    coreDays: ["pushA", "pullA", "pushB", "pullB"],   // the 4 progressive strength days that gate deloads (pump days don't)
+    coreDays: ["pushA", "pushB", "pullB"],   // the 3 progressive strength days that gate deloads (Mon/Wed/Fri are open/catch-up)
     tentpoles: {
-      incline:  { label: "Incline DB press",         start: 18, goal: 26, unit: "kg/hand", targetW16: "≈24-28 kg/hand ×8-10" },
-      ohp:      { label: "Seated DB shoulder press",  start: 14, goal: 21, unit: "kg/hand", targetW16: "≈20-22 kg/hand ×8-10" },
-      lateral:  { label: "DB lateral raise",          start: 8,  goal: 13, unit: "kg/hand", targetW16: "≈12-14 kg strict ×12+" },
-      pulldown: { label: "Vertical pull (pulldown / pull-up)", start: 55, goal: 70, unit: "kg", targetW16: "BW pull-up ×8-10 or ≈65-70 kg pulldown ×8" },
-      curl:     { label: "Biceps curl",               start: 10, goal: 15, unit: "kg/hand", targetW16: "≈14-16 kg/hand ×10" }
+      incline:  { label: "Incline DB press",          start: 18, goal: 26, unit: "kg/hand", targetW16: "≈24-28 kg/hand ×8-10" },
+      ohp:      { label: "Arnold press (standing)",    start: 14, goal: 21, unit: "kg/hand", targetW16: "≈20-22 kg/hand ×8-10" },
+      lateral:  { label: "Machine lateral raise",      start: 8,  goal: 13, unit: "kg", targetW16: "≈12-14 kg strict ×12+" },
+      pulldown: { label: "Lat pulldown (wide grip)",   start: 55, goal: 70, unit: "kg", targetW16: "≈65-70 kg × 8" },
+      curl:     { label: "EZ-bar curl",                start: 10, goal: 15, unit: "kg", targetW16: "≈14-16 kg ×10" }
     }
   },
   habitsCatalog: [
@@ -364,7 +366,7 @@ const DEFAULT_DATA = {
     { id: "annual",  type: "Full health panel",        when: "Annually",  purpose: "Complete blood work + DEXA + full physical.", status: "todo", date: "", result: "" }
   ],
   tombstones: [],  /* {coll,key,at} — deletes that must sync and not resurrect (record-level merge) */
-  programState: { startDate: "2026-09-14", programEpoch: "2026-09-14" },  /* user-owned; programEpoch resets the cluster counter on each programme swap (v14.1: Sculpt Split) without touching load history */
+  programState: { startDate: "2026-09-28", programEpoch: "2026-09-28" },  /* user-owned; startDate = week-1 Monday (calendar anchor); programEpoch = when cluster counting starts (v14.3: 3-day split, fresh from Mon 28 Sep). Load history is never filtered. */
   stepsLog: {}     /* { "2026-W28": 62000 } — weekly total steps, Mon–Sun (confirmed Sunday) */
 };
 /* ============ CALCS (ported from workbook, verified) ============ */
@@ -444,13 +446,14 @@ function mergeSaved(obj) {
   d.habitsCatalog = structuredClone(DEFAULT_DATA.habitsCatalog);
   // M09/M10: user-owned programme state (start date) is kept separately and re-applied over the template, so it never reverts
   d.programState = Object.assign({ startDate: DEFAULT_DATA.program.startDate }, d.programState || {});
-  // C4: the Frame Year swap forces its epoch + start once, overriding any stale saved startDate, so the
+  // C4: a programme swap forces its epoch + start-anchor once, overriding any stale saved values, so the
   // cluster counter resets (dayDone/deloadsDone filter by programEpoch). Idempotent — once the epoch
-  // matches, later user edits to startDate stick. Load history (Prog.lastSet) is never filtered.
+  // matches, later user edits stick. Load history (Prog.lastSet) is never filtered. The epoch (when
+  // counting starts) and the startDate (the week-1 Monday the calendar/ICS is anchored to) can differ.
   const frameEpoch = (DEFAULT_DATA.programState && DEFAULT_DATA.programState.programEpoch) || "";
   if (frameEpoch && d.programState.programEpoch !== frameEpoch) {
     d.programState.programEpoch = frameEpoch;
-    d.programState.startDate = frameEpoch;
+    d.programState.startDate = (DEFAULT_DATA.programState && DEFAULT_DATA.programState.startDate) || frameEpoch;
   }
   if (d.programState.startDate) d.program.startDate = d.programState.startDate;
   return runMigrations(d);
@@ -579,15 +582,22 @@ const Logic = {
 // Seeds derived from the lifts you gave (bench ~50kg, curl 12.5kg/arm). Estimates — adjust to feel.
 // Starting anchors (by slot name) — DB moves are per-hand; machines/cables are the stack. Calibrate set 1 to ~2 reps in reserve.
 const SEED_WEIGHTS = {
-  "Incline Press": 18, "Chest Press": 52.5, "Shoulder Press": 14,
-  "Triceps Pushdown": 25, "Overhead Triceps": 12, "Vertical Pull": 55,
-  "Cable Row": 55, "Rear Delts": 15, "Hammer Curl": 12,
-  "Pump Chest": 52.5, "Leg Curl (hamstrings)": 40, "Calf Raise": 60
+  // Cluster-1 calibration hints, keyed by slot role (see FRAME sessions). kg; DB moves are per-hand.
+  // Back + biceps (Sat, with legs)
+  "Lats — vertical": 55, "Mid-back": 55, "Lats — isolation": 25,
+  "Back — unilateral": 24, "Biceps — EZ": 25, "Brachialis": 12,
+  // Chest + triceps (Tue)
+  "Upper chest": 18, "Chest — press": 52.5, "Chest — fly": 45, "Chest — stretch": 22, "Lower chest": 22,
+  "Triceps — overhead": 25, "Triceps — machine": 40, "Triceps — pushdown": 25,
+  // Shoulders + core (Thu)
+  "Side delts": 20, "Shoulders — press": 14, "Rear delts / traps": 20,
+  // Legs (Sat)
+  "Quads": 100, "Hamstrings": 40, "Calves": 60
 };
 
 /* =============================================================================
    MSELA — "Sculpt Split" programme pack (chest · arms · V-taper)
-   52-week upper-body-priority macrocycle · starts Mon 14 Sep 2026
+   Fixed exercise list · 3-day split (Tue/Thu/Sat) · week-1 Mon 28 Sep 2026
    FRAME.install() is the single source of the live programme: it sets the name,
    schedule, sessions, blocks and start date, and merges its own tentpole into the
    ones defined on DEFAULT_DATA.program. Placed here (after SEED_WEIGHTS, before
@@ -597,7 +607,7 @@ const SEED_WEIGHTS = {
 const FRAME = (function () {
   "use strict";
 
-  const START_DATE = "2026-09-14";   // Monday of Week 1 — new split restart (fresh clusters; load history preserved)
+  const START_DATE = "2026-09-28";   // Monday of Week 1 — calendar anchor (counting epoch matches; see programState)
   const WEEKS = 52;
 
   const BLOCKS = [
@@ -615,130 +625,67 @@ const FRAME = (function () {
   const DELOAD_WEEKS = [];   // EMPTY BY DESIGN — the block gate earns the deload
 
   const SCHEDULE = {
-    1: { type: "BACK + BICEPS · V-taper",       kind: "gym",  sessionKey: "pullA",
-         note: "Measure first thing (before food/water), then train. Full stretch at the top of every pulldown. Then a 45-min easy LISS walk. ~7k steps." },
-    2: { type: "CHEST + TRICEPS · priority",    kind: "gym",  sessionKey: "pushA",
-         note: "Your priority day — chest first, hit it fresh. 45-min LISS walk after. ~7k steps." },
-    3: { type: "LATERAL PUMP AM + BASKETBALL",  kind: "gym", sessionKey: "pump", gated: false, activity: "basketball",
-         note: "15-min side-delt pump 8–9am (cable laterals + rear delts). Basketball 6pm • snack 5pm • post-game meal within 90 min." },
-    4: { type: "SHOULDERS + CORE · width",      kind: "gym",  sessionKey: "pushB",
-         note: "Width first — laterals lead, no front raises. Core to finish, then a 45-min LISS walk. ~7k steps." },
-    5: { type: "CHEST PUMP AM + BASKETBALL",    kind: "gym", sessionKey: "pumpB", gated: false, activity: "basketball",
-         note: "15-min chest pump 8–9am (incline/pec-deck + cable fly). Basketball 6pm • snack 5pm • post-game meal within 90 min." },
-    6: { type: "LEGS + WEAK POINTS",            kind: "gym",  sessionKey: "pullB",
-         note: "Maintenance legs, then a flexible weak-point block (2nd chest/delt/arm touch). 45-min LISS walk. Recovery ~14k steps." },
-    0: { type: "REST — completely off",         kind: "rest",
+    1: { type: "OPEN — measure AM",    kind: "mixed",
+         note: "Measure first thing (before food/water). Evenings are usually booked — treat today as open: rest, an easy walk, or catch up a session if you get free." },
+    2: { type: "CHEST + TRICEPS",      kind: "gym",  sessionKey: "pushA",
+         note: "Chest first, hit it fresh. 45-min LISS walk after. ~7k steps." },
+    3: { type: "CATCH-UP / OPTIONAL + BASKETBALL", kind: "mixed", activity: "basketball",
+         note: "No fixed session. Optional short session, or catch up a missed Mon/Tue day. Basketball 6pm • snack 5pm • post-game meal within 90 min." },
+    4: { type: "SHOULDERS + BICEPS + CORE", kind: "gym",  sessionKey: "pushB",
+         note: "Width first — laterals lead, no front raises. Then biceps, then core to finish. 45-min LISS walk. ~7k steps." },
+    5: { type: "CATCH-UP / OPTIONAL + BASKETBALL", kind: "mixed", activity: "basketball",
+         note: "No fixed session. Optional short session, or catch up any missed day this week. Basketball 6pm • snack 5pm • post-game meal within 90 min." },
+    6: { type: "BACK + LEGS",          kind: "gym",  sessionKey: "pullB",
+         note: "Back first while fresh (V-taper priority), then legs. 45-min LISS walk. Recovery ~14k steps." },
+    0: { type: "REST — completely off", kind: "rest",
          note: "No gym. Recovery walk 5–8km, log the week's total steps, stretch." }
   };
 
   const SESSIONS = {
-    pullA: {
-      title: "Mon — Back + Biceps (lats · mid-back · rear delts · biceps)",
-      slots: [
-        { name: "Vertical Pull",  star: 1, tent: "pulldown", rx: "4 × 8-10",
-          w: ["Lat pulldown (wide)", "Neutral-grip pulldown", "Pull-up"] },
-        { name: "Cable Row",      star: 1, tent: "row",      rx: "3-4 × 10-12",
-          w: ["Seated cable row", "Chest-supported row", "Machine row"] },
-        { name: "Lat Isolation",                             rx: "3 × 12-15",
-          w: ["Straight-arm pulldown", "Cable pullover"] },
-        { name: "One-arm DB Row",                            rx: "3 × 10-12",
-          w: ["One-arm DB row", "Single-arm cable row", "Chest-supported DB row"] },
-        { name: "EZ / Preacher Curl", star: 1, tent: "curl", rx: "3 × 8-10",
-          w: ["EZ-bar curl", "Preacher curl", "Barbell curl"] },
-        { name: "Incline Curl",                              rx: "3 × 10-12",
-          w: ["Incline DB curl", "DB curl", "Cable curl"] },
-        { name: "Hammer Curl",                               rx: "3 × 10-12",
-          w: ["Hammer curl", "Rope hammer curl", "Cable hammer curl"] },
-        { name: "Rear Delts",                                rx: "3 × 15-20",
-          w: ["Reverse pec deck", "Face pull", "Cable rear fly"] }
-      ]
-    },
     pushA: {
-      title: "Tue — Chest + Triceps (priority — chest first)",
+      title: "Tue — Chest + Triceps",
       slots: [
-        { name: "Incline Press",   star: 1, tent: "incline", rx: "4 × 8-10",
-          w: ["Incline DB press", "Incline machine press", "Incline Smith press"] },
-        { name: "Chest Press",     star: 1,                  rx: "3 × 10-12",
-          w: ["Machine chest press", "Flat DB press", "Flat barbell press"] },
-        { name: "Pec Deck",                                  rx: "3 × 10-12",
-          w: ["Pec deck", "Cable fly", "Machine fly"] },
-        { name: "Chest Finisher",                            rx: "3 × 10-12",
-          w: ["High-to-low cable fly / Weighted dip", "Decline cable fly"] },
-        { name: "DB Pullover",                               rx: "3 × 10-12",
-          w: ["DB pullover", "Cable pullover"] },
-        { name: "Triceps Compound",                          rx: "3 × 8-10",
-          w: ["Close-grip bench", "Dip machine", "Close-grip machine press"] },
-        { name: "Overhead Triceps",                          rx: "3 × 10-12",
-          w: ["Overhead cable extension", "DB overhead extension", "EZ-bar overhead extension"] },
-        { name: "Triceps Pushdown",                          rx: "3 × 12-15",
-          w: ["Rope pushdown", "Bar pushdown", "Single-arm pushdown"] }
-      ]
-    },
-    pump: {
-      title: "Wed AM — Lateral pump (before basketball)",
-      slots: [
-        { name: "Pump Lateral",  rx: "4 × 15-20",
-          w: ["Cable lateral raise", "Machine lateral raise", "DB lateral raise"] },
-        { name: "Pump Rear Delts", rx: "2 × 15-20",
-          w: ["Face pull", "Reverse pec deck", "Cable rear fly"] }
-      ]
-    },
-    pumpB: {
-      title: "Fri AM — Chest pump (before basketball)",
-      slots: [
-        { name: "Pump Chest",  rx: "3 × 12-15",
-          w: ["Incline machine press", "Pec deck", "Machine chest press"] },
-        { name: "Pump Fly",    rx: "2 × 15",
-          w: ["Cable fly", "High-to-low cable fly", "Pec deck"] }
+        { name: "Upper chest",       star: 1, tent: "incline", rx: "4 × 8-10",  w: ["Incline DB Press"] },
+        { name: "Chest — press",     star: 1,                  rx: "3 × 10-12", w: ["Machine Chest Press"] },
+        { name: "Chest — fly",                                 rx: "3 × 10-12", w: ["Pec Deck"] },
+        { name: "Chest — stretch",                             rx: "3 × 10-12", w: ["DB Pullover"] },
+        { name: "Lower chest",                                 rx: "3 × 10-12", w: ["Close DB Decline Press"] },
+        { name: "Triceps — overhead",                          rx: "3 × 10-12", w: ["Cable Overhead Tricep Extension"] },
+        { name: "Triceps — machine",                           rx: "3 × 10-12", w: ["Tricep Machine (preacher-style)"] },
+        { name: "Triceps — pushdown",                          rx: "3 × 12-15", w: ["Rope Pushdown"] },
+        { name: "Triceps — dips",                              rx: "3 × 8-12",  w: ["Tricep Dips"] }
       ]
     },
     pushB: {
-      title: "Thu — Shoulders + Core (width first)",
+      title: "Thu — Shoulders + Biceps + Core",
       slots: [
-        { name: "Machine Lateral", star: 2, tent: "lateral", rx: "4-5 × 10-15",
-          w: ["Machine lateral raise", "Cable lateral raise", "DB lateral raise"] },
-        { name: "Shoulder Press",  star: 1, tent: "ohp",     rx: "3-4 × 8-10",
-          w: ["Arnold press", "Seated DB shoulder press", "Machine shoulder press"] },
-        { name: "Face Pulls",                                rx: "3-4 × 15-20",
-          w: ["Face pull", "Rope face pull", "Rear-delt cable"] },
-        { name: "Core — anti-extension", rx: "2-3 × 10-12",
-          w: ["Dead bug", "Plank", "Ab wheel"] },
-        { name: "Core — anti-rotation",  rx: "2-3 × 10-12",
-          w: ["Pallof press", "Cable chop", "Bird dog"] },
-        { name: "Core — flexion",        rx: "2-3 × 12-15",
-          w: ["Cable crunch", "Hanging leg raise", "Reverse crunch"] }
+        { name: "Side delts",        star: 2, tent: "lateral", rx: "4 × 10-15", w: ["Machine Lateral Raise"] },
+        { name: "Shoulders — press", star: 1, tent: "ohp",     rx: "3 × 8-10",  w: ["Arnold Press (standing)"] },
+        { name: "Rear delts / traps",                          rx: "3 × 15-20", w: ["Face Pull"] },
+        { name: "Biceps — EZ",       star: 1, tent: "curl",     rx: "3 × 8-10",  w: ["EZ-Bar Curl"] },
+        { name: "Brachialis",                                   rx: "3 × 10-12", w: ["Hammer Curl"] },
+        { name: "Core — flexion",                              rx: "3 × 10-15", w: ["Hanging Leg Raise"] },
+        { name: "Core — abs",                                  rx: "3 × 12-15", w: ["Cable Crunch"] },
+        { name: "Core — brace",                                rx: "3 × 30-60s", w: ["Plank"] }
       ]
     },
     pullB: {
-      title: "Sat — Legs + Weak Points (maintenance + priority top-up)",
+      title: "Sat — Back + Legs",
       slots: [
-        { name: "Leg Press",                                 rx: "3-4 × 10-12",
-          w: ["Leg press", "Hack squat", "Machine squat"] },
-        { name: "Leg Curl (hamstrings)",                     rx: "3 × 10-12",
-          w: ["Seated leg curl", "Lying leg curl"] },
-        { name: "Calf Raise",                                rx: "3 × 15-20",
-          w: ["Standing calf raise", "Seated calf raise", "Leg-press calf press"] },
-        { name: "WP Chest",                                  rx: "2-3 × 10-12",
-          w: ["Incline press", "Machine chest press", "Pec deck"] },
-        { name: "WP Lateral",                                rx: "3 × 15",
-          w: ["Cable lateral raise", "Machine lateral raise"] },
-        { name: "WP Arms",                                   rx: "2-3 × 12-15",
-          w: ["Cable curl", "Rope pushdown", "Preacher curl"] }
+        { name: "Lats — vertical",   star: 1, tent: "pulldown", rx: "3 × 8-10",  w: ["Lat Pulldown (wide grip)"] },
+        { name: "Mid-back",          star: 1, tent: "row",      rx: "3 × 10-12", w: ["Seated Cable Row"] },
+        { name: "Lats — isolation",                             rx: "3 × 12-15", w: ["Straight-Arm Pulldown"] },
+        { name: "Back — unilateral",                            rx: "3 × 10-12", w: ["One-Arm DB Row"] },
+        { name: "Quads",                                        rx: "3 × 10-12", w: ["Leg Press"] },
+        { name: "Hamstrings",                                   rx: "3 × 10-12", w: ["Seated Leg Curl"] },
+        { name: "Calves",                                       rx: "3 × 15-20", w: ["Standing Calf Raise"] }
       ]
     }
   };
 
   const NEW_TENTPOLES = {
-    row: { label: "Chest-supported row / T-bar row", start: 20, goal: 34,
-           unit: "kg", targetW16: "≈32-36 kg × 8-10 strict, chest never leaving the pad" }
-  };
-
-  const NEW_SEEDS = {
-    "Lat Isolation":    25, "Pump Lateral": 8, "Pump Rear Delts": 12, "Leg Press": 100,
-    "One-arm DB Row":   24, "EZ / Preacher Curl": 25, "Incline Curl": 10,
-    "Pec Deck":         45, "Chest Finisher": 30, "DB Pullover": 22, "Triceps Compound": 40,
-    "Machine Lateral":  20, "Face Pulls": 20,
-    "Pump Fly":         15, "WP Chest": 40, "WP Lateral": 8, "WP Arms": 20
+    row: { label: "Seated cable row", start: 20, goal: 34,
+           unit: "kg", targetW16: "≈32-36 kg × 8-10 strict, chest tall, no swing" }
   };
 
   function expandRotation(sessions, weeks) {
@@ -755,19 +702,18 @@ const FRAME = (function () {
 
   function install(DEFAULT_DATA, SEED_WEIGHTS) {
     const p = DEFAULT_DATA.program;
-    p.name         = "Sculpt Split — Chest · Arms · V-Taper (52-week)";
+    p.name         = "Sculpt Split — Chest · Arms · V-Taper (fixed list)";
     p.startDate    = START_DATE;
     p.weeks        = WEEKS;
     p.blocks       = structuredClone(BLOCKS);
     p.deloadWeeks  = DELOAD_WEEKS.slice();
     p.schedule     = structuredClone(SCHEDULE);
     p.sessions     = expandRotation(structuredClone(SESSIONS), WEEKS);
-    p.coreDays     = ["pushA", "pullA", "pushB", "pullB"];   // unchanged — pump stays ungated
+    p.coreDays     = ["pushA", "pushB", "pullB"];   // the 3 gated strength days (Mon open, Wed/Fri catch-up, all ungated)
     Object.assign(p.tentpoles, structuredClone(NEW_TENTPOLES));
     DEFAULT_DATA.programState = Object.assign(
       {}, DEFAULT_DATA.programState || {}, { startDate: START_DATE }
     );
-    if (SEED_WEIGHTS) Object.assign(SEED_WEIGHTS, NEW_SEEDS);
     return p;
   }
 
@@ -911,7 +857,8 @@ const Score = {
       const dISO = Clock.toISO(dt), wd = dt.getDay(), day = data.program.schedule[wd];
       let types = [];
       if (!day) types = [];
-      else if (day.kind === "gym") types = ["strength", day.activity || "walk"];   // Wed/Fri pair with basketball, others with a walk
+      else if (day.kind === "gym") types = ["strength", day.activity || "walk"];   // gym days pair with a walk
+      else if (day.activity) types = [day.activity];   // Wed/Fri catch-up days pair with basketball
       else types = ["recovery"];   // Sunday rest / recovery
       planned += types.length;
       types.forEach(t => { if (has(dISO, t)) done++; });
@@ -1135,7 +1082,7 @@ const App = {
         <div style="margin-top:12px"><button class="btn" onclick="App.completeDeload()">Mark deload done → unlock Block ${bp.block + 1}</button></div></div>`;
     } else {
       const grow = (lbl, have, need) => `<div class="exrow"><div class="n"><b>${lbl}</b></div><span class="chip ${have >= need ? "green" : "teal"}">${Math.min(have, need)}/${need}</span></div>`;
-      const LBL = { pushA: "Push A clusters", pullA: "Pull A clusters", pushB: "Push B clusters", pullB: "Pull B clusters" };
+      const LBL = { pushA: "Chest+Tri clusters", pushB: "Delts+Bi clusters", pullB: "Back+Legs clusters" };
       html += `<div class="card"><h2>Block ${bp.block} → deload progress</h2>
         ${bp.keys.map(k => grow(LBL[k] || k, bp.days[k], bp.end)).join("")}
         <div class="note" style="margin-top:8px">Hit all four strength days to earn your deload.</div></div>`;
@@ -1172,9 +1119,9 @@ const App = {
     if (cl > this.data.program.weeks) return { name: "MAINTENANCE & ATHLETIC", params: "hold gains • minimum effective dose • re-build focus 2-3×/yr" };
     return Clock.block(this.data, cl);
   },
-  coreDays() { return (this.data.program.coreDays || ["pushA", "pullA", "pushB", "pullB"]); },
+  coreDays() { return (this.data.program.coreDays || ["pushA", "pushB", "pullB"]); },
   clusterOf(key) { return Math.min(this.dayDone(key) + 1, this.blockEnd()); },
-  isBlocked(key) { return this.coreDays().includes(key) && this.dayDone(key) >= this.blockEnd(); },  // pump days are never gated
+  isBlocked(key) { return this.coreDays().includes(key) && this.dayDone(key) >= this.blockEnd(); },  // Wed/Fri catch-up days are never gated
   blockProgress() {
     const end = this.blockEnd(), keys = this.coreDays();
     const days = {}; keys.forEach(k => { days[k] = this.dayDone(k); });
@@ -1212,8 +1159,8 @@ const App = {
     const sess = data.program.sessions[this.logSession];
     const cl = this.clusterOf(this.logSession), blk = this.phaseFor(cl);
     let html = `<div class="card"><h2>Log a session</h2>
-      <div class="seg" role="group" aria-label="Day">
-        ${[["pullA","Mon Back"],["pushA","Tue Chest"],["pump","Wed pump"],["pushB","Thu Delts"],["pumpB","Fri pump"],["pullB","Sat Legs"]].map(([k,lab]) => `<button aria-pressed="${k === this.logSession}" onclick="App.setLogSession('${k}')">${lab}</button>`).join("")}
+      <div class="seg days" role="group" aria-label="Day">
+        ${[["pushA","Tue Chest+Tri"],["pushB","Thu Delts+Bi"],["pullB","Sat Back+Legs"]].map(([k,lab]) => `<button aria-pressed="${k === this.logSession}" onclick="App.setLogSession('${k}')">${lab}</button>`).join("")}
       </div>
       <div class="note" style="margin-top:8px"><b>${esc(sess.title)}</b> · Cluster ${cl} of ${data.program.weeks}${blk ? " · " + esc(blk.name) : ""}. Do it and save to advance ${this.logSession.toUpperCase()} to its next cluster.</div>
       <div class="fld" style="margin-top:8px"><label for="log-date">Session date (back-date a forgotten one)</label><input type="date" id="log-date" value="${Clock.toISO(this.now())}" max="${Clock.toISO(this.now())}"></div>
@@ -1991,12 +1938,9 @@ const DataIO = {
     };
     // [sessionKey, day-offset (0=Mon), hour, duration min, label]
     const gym = [
-      ["pullA", 0, 18, 60, "Back + biceps"],
       ["pushA", 1, 18, 60, "Chest + triceps"],
-      ["pump",  2,  8, 20, "Lateral pump (AM)"],
-      ["pushB", 3, 18, 60, "Shoulders + core"],
-      ["pumpB", 4,  8, 20, "Chest pump (AM)"],
-      ["pullB", 5, 11, 60, "Legs + weak points"]
+      ["pushB", 3, 18, 60, "Shoulders + biceps + core"],
+      ["pullB", 5, 11, 75, "Back + legs"]
     ];
     for (let wk = fromWk; wk <= data.program.weeks; wk++) {
       const deload = Clock.isDeload(data, wk), blk = Clock.block(data, wk);
@@ -2341,9 +2285,10 @@ App.dayPlan = function (now, day) {
   if (d === 1) plan.push({ t: "measure", l: "Measure", e: "📏", done: data.measurements.some(m => m.date === today), link: "measure" });
   if (day.kind === "gym") {
     plan.push({ t: "strength", l: "Strength", e: "🏋️", done: data.workouts.some(w => w.date === today), link: "log", sess: day.sessionKey });
-    // Wed/Fri pump days pair with basketball; the other gym days pair with the day's walk.
-    if (day.activity === "basketball") plan.push({ t: "basketball", l: "Basketball", e: "🏀", done: has("basketball"), toggle: true });
-    else plan.push({ t: "walk", l: "Walk", e: "🚶", done: has("walk"), toggle: true });
+    plan.push({ t: "walk", l: "Walk", e: "🚶", done: has("walk"), toggle: true });   // gym days pair with the day's walk
+  } else if (day.activity === "basketball") {
+    // Wed/Fri catch-up days: basketball is the planned activity
+    plan.push({ t: "basketball", l: "Basketball", e: "🏀", done: has("basketball"), toggle: true });
   } else {
     plan.push({ t: "recovery", l: "Recovery walk", e: "🚶", done: has("recovery"), toggle: true });
   }
@@ -2391,7 +2336,8 @@ App.catchUpCard = function (now) {
   const dt = Clock.parseISO(cd), wd = dt.getDay(), day = data.program.schedule[wd];
   const has = t => (data.activities || []).some(a => a.date === cd && a.type === t);
   const opts = [];
-  if (day && day.kind === "gym") opts.push(day.activity === "basketball" ? ["basketball", "🏀 Basketball"] : ["walk", "🚶 Walk"]);
+  if (day && day.activity === "basketball") opts.push(["basketball", "🏀 Basketball"]);
+  else if (day && day.kind === "gym") opts.push(["walk", "🚶 Walk"]);
   else opts.push(["recovery", "🚶 Recovery walk"]);
   opts.push(["pilates", "🧘 Pilates"]);
   const chips = opts.map(([t, l]) => `<button class="pill" aria-pressed="${has(t)}" onclick="App.catchToggle('${t}')">${l}${has(t) ? " ✓" : ""}</button>`).join("");
@@ -2540,7 +2486,7 @@ App.renderData = function () {
       <div class="note" style="margin-top:12px">${data.lastBackup ? "Last export: " + esc(data.lastBackup) : "No export yet — back up now to be safe."}</div>
     </div>
     <div class="card"><h2>Reminders calendar</h2>
-      <div class="note">A <b>.ics</b> for your whole program you import once into your phone calendar: Monday-morning measurement reminders, Sunday weekly-steps prompts, and Mon/Tue/Thu sessions that name each week's exercises, plus basketball, deloads and DEXA/blood/BP checkpoints — each with a 30-minute alert. Native notifications, even offline.</div>
+      <div class="note">A <b>.ics</b> for your whole program you import once into your phone calendar: Monday-morning measurement reminders, Sunday weekly-steps prompts, and Tue/Thu/Sat sessions that name each exercise, plus basketball, deloads and DEXA/blood/BP checkpoints — each with a 30-minute alert. Native notifications, even offline.</div>
       <div style="margin-top:12px"><button class="btn" onclick="DataIO.exportICS()">Download .ics calendar</button></div>
     </div>
     ${this.checkpointsCard()}
@@ -2751,7 +2697,7 @@ App.lensStrength = function (data, now, fmt) {
 };
 
 App.lensTraining = function (data, now) {
-  const days = this.coreDays(), names = { pullA:"Mon · Back+Bi", pushA:"Tue · Chest+Tri", pushB:"Thu · Delts", pullB:"Sat · Legs" };
+  const days = this.coreDays(), names = { pushA:"Tue · Chest+Tri", pushB:"Thu · Delts+Bi", pullB:"Sat · Back+Legs" };
   const end = this.blockEnd();
   let crows = "";
   days.forEach(k => {
@@ -2761,14 +2707,12 @@ App.lensTraining = function (data, now) {
   const s7 = Insights.sessionsInWindow(data.workouts, now, 7), s28 = Insights.sessionsInWindow(data.workouts, now, 28);
   const consChip = s7 >= 4 ? "green" : s7 >= 3 ? "orange" : "red";
   const allTon = Insights.tonnage(data.workouts, null);
-  const pumpN = data.workouts.filter(w => w.sessionKey === "pump" || w.sessionKey === "pumpB").length;
   const cons = `<div class="card"><h2>Consistency</h2><table class="mini">
     <tr><td>Gym sessions this week</td><td><b>${s7}</b> / 4 core</td><td><span class="chip ${consChip}">${s7 >= 4 ? "on track" : "keep going"}</span></td></tr>
     <tr><td>Sessions last 28 days</td><td><b>${s28}</b></td><td><span class="chip teal">≈ ${(s28/4).toFixed(1)}/wk</span></td></tr>
     <tr><td>Total sessions logged</td><td><b>${data.workouts.length}</b></td><td></td></tr>
-    <tr><td>Pump sessions logged</td><td><b>${pumpN}</b></td><td></td></tr>
     <tr><td>Total volume (all lifts)</td><td><b>${allTon.kg.toLocaleString()} kg</b></td><td></td></tr></table></div>`;
-  return `<div class="card"><h2>Where each day stands</h2><div class="note">Your four strength days progress independently. Each climbs to ${end} clusters this block, then holds for an earned deload. Pump days aren't gated.</div><table class="mini"><tr><th>Day</th><th>Cluster</th><th>Block</th></tr>${crows}</table></div>` + cons;
+  return `<div class="card"><h2>Where each day stands</h2><div class="note">Your four strength days progress independently. Each climbs to ${end} clusters this block, then holds for an earned deload. Wed/Fri catch-up days aren't gated.</div><table class="mini"><tr><th>Day</th><th>Cluster</th><th>Block</th></tr>${crows}</table></div>` + cons;
 };
 
 App.lensActivity = function (data, now) {
