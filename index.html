@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<meta name="theme-color" content="#0F2A47">
+<meta name="theme-color" content="#0F1A17">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -20,54 +20,58 @@
 <link rel="apple-touch-startup-image" media="(device-width:375px) and (device-height:812px) and (-webkit-device-pixel-ratio:3) and (orientation:portrait)" href="splash/splash-1125x2436.png">
 <link rel="apple-touch-startup-image" media="(device-width:414px) and (device-height:896px) and (-webkit-device-pixel-ratio:2) and (orientation:portrait)" href="splash/splash-828x1792.png">
 <link rel="apple-touch-startup-image" media="(device-width:375px) and (device-height:667px) and (-webkit-device-pixel-ratio:2) and (orientation:portrait)" href="splash/splash-750x1334.png">
-<title>Msela — Health & Fitness Tracker</title>
+<title>Msela</title>
 <style>
 /* ============================================================
-   MSELA · "Clinical Deep" design system — single source of truth.
+   MSELA · "Still Water" design system — single source of truth.
    Every colour, surface and accent below is a token. Light is the
    default; dark applies automatically with the OS AND via a manual
    [data-theme] override (the in-app toggle). No raw hex outside here.
    ============================================================ */
 :root{
-  /* brand + accent */
-  --navy:#0F2A47;        /* primary text/headings (flips light in dark) */
-  --brand:#0F2A47;       /* navy surfaces that stay navy: header, hero */
-  --brand-2:#163A5E;
-  --accent:#12936A;      /* signature green — CTAs, active, ring */
-  --accent-ink:#0B6B4D;  /* green text on light surfaces */
-  --btn-bg:#0F2A47;      /* primary button fill */
-  --btn-ink:#FFFFFF;
-  --teal:#0E7C72; --teal-soft:#DCEFEC;
-  /* neutrals (cool clinical) */
-  --bg:#F4F7FA; --card:#FFFFFF; --line:#E6ECF2;
-  --slate:#51627A; --slate2:#8A98AC; --cue:#0E7C72;
-  --input:#0050C8;       /* focus ring */
-  /* semantic status */
-  --green:#0B7A4F; --green-chip:#DCF5E9; --red:#B42318; --red-chip:#FCE4E2;
-  --orange:#9A5B12; --orange-chip:#FBEBD2;
-  /* ring + elevation */
-  --ring:#12936A; --ring-track:#E2EAF1; --glow:0 0 0 rgba(0,0,0,0); --on-brand-mute:#9FB4CC;
+  /* MSELA — "Still Water" brand system (single identity, dark) */
+  --navy:#ECF2EE;        /* primary text/headings (ivory) */
+  --brand:#0F1A17;       /* header / hero surface */
+  --brand-2:#15231E;
+  --accent:#8FBFA8;      /* sage — CTAs, active, ring */
+  --accent-ink:#0F1A17;  /* dark ink on sage fills */
+  --btn-bg:#8FBFA8;      /* primary button fill */
+  --btn-ink:#0F1A17;
+  --teal:#7FB7A0; --teal-soft:#1A2A24;
+  /* surfaces */
+  --bg:#0F1A17; --card:#15231E; --line:#243029;
+  --slate:#8FA79C; --slate2:#6E857B; --cue:#8FBFA8;
+  --input:#8FBFA8;       /* focus ring */
+  /* pillar / semantic tints (dimension, not performance) */
+  --body:#7FB7A0; --mind:#8AA2C0; --spirit:#CBA866;
+  --green:#7FB7A0; --green-chip:#1A2E24; --red:#D98A8A; --red-chip:#33201F;
+  --orange:#CBA866; --orange-chip:#2E2719;
+  /* ring + elevation + type */
+  --ring:#8FBFA8; --ring-track:#243029; --glow:0 0 0 rgba(0,0,0,0); --on-brand-mute:#6E857B;
+  --font-voice:Georgia,"Times New Roman",serif;
   --radius:18px;
-  --shadow:0 1px 2px rgba(15,42,71,.06),0 6px 20px rgba(15,42,71,.07);
-  color-scheme:light;
+  --shadow:0 1px 2px rgba(0,0,0,.30),0 8px 24px rgba(0,0,0,.28);
+  color-scheme:dark;
 }
 /* shared dark palette, reused by the OS query and the manual toggle */
 :root[data-theme="dark"]{
-  --navy:#E7EDF4; --brand:#101824; --brand-2:#16202c; --accent:#39E0C3; --accent-ink:#39E0C3;
-  --btn-bg:#39E0C3; --btn-ink:#06201A; --teal:#3FC9BD; --teal-soft:#16302F;
-  --bg:#0B0E13; --card:#121821; --line:#1F2935; --slate:#9AA7B6; --slate2:#6B7787; --cue:#6FE0D4;
-  --input:#7FB3FF; --green:#5FD39B; --green-chip:#13301F; --red:#F1A0A0; --red-chip:#3E1D1D;
-  --orange:#F0B074; --orange-chip:#3A2A16; --ring:#39E0C3; --ring-track:#222C38;
-  --glow:0 0 16px rgba(57,224,195,.45); --shadow:0 1px 3px rgba(0,0,0,.5); color-scheme:dark;
+  --navy:#ECF2EE; --brand:#0F1A17; --brand-2:#15231E; --accent:#8FBFA8; --accent-ink:#0F1A17;
+  --btn-bg:#8FBFA8; --btn-ink:#0F1A17; --teal:#7FB7A0; --teal-soft:#1A2A24;
+  --bg:#0F1A17; --card:#15231E; --line:#243029; --slate:#8FA79C; --slate2:#6E857B; --cue:#8FBFA8;
+  --input:#8FBFA8; --green:#7FB7A0; --green-chip:#1A2E24; --red:#D98A8A; --red-chip:#33201F;
+  --orange:#CBA866; --orange-chip:#2E2719; --ring:#8FBFA8; --ring-track:#243029;
+  --body:#7FB7A0; --mind:#8AA2C0; --spirit:#CBA866;
+  --glow:0 0 0 rgba(0,0,0,0); --shadow:0 1px 3px rgba(0,0,0,.5); color-scheme:dark;
 }
 @media (prefers-color-scheme: dark){
   :root:not([data-theme="light"]){
-    --navy:#E7EDF4; --brand:#101824; --brand-2:#16202c; --accent:#39E0C3; --accent-ink:#39E0C3;
-    --btn-bg:#39E0C3; --btn-ink:#06201A; --teal:#3FC9BD; --teal-soft:#16302F;
-    --bg:#0B0E13; --card:#121821; --line:#1F2935; --slate:#9AA7B6; --slate2:#6B7787; --cue:#6FE0D4;
-    --input:#7FB3FF; --green:#5FD39B; --green-chip:#13301F; --red:#F1A0A0; --red-chip:#3E1D1D;
-    --orange:#F0B074; --orange-chip:#3A2A16; --ring:#39E0C3; --ring-track:#222C38;
-    --glow:0 0 16px rgba(57,224,195,.45); --shadow:0 1px 3px rgba(0,0,0,.5); color-scheme:dark;
+    --navy:#ECF2EE; --brand:#0F1A17; --brand-2:#15231E; --accent:#8FBFA8; --accent-ink:#0F1A17;
+    --btn-bg:#8FBFA8; --btn-ink:#0F1A17; --teal:#7FB7A0; --teal-soft:#1A2A24;
+    --bg:#0F1A17; --card:#15231E; --line:#243029; --slate:#8FA79C; --slate2:#6E857B; --cue:#8FBFA8;
+    --input:#8FBFA8; --green:#7FB7A0; --green-chip:#1A2E24; --red:#D98A8A; --red-chip:#33201F;
+    --orange:#CBA866; --orange-chip:#2E2719; --ring:#8FBFA8; --ring-track:#243029;
+    --body:#7FB7A0; --mind:#8AA2C0; --spirit:#CBA866;
+    --glow:0 0 0 rgba(0,0,0,0); --shadow:0 1px 3px rgba(0,0,0,.5); color-scheme:dark;
   }
 }
 *{box-sizing:border-box; -webkit-tap-highlight-color:transparent}
@@ -222,14 +226,14 @@ nav.tabs button:focus-visible{outline:3px solid var(--input); outline-offset:-3p
 /* welcome / sign-in cover */
 .cover{position:fixed; inset:0; z-index:100; display:flex; align-items:center; justify-content:center;
   padding:28px calc(20px + env(safe-area-inset-left)) calc(28px + env(safe-area-inset-bottom)) calc(20px + env(safe-area-inset-right));
-  background:radial-gradient(120% 80% at 80% 0%, #2a6f73 0%, rgba(42,111,115,0) 55%), linear-gradient(155deg,#0C2440 0%,#143a5e 48%,#1d5a5e 100%);
+  background:radial-gradient(130% 80% at 50% 0%, #15231E 0%, #0F1A17 62%);
   overflow-y:auto;}
 .cover-inner{width:100%; max-width:384px; margin:auto}
 .cover-brand{text-align:center; color:#fff; margin-bottom:24px}
 .cover-logo{width:88px; height:88px; border-radius:24px; box-shadow:0 10px 34px rgba(0,0,0,.40); margin-bottom:16px}
-.cover-name{font-size:36px; font-weight:800; letter-spacing:.5px; line-height:1; margin:0}
-.cover-name::after{content:""; display:block; width:48px; height:3px; background:#39E0C3; border-radius:2px; margin:12px auto 0}
-.cover-tag{font-size:14px; color:#D4E0EC; margin-top:14px; font-weight:600; letter-spacing:.3px}
+.cover-name{font-family:var(--font-voice); font-size:30px; font-weight:500; letter-spacing:.3px; line-height:1; margin:0; color:var(--navy)}
+.cover-name::after{content:""; display:block; width:44px; height:2px; background:var(--spirit); border-radius:2px; margin:14px auto 0}
+.cover-tag{font-size:14px; color:#AEBFB6; margin-top:16px; font-weight:600; letter-spacing:.3px}
 .cover-sub{font-size:13px; color:var(--on-brand-mute); margin-top:3px}
 .cover-card{background:var(--card); border:1px solid var(--line); border-radius:20px; padding:22px 18px; box-shadow:0 20px 56px rgba(0,0,0,.34)}
 .cover-card h2{margin:0 0 3px; font-size:17px; font-weight:700; color:var(--navy); letter-spacing:0; text-transform:none}
@@ -237,93 +241,167 @@ nav.tabs button:focus-visible{outline:3px solid var(--input); outline-offset:-3p
 .cover-btn{margin-top:10px}
 .cover-skip{display:block; width:100%; margin-top:16px; background:none; border:0; color:var(--slate);
   font:inherit; font-size:13.5px; font-weight:600; cursor:pointer; min-height:40px}
-.cover-foot{text-align:center; color:#8FA6BE; font-size:11.5px; margin-top:18px}
-body.commercial nav.tabs button[data-scr="log"]{display:none}
+.cover-foot{text-align:center; color:var(--slate2); font-size:11.5px; margin-top:18px}
+
+/* ===== MSELA 2.0 design system — type gears, pillar accents, M·Score ring ===== */
+.t-hero{font-family:var(--font-voice);font-size:44px;color:var(--navy);line-height:1}
+.t-primary{font-size:18px;color:var(--navy)}
+.t-label{font-size:10px;color:var(--slate);letter-spacing:.15em;text-transform:uppercase}
+.t-support{font-size:12.5px;color:var(--slate)}
+.c-spirit{color:var(--spirit)} .c-body{color:var(--body)} .c-mind{color:var(--mind)}
+.mring{width:146px;height:146px;display:block;margin:0 auto}
+.mring-n{fill:var(--navy);font-family:var(--font-voice);font-size:44px}
+.mring-l{fill:var(--slate);font-size:9.5px;letter-spacing:1px}
+.greet{font-size:14px;color:#AEBFB6}
+.todayrow{display:flex;align-items:center;gap:12px}
+.todayrow .ic{font-size:18px;width:20px;text-align:center}
+.todayrow .nm{flex:1;font-size:14.5px;color:var(--navy)}
+.todayrow .sub{font-size:12px;color:var(--slate);margin-top:1px}
+.todayrow .st{font-size:12.5px;color:var(--slate)}
+.todayrow .act{font-size:12.5px;color:var(--accent);cursor:pointer}
+.tbar{height:3px;background:var(--ring-track);border-radius:2px;margin-top:5px}
+.tbar > div{height:3px;background:var(--body);border-radius:2px}
+.sig{display:flex;justify-content:space-between;text-align:center}
+.sig > div .l{font-size:10px;letter-spacing:.08em}
+.sig > div .v{font-size:21px;color:var(--navy);font-family:var(--font-voice);margin-top:2px}
+.subnav{display:flex;gap:6px;padding:8px 16px 2px;overflow-x:auto;scrollbar-width:none}
+.subnav::-webkit-scrollbar{display:none}
+.subnav button{flex:0 0 auto;border:0;background:var(--card);color:var(--slate);font:inherit;font-size:12.5px;font-weight:600;padding:7px 13px;border-radius:999px;cursor:pointer;white-space:nowrap}
+.subnav button.on{background:var(--brand-2);color:var(--navy)}
+
+/* MSELA 2.0 — Body v2 presence */
+.mring{width:190px;height:190px}
+.greet{font-size:15px}
+.todayrow{padding:13px 2px;border-bottom:1px solid var(--line);gap:11px}
+.todayrow:last-child{border-bottom:0}
+.todayrow .dot{color:var(--body);font-size:9px;line-height:1}
+.todayrow .nm{flex:1;font-size:16px;color:var(--navy)}
+.todayrow .meta{font-size:12px;color:var(--slate2);margin-left:7px}
+.todayrow .st{font-size:13px;color:var(--slate2)}
+.todayrow .act{font-size:13px;color:var(--accent);font-weight:600;border:1px solid var(--line);padding:6px 13px;border-radius:999px;cursor:pointer}
+.bchips{display:flex;gap:8px;padding:2px 2px 12px}
+.bchip{flex:1;text-align:center;padding:9px 4px;border:1px solid var(--line);border-radius:11px;background:none;color:var(--slate);font:inherit;font-size:13px;cursor:pointer}
+.bchip.on{border-color:var(--accent);color:var(--accent)}
+.srow{display:flex;gap:8px;padding:2px 2px 12px}
+.srow input{flex:1;background:var(--bg);border:1px solid var(--line);border-radius:11px;color:var(--navy);font:inherit;font-size:15px;padding:9px 12px}
+.mring-n{font-size:40px}
+nav.tabs button{font-size:10.5px;min-height:60px;color:var(--slate2)}
+nav.tabs button .ic svg{width:22px;height:22px}
+nav.tabs{box-shadow:0 -4px 18px rgba(0,0,0,.22)}
+
+.rlabel{font-size:12px;color:var(--slate)}
+.rval{font-size:16px;color:var(--navy);margin-top:2px}
+.act.sp{color:var(--spirit)}
+
+.bsfpill{font-size:12px;padding:5px 11px;border:1px solid var(--line);border-radius:999px;color:var(--slate);background:none;cursor:pointer;white-space:nowrap}
+.bsfpill.on{color:var(--spirit);border-color:var(--spirit)}
+nav.tabs button{color:var(--slate)}
+@media (min-width:720px){
+  main{max-width:640px;padding-top:28px}
+  .greet{font-size:17px}
+  .mring{width:224px;height:224px}
+  .todayrow{padding:15px 2px}
+  .todayrow .nm,.rval{font-size:18px}
+  .rlabel{font-size:13px}
+  .t-label{font-size:12px}
+  .t-support{font-size:13.5px}
+  .sig > div .v{font-size:26px}
+  .sig > div .l{font-size:11px}
+  .card{padding:22px}
+  nav.tabs button{min-height:66px;font-size:11.5px}
+  nav.tabs button .ic svg{width:24px;height:24px}
+}
+
+.act{display:inline-flex;align-items:center;justify-content:center;font:inherit;font-size:13px;color:var(--body);border:1px solid var(--line);border-radius:999px;padding:6px 14px;background:none;cursor:pointer;white-space:nowrap;line-height:1}
+.act.sp{color:var(--spirit)}
+.act.done{color:var(--slate2)}
+.act.q{color:var(--slate)}
+.act.mini{font-size:12px;padding:5px 11px}
+.act.lg{font-size:15px;padding:12px 24px}
+.act.fill{background:var(--body);color:var(--accent-ink);border-color:var(--body);font-weight:600}
+.act.sp.fill{background:var(--spirit);color:var(--accent-ink);border-color:var(--spirit)}
+.hero .big{font-weight:600;font-size:22px}
+.hero .meta{color:var(--slate)}
+.star{color:var(--spirit)}
+.pill{font:inherit;font-size:13px;color:var(--body);border:1px solid var(--line);border-radius:999px;padding:7px 14px;background:none;cursor:pointer}
+.pill[aria-pressed="true"]{color:var(--accent-ink);background:var(--body);border-color:var(--body)}
+
+.act.md{color:var(--mind)}
+
+.cover-journal{font-family:var(--font-voice);font-size:19px;color:var(--navy);margin-top:18px}
+.cover-found{max-width:360px;margin:10px auto 0}
+.foundrow{display:flex;align-items:center;gap:12px;padding:14px 2px;border-bottom:1px solid var(--line)}
+.foundrow label{flex:0 0 132px;font-size:13px;color:var(--slate);font-weight:500}
+.foundrow input{flex:1;background:none;border:0;color:var(--navy);font:inherit;font-size:16px;text-align:right;min-height:30px}
+.foundrow input::placeholder{color:var(--slate2)}
+.cover-restore{display:block;width:100%;margin-top:14px;background:none;border:0;color:var(--slate2);font:inherit;font-size:12.5px;cursor:pointer;min-height:36px}
 </style>
 <script>/* apply theme before paint to avoid a flash. Dark is the default; a saved choice wins. */
 try{var _t=localStorage.getItem("msela_theme"); document.documentElement.setAttribute("data-theme",(_t==="light"||_t==="dark")?_t:"dark");}catch(e){document.documentElement.setAttribute("data-theme","dark");}</script>
 </head>
 <body>
-<div id="cover" class="cover" role="dialog" aria-label="Welcome to Msela" style="display:none">
-  <div class="cover-inner">
-    <div class="cover-brand">
-      <img src="icon-512.png" alt="Msela logo" class="cover-logo">
-      <h1 class="cover-name">Msela</h1>
-      <div class="cover-tag">Health & Fitness Tracker</div>
-      <div class="cover-sub">Process over outcome.</div>
-    </div>
-    <div class="cover-card">
-      <h2>Sign in to sync everywhere</h2>
-      <div class="cover-note">Your measurements, workouts and habits — kept in sync across every device you use.</div>
-      <div class="fld"><label for="cv-email">Email</label><input type="email" id="cv-email" autocomplete="username" inputmode="email" placeholder="you@email.com"></div>
-      <div class="fld"><label for="cv-pw">Password</label><input type="password" id="cv-pw" autocomplete="current-password" placeholder="Your password"></div>
-      <button class="btn cover-btn" onclick="App.coverLogin()">Log in</button>
-      <button class="btn ghost cover-btn" onclick="App.coverSignup()">Create account</button>
-      <button class="cover-skip" onclick="App.coverSkip()">Continue on this device →</button>
-    </div>
-    <div class="cover-foot">Private to you · works offline · no ads · wellness tracking, not medical advice</div>
-  </div>
-</div>
 <div id="onboard" class="cover" role="dialog" aria-label="Set up your profile" style="display:none">
   <div class="cover-inner">
     <div class="cover-brand">
-      <h1 class="cover-name">Welcome</h1>
-      <div class="cover-tag">Let's set up your profile</div>
-      <div class="cover-sub">Takes 20 seconds. Change anything later in Data.</div>
+      <svg viewBox="0 0 150 150" style="width:72px;height:72px;margin:0 auto 16px;display:block" aria-hidden="true"><path d="M86.75,13.41 A60,60 0 0 1 63.25,13.41" fill="none" stroke="var(--spirit)" stroke-width="7.5" stroke-linecap="round"/><path d="M126.96,45.36 A60,60 0 0 1 128.9,74.22" fill="none" stroke="var(--body)" stroke-width="7.5" stroke-linecap="round"/><path d="M21.1,74.22 A60,60 0 0 1 23.04,45.36" fill="none" stroke="var(--mind)" stroke-width="7.5" stroke-linecap="round"/></svg>
+      <h1 class="cover-name">Msela</h1>
+      <div class="cover-tag">Spirit · Body · Mind</div>
+      <div class="cover-journal">Your journey, Michel.</div>
+      <div class="cover-sub">A life cultivated with intention.</div>
     </div>
-    <div class="cover-card">
-      <h2>About you</h2>
-      <div class="cover-note">Just the basics so your numbers make sense.</div>
-      <div class="fld"><label for="ob-name">Your name</label><input type="text" id="ob-name" autocomplete="given-name" placeholder="First name"></div>
-      <div class="grid2">
-        <div class="fld"><label for="ob-height">Height (m)</label><input type="number" inputmode="decimal" step="0.01" id="ob-height" placeholder="1.75"></div>
-        <div class="fld"><label for="ob-twt">Target weight (kg)</label><input type="number" inputmode="decimal" step="0.1" id="ob-twt" placeholder="optional"></div>
-      </div>
-      <div class="fld"><label for="ob-tw">Target waist (cm)</label><input type="number" inputmode="decimal" step="0.1" id="ob-tw" placeholder="optional"></div>
-      <button class="btn cover-btn" onclick="App.completeOnboarding()">Get started</button>
+    <div class="cover-found">
+      <div class="t-label" style="color:var(--slate);margin-bottom:2px">YOUR FOUNDATION</div>
+      <div class="foundrow"><label for="ob-name">Name</label><input type="text" id="ob-name" autocomplete="given-name" value="Michel" placeholder="Your name"></div>
+      <div class="foundrow"><label for="ob-height">Height (m)</label><input type="number" inputmode="decimal" step="0.01" id="ob-height" placeholder="1.75"></div>
+      <div class="foundrow"><label for="ob-twt">Target weight (kg)</label><input type="number" inputmode="decimal" step="0.1" id="ob-twt" placeholder="optional"></div>
+      <div class="foundrow"><label for="ob-tw">Target waist (cm)</label><input type="number" inputmode="decimal" step="0.1" id="ob-tw" placeholder="optional"></div>
+      <button class="btn cover-btn" style="margin-top:22px" onclick="App.completeOnboarding()">Begin your journey →</button>
+      <button type="button" class="cover-restore" onclick="document.getElementById('ob-import').click()">Restore a backup</button>
+      <input id="ob-import" type="file" accept="application/json,.json" style="position:absolute;width:1px;height:1px;opacity:0" aria-label="Restore a backup file" onchange="DataIO.importJSON(this.files[0]); this.value='';">
     </div>
-    <div class="cover-foot">You can edit all of this anytime under Data → Profile</div>
   </div>
 </div>
 <header class="app">
   <div class="brandwrap">
-    <h1>MSELA</h1>
-    <div class="sub">Health & Fitness Tracker · process over outcome</div>
+    <h1 style="font-family:var(--font-voice);letter-spacing:.5px">Msela</h1>
+    <div class="sub">Spirit · Body · Mind</div>
   </div>
   <div style="display:flex;gap:8px;align-items:center">
-    <button class="themebtn" type="button" aria-label="Data and backup" onclick="App.switchTab('data')">⚙️</button>
-    <button class="themebtn" id="theme-btn" type="button" aria-label="Switch light or dark theme" onclick="App.toggleTheme()">🌙</button>
   </div>
 </header>
 <main>
-  <section id="scr-dash" class="screen active" role="tabpanel" aria-label="Dashboard"></section>
+  <div id="bodysub" class="subnav" style="display:none">
+    <button class="seg" data-sub="dash" onclick="App.switchTab('dash')">Overview</button>
+    <button class="seg" data-sub="today" onclick="App.switchTab('today')">Session</button>
+    <button class="seg" data-sub="log" onclick="App.switchTab('log')">Log</button>
+    <button class="seg" data-sub="track" onclick="App.switchTab('track')">Measure</button>
+    <button class="seg" data-sub="progress" onclick="App.switchTab('progress')">Trends</button>
+  </div>
+  <section id="scr-home" class="screen active" role="tabpanel" aria-label="Today"></section>
+  <section id="scr-spirit" class="screen" role="tabpanel" aria-label="Spirit"></section>
+  <section id="scr-mind" class="screen" role="tabpanel" aria-label="Mind"></section>
+  <section id="scr-dash" class="screen" role="tabpanel" aria-label="Dashboard"></section>
   <section id="scr-today" class="screen" role="tabpanel" aria-label="Today"></section>
   <section id="scr-log" class="screen" role="tabpanel" aria-label="Log workout"></section>
-  <section id="scr-track" class="screen" role="tabpanel" aria-label="Track measurements and habits">
-    <div class="segbar" role="group" aria-label="Track view" style="margin:2px 0 6px">
-      <button type="button" class="seg" id="tv-measure" onclick="App.setTrackView('measure')">Measurements</button>
-      <button type="button" class="seg" id="tv-habits" onclick="App.setTrackView('habits')">Habits</button>
-    </div>
+  <section id="scr-track" class="screen" role="tabpanel" aria-label="Measurements">
     <div id="scr-measure"></div>
-    <div id="scr-habits"></div>
   </section>
   <section id="scr-progress" class="screen" role="tabpanel" aria-label="Progress over time"></section>
   <section id="scr-data" class="screen" role="tabpanel" aria-label="Data and backup"></section>
 </main>
 <div id="toast" class="toast" role="status" aria-live="polite"></div>
 <nav class="tabs" role="tablist" aria-label="Main navigation">
-  <button role="tab" aria-selected="true" data-scr="dash"><span class="ic" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></svg></span>Home</button>
-  <button role="tab" aria-selected="false" data-scr="today"><span class="ic" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M5 5l1.4 1.4M17.6 17.6L19 19M19 5l-1.4 1.4M6.4 17.6L5 19"/></svg></span>Today</button>
-  <button role="tab" aria-selected="false" data-scr="log"><span class="ic" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M6.5 6.5v11M17.5 6.5v11M3.5 9v6M20.5 9v6M6.5 12h11"/></svg></span>Log</button>
-  <button role="tab" aria-selected="false" data-scr="track"><span class="ic" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="4.5" y="3" width="15" height="18" rx="2"/><path d="M8.5 8.5l1.5 1.5 2.5-3M8.5 15l1.5 1.5 2.5-3M15 8h1.5M15 14.5h1.5"/></svg></span>Track</button>
-  <button role="tab" aria-selected="false" data-scr="progress"><span class="ic" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 4v16h16"/><path d="M7 14l3.5-4 3 3L20 7"/></svg></span>Insights</button>
+  <button role="tab" aria-selected="true" data-scr="home"><span class="ic" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="5"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2"/></svg></span>Today</button>
+  <button role="tab" aria-selected="false" data-scr="spirit"><span class="ic" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 3c2 3 5 5 5 9a5 5 0 0 1-10 0c0-4 3-6 5-9z"/></svg></span>Spirit</button>
+  <button role="tab" aria-selected="false" data-scr="dash"><span class="ic" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3 12h4l2-5 3 10 2-5h4"/></svg></span>Body</button>
+  <button role="tab" aria-selected="false" data-scr="mind"><span class="ic" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M9 18h6M10 21h4M12 3a6 6 0 0 1 4 10c-1 1-1 2-1 3H9c0-1 0-2-1-3a6 6 0 0 1 4-10z"/></svg></span>Mind</button>
+  <button role="tab" aria-selected="false" data-scr="data"><span class="ic" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg></span>Me</button>
 </nav>
 <script>
 "use strict";
 /* ============ DATA MODEL & SEED (program is data, not code) ============ */
 const STORE_KEY = "uhs_data_v1";
-const OWNER_EMAILS = ["michelnas13@gmail.com"];   // only this account unlocks the full personal program; everyone else gets the commercial experience
-const APP_VERSION = "2026-09-29 · v14.3 · 3-day split — Mon off, Sat = back + legs + biceps";   // visible build tag — bump on every deploy so we can confirm what's actually live on a device
+const APP_VERSION = "2026-10-09 · v18.0 · MSELA 2.0 · 2027–28 dual-track Journey (OT+NT) · two-era odometer";   // visible build tag — bump on every deploy so we can confirm what's actually live on a device
 const DEFAULT_DATA = {
   schema: 1,
   profile: { name: "", heightM: 1.75 },
@@ -340,19 +418,10 @@ const DEFAULT_DATA = {
       curl:     { label: "EZ-bar curl",                start: 10, goal: 15, unit: "kg", targetW16: "≈14-16 kg ×10" }
     }
   },
-  habitsCatalog: [
-    { id: "meals",  label: "Sodium consistency — cook 5+ meals at home", w: 3 },
-    { id: "water",  label: "Water — steady daily intake", w: 3 },
-    { id: "sleep",  label: "Sleep consistency — bedtime ±30 min", w: 3 },
-    { id: "alcohol",label: "Alcohol-free or ≤2 units", w: 3 },
-    { id: "timing", label: "Consistent meal times", w: 2 },
-    { id: "rhythm", label: "Training rhythm held (no skip-then-cram)", w: 2 }
-  ],
   measurements: [],
   workouts: [],   /* {date, cluster, sessionKey, sets:[{slot, exercise, kg, reps}]} */
   activities: [], /* {date, type:"walk"|"basketball"|"pilates"|"recovery"} — loggable daily confirmations */
   deloads: [],    /* {date} — each completed block deload */
-  habitLog: {},   /* { "2026-W24": {meals:true,...} } */
   checkpoints: [  /* health checkpoints — status: todo|booked|done • date + result are user-entered */
     { id: "dexa1",   type: "DEXA scan — baseline",     when: "Start",     purpose: "Body-composition baseline: fat mass, lean mass, regional distribution, visceral fat, bone density.", status: "todo", date: "", result: "" },
     { id: "blood1",  type: "Blood panel — baseline",   when: "Start",     purpose: "Lipids, HbA1c, fasting glucose, ALT/AST, free testosterone, TSH/free T4, vitamin D, ferritin, creatinine, eGFR.", status: "todo", date: "", result: "" },
@@ -367,7 +436,15 @@ const DEFAULT_DATA = {
   ],
   tombstones: [],  /* {coll,key,at} — deletes that must sync and not resurrect (record-level merge) */
   programState: { startDate: "2026-09-28", programEpoch: "2026-09-28" },  /* user-owned; startDate = week-1 Monday (calendar anchor); programEpoch = when cluster counting starts (v14.3: 3-day split, fresh from Mon 28 Sep). Load history is never filtered. */
-  stepsLog: {}     /* { "2026-W28": 62000 } — weekly total steps, Mon–Sun (confirmed Sunday) */
+  stepsLog: {},    /* weekly total steps */
+  nutrition: {},   /* { "YYYY-MM-DD": "clean"|"ok"|"off" } — daily eating, self-judged */
+  hydration: {},   /* { "YYYY-MM-DD": "high"|"mid"|"low" } — daily water, self-judged */
+  sleep: {},       /* { "YYYY-MM-DD": true } — asleep within ±30 min of 23:00 */
+  steps: {},       /* { "YYYY-MM-DD": 8200 } — actual daily steps */
+  movement: {},   /* { "YYYY-MM-DD": true } — basketball / Sunday-gym completion */
+  sunPlan: {},     /* Sunday’s chosen plan */
+  spirit: { journeyRead: {}, coverage: {}, prayer: {}, bsf: { active: true, weeks: {} }, catchupDone: 0, catchupFrom: 5, catchupTo: 28, catchupTarget: '2026-11-30', catchupLast: null, testimonies: [], prayerReqs: [], bibleLap: 1 },
+  mind: { books: [], items: [], readLog: {} }  /* Mind pillar */
 };
 /* ============ CALCS (ported from workbook, verified) ============ */
 const Calc = {
@@ -413,7 +490,7 @@ function isMinorProfile(profile, now) { const by = profile && profile.birthYear;
 function startOfIsoWeek(d) { const x = new Date(d); const off = (x.getDay() + 6) % 7; x.setHours(0, 0, 0, 0); x.setDate(x.getDate() - off); return x; }
 
 /* ============ STORAGE ============ */
-// Merge a saved/imported file with code defaults. User data wins, but program & habitsCatalog
+// Merge a saved/imported file with code defaults. User data wins, but the programme
 // always come from the current app code (so they can't be resurrected stale from an old backup).
 // Record identity: one natural key per collection — single source of truth for BOTH merge and deletes (M01/M03).
 const REC_KEYS = {
@@ -437,13 +514,34 @@ function runMigrations(d) {
     }
     d.schema = 2;
   }
-  // future: if (!(d.schema >= 3)) { …; d.schema = 3; }
+  if (!(d.schema >= 3)) {                       // v2 → v3: structural only — personal-seeds container. Historical Scripture
+    if (d.spirit) d.spirit.personalSeeds = d.spirit.personalSeeds || {};   // seed moved OUT of migrations into applyPersonalSeeds (one-time, flag-gated)
+    d.schema = 3;
+  }
+  return d;
+}
+// Personal bootstrap — NOT a schema migration. Seeds Michel's real starting Scripture state exactly once, then never again.
+// Gated by spirit.personalSeeds.scripture2026Applied so it cannot be inferred or re-applied on later loads, and it never
+// clobbers an already-seeded (legacy v17.8) dataset or any day Michel has since toggled.
+function applyPersonalSeeds(d) {
+  if (!d || !d.spirit) return d;
+  const ps = d.spirit.personalSeeds = d.spirit.personalSeeds || {};
+  if (ps.scripture2026Applied) return d;                           // already handled once — never reapply
+  const cov = d.spirit.coverage = d.spirit.coverage || {};
+  const alreadySeeded = !!cov['Luke 24'];                          // legacy datasets were seeded before this flag existed → adopt, don't reapply
+  if (!alreadySeeded) {
+    const seedCh = (book, from, to) => { for (let c = from; c <= to; c++) cov[book + ' ' + c] = true; };
+    seedCh('Matthew', 1, 4); seedCh('Mark', 1, 16); seedCh('Luke', 1, 24); seedCh('John', 1, 4);   // Matthew 1–4, Mark 1–16, Luke 1–24, John 1–4
+    const jr = d.spirit.journeyRead = d.spirit.journeyRead || {};
+    if (typeof NT_PLAN !== 'undefined') { for (let i = 0; i < NT_PLAN.length; i++) { if (NT_PLAN[i].d >= 14 && NT_PLAN[i].d <= 32) jr[NT_PLAN[i].date] = true; } }
+    if (!d.spirit.catchupFrom || d.spirit.catchupFrom < 5) d.spirit.catchupFrom = 5;
+  }
+  ps.scripture2026Applied = true;                                  // one-time: set whether we seeded now or adopted an existing seed
   return d;
 }
 function mergeSaved(obj) {
   const d = Object.assign(structuredClone(DEFAULT_DATA), obj || {});
   d.program = structuredClone(DEFAULT_DATA.program);          // exercises/blocks/schedule always come from code (template)
-  d.habitsCatalog = structuredClone(DEFAULT_DATA.habitsCatalog);
   // M09/M10: user-owned programme state (start date) is kept separately and re-applied over the template, so it never reverts
   d.programState = Object.assign({ startDate: DEFAULT_DATA.program.startDate }, d.programState || {});
   // C4: a programme swap forces its epoch + start-anchor once, overriding any stale saved values, so the
@@ -456,7 +554,7 @@ function mergeSaved(obj) {
     d.programState.startDate = (DEFAULT_DATA.programState && DEFAULT_DATA.programState.startDate) || frameEpoch;
   }
   if (d.programState.startDate) d.program.startDate = d.programState.startDate;
-  return runMigrations(d);
+  return applyPersonalSeeds(runMigrations(d));   // structural migrations first, then the one-time personal Scripture bootstrap
 }
 const MIRROR_KEY = STORE_KEY + "_mirror";   // redundant copy: survives a single corrupt write to the main key
 const Store = {
@@ -471,7 +569,7 @@ const Store = {
     for (const key of [STORE_KEY, MIRROR_KEY]) {
       try { const o = this.parseValid(localStorage.getItem(key)); if (o) return mergeSaved(o); } catch (e) {}
     }
-    return structuredClone(DEFAULT_DATA);
+    return mergeSaved({});   // clean install still runs migrations (seeds starting Scripture state)
   },
   save(d, keepStamp) {
     if (!keepStamp) d.updatedAt = new Date().toISOString();   // stamp for cloud-merge conflict resolution (skip on boot-time normalisation)
@@ -486,7 +584,6 @@ const Store = {
       if (typeof toast === "function") toast("⚠ Couldn't save on this device — storage may be full. Export a backup from Data to be safe.");
     }
     if (typeof FileSync !== "undefined" && FileSync.handle) FileSync.write(d); // mirror to linked file if any
-    if (typeof Cloud !== "undefined" && Cloud.user && !Cloud._syncing) Cloud.queuePush();   // push to cloud if signed in (not during an in-progress merge)
   }
 };
 
@@ -565,17 +662,6 @@ const Logic = {
     }
     return { errors, warnings };
   },
-  habitStreak(log, id, now) {
-    const cur = Clock.isoWeekKey(now);
-    let d = new Date(now);
-    if (!(log[cur] && log[cur][id])) d.setDate(d.getDate() - 7); /* current week not ticked yet: don't break streak */
-    let s = 0;
-    for (let i = 0; i < 520; i++) {
-      const k = Clock.isoWeekKey(d);
-      if (log[k] && log[k][id]) { s++; d.setDate(d.getDate() - 7); } else break;
-    }
-    return s;
-  }
 };
 
 /* ============ PROGRESSION COACH (week-1 calibration + double progression) ============ */
@@ -625,20 +711,20 @@ const FRAME = (function () {
   const DELOAD_WEEKS = [];   // EMPTY BY DESIGN — the block gate earns the deload
 
   const SCHEDULE = {
-    1: { type: "OPEN — measure AM",    kind: "mixed",
-         note: "Measure first thing (before food/water). Evenings are usually booked — treat today as open: rest, an easy walk, or catch up a session if you get free." },
-    2: { type: "CHEST + TRICEPS",      kind: "gym",  sessionKey: "pushA",
-         note: "Chest first, hit it fresh. 45-min LISS walk after. ~7k steps." },
-    3: { type: "CATCH-UP / OPTIONAL + BASKETBALL", kind: "mixed", activity: "basketball",
-         note: "No fixed session. Optional short session, or catch up a missed Mon/Tue day. Basketball 6pm • snack 5pm • post-game meal within 90 min." },
-    4: { type: "SHOULDERS + BICEPS + CORE", kind: "gym",  sessionKey: "pushB",
-         note: "Width first — laterals lead, no front raises. Then biceps, then core to finish. 45-min LISS walk. ~7k steps." },
-    5: { type: "CATCH-UP / OPTIONAL + BASKETBALL", kind: "mixed", activity: "basketball",
-         note: "No fixed session. Optional short session, or catch up any missed day this week. Basketball 6pm • snack 5pm • post-game meal within 90 min." },
-    6: { type: "BACK + LEGS",          kind: "gym",  sessionKey: "pullB",
-         note: "Back first while fresh (V-taper priority), then legs. 45-min LISS walk. Recovery ~14k steps." },
-    0: { type: "REST — completely off", kind: "rest",
-         note: "No gym. Recovery walk 5–8km, log the week's total steps, stretch." }
+    1: { type: "REST — measure AM",    kind: "rest",  steps: 1500,
+         note: "Measure first thing (before food/water). Recovery day — recovery ≠ immobility, so a light ~1,500 steps is all that's asked." },
+    2: { type: "CHEST + TRICEPS",      kind: "gym",  sessionKey: "pushA", steps: 7500,
+         note: "Chest first, hit it fresh. 45-min LISS walk after. Step target 7,500." },
+    3: { type: "BASKETBALL",           kind: "mixed", activity: "basketball", steps: null,
+         note: "Basketball is today's prescribed activity. Basketball 6pm • snack 5pm • post-game meal within 90 min. Steps aren't scored today." },
+    4: { type: "SHOULDERS + BICEPS + CORE", kind: "gym",  sessionKey: "pushB", steps: 7500,
+         note: "Width first — laterals lead, no front raises. Then biceps, then core to finish. 45-min LISS walk. Step target 7,500." },
+    5: { type: "BASKETBALL",           kind: "mixed", activity: "basketball", steps: null,
+         note: "Basketball is today's prescribed activity. Basketball 6pm • snack 5pm • post-game meal within 90 min. Steps aren't scored today." },
+    6: { type: "BACK + LEGS",          kind: "gym",  sessionKey: "pullB", steps: 15000,
+         note: "Back first while fresh (V-taper priority), then legs. 45-min LISS walk. Step target 15,000." },
+    0: { type: "FLEXIBLE — walk / gym / rest", kind: "flex", steps: 6000,
+         note: "Your choice this morning: rest, an easy walk, or a catch-up gym session. Light step target 6,000." }
   };
 
   const SESSIONS = {
@@ -775,21 +861,150 @@ const Prog = {
   }
 };
 
-/* ============ SCORES (behaviour Process Score + Health Excellence index) ============ */
+/* ============ SCORES (Health Excellence index) ============ */
+const BIBLE_CANON = [["Genesis", 50], ["Exodus", 40], ["Leviticus", 27], ["Numbers", 36], ["Deuteronomy", 34], ["Joshua", 24], ["Judges", 21], ["Ruth", 4], ["1 Samuel", 31], ["2 Samuel", 24], ["1 Kings", 22], ["2 Kings", 25], ["1 Chronicles", 29], ["2 Chronicles", 36], ["Ezra", 10], ["Nehemiah", 13], ["Esther", 10], ["Job", 42], ["Psalms", 150], ["Proverbs", 31], ["Ecclesiastes", 12], ["Song of Solomon", 8], ["Isaiah", 66], ["Jeremiah", 52], ["Lamentations", 5], ["Ezekiel", 48], ["Daniel", 12], ["Hosea", 14], ["Joel", 3], ["Amos", 9], ["Obadiah", 1], ["Jonah", 4], ["Micah", 7], ["Nahum", 3], ["Habakkuk", 3], ["Zephaniah", 3], ["Haggai", 2], ["Zechariah", 14], ["Malachi", 4], ["Matthew", 28], ["Mark", 16], ["Luke", 24], ["John", 21], ["Acts", 28], ["Romans", 16], ["1 Corinthians", 16], ["2 Corinthians", 13], ["Galatians", 6], ["Ephesians", 6], ["Philippians", 4], ["Colossians", 4], ["1 Thessalonians", 5], ["2 Thessalonians", 3], ["1 Timothy", 6], ["2 Timothy", 4], ["Titus", 3], ["Philemon", 1], ["Hebrews", 13], ["James", 5], ["1 Peter", 5], ["2 Peter", 3], ["1 John", 5], ["2 John", 1], ["3 John", 1], ["Jude", 1], ["Revelation", 22]];
+const BIBLE_TOTAL = 1189;
+const NT_PLAN = [{"d": 1, "date": "2026-09-07", "r": "Matthew 1–3"}, {"d": 2, "date": "2026-09-08", "r": "Matthew 4–5"}, {"d": 3, "date": "2026-09-09", "r": "Matthew 6–7"}, {"d": 4, "date": "2026-09-10", "r": "Matthew 8–9"}, {"d": 5, "date": "2026-09-11", "r": "Matthew 10–12"}, {"d": 6, "date": "2026-09-12", "r": "Matthew 13–14"}, {"d": 7, "date": "2026-09-13", "r": "Matthew 15–16"}, {"d": 8, "date": "2026-09-14", "r": "Matthew 17–18"}, {"d": 9, "date": "2026-09-15", "r": "Matthew 19–21"}, {"d": 10, "date": "2026-09-16", "r": "Matthew 22–23"}, {"d": 11, "date": "2026-09-17", "r": "Matthew 24–25"}, {"d": 12, "date": "2026-09-18", "r": "Matthew 26–27"}, {"d": 13, "date": "2026-09-19", "r": "Matthew 28; Mark 1–2"}, {"d": 14, "date": "2026-09-20", "r": "Mark 3–4"}, {"d": 15, "date": "2026-09-21", "r": "Mark 5–6"}, {"d": 16, "date": "2026-09-22", "r": "Mark 7–8"}, {"d": 17, "date": "2026-09-23", "r": "Mark 9–11"}, {"d": 18, "date": "2026-09-24", "r": "Mark 12–13"}, {"d": 19, "date": "2026-09-25", "r": "Mark 14–15"}, {"d": 20, "date": "2026-09-26", "r": "Mark 16; Luke 1"}, {"d": 21, "date": "2026-09-27", "r": "Luke 2–4"}, {"d": 22, "date": "2026-09-28", "r": "Luke 5–6"}, {"d": 23, "date": "2026-09-29", "r": "Luke 7–8"}, {"d": 24, "date": "2026-09-30", "r": "Luke 9–10"}, {"d": 25, "date": "2026-10-01", "r": "Luke 11–13"}, {"d": 26, "date": "2026-10-02", "r": "Luke 14–15"}, {"d": 27, "date": "2026-10-03", "r": "Luke 16–17"}, {"d": 28, "date": "2026-10-04", "r": "Luke 18–19"}, {"d": 29, "date": "2026-10-05", "r": "Luke 20–22"}, {"d": 30, "date": "2026-10-06", "r": "Luke 23–24"}, {"d": 31, "date": "2026-10-07", "r": "John 1–2"}, {"d": 32, "date": "2026-10-08", "r": "John 3–4"}, {"d": 33, "date": "2026-10-09", "r": "John 5–7"}, {"d": 34, "date": "2026-10-10", "r": "John 8–9"}, {"d": 35, "date": "2026-10-11", "r": "John 10–11"}, {"d": 36, "date": "2026-10-12", "r": "John 12–13"}, {"d": 37, "date": "2026-10-13", "r": "John 14–16"}, {"d": 38, "date": "2026-10-14", "r": "John 17–18"}, {"d": 39, "date": "2026-10-15", "r": "John 19–20"}, {"d": 40, "date": "2026-10-16", "r": "John 21; Acts 1"}, {"d": 41, "date": "2026-10-17", "r": "Acts 2–4"}, {"d": 42, "date": "2026-10-18", "r": "Acts 5–6"}, {"d": 43, "date": "2026-10-19", "r": "Acts 7–8"}, {"d": 44, "date": "2026-10-20", "r": "Acts 9–10"}, {"d": 45, "date": "2026-10-21", "r": "Acts 11–13"}, {"d": 46, "date": "2026-10-22", "r": "Acts 14–15"}, {"d": 47, "date": "2026-10-23", "r": "Acts 16–17"}, {"d": 48, "date": "2026-10-24", "r": "Acts 18–19"}, {"d": 49, "date": "2026-10-25", "r": "Acts 20–22"}, {"d": 50, "date": "2026-10-26", "r": "Acts 23–24"}, {"d": 51, "date": "2026-10-27", "r": "Acts 25–26"}, {"d": 52, "date": "2026-10-28", "r": "Acts 27–28"}, {"d": 53, "date": "2026-10-29", "r": "Romans 1–3"}, {"d": 54, "date": "2026-10-30", "r": "Romans 4–5"}, {"d": 55, "date": "2026-10-31", "r": "Romans 6–7"}, {"d": 56, "date": "2026-11-01", "r": "Romans 8–9"}, {"d": 57, "date": "2026-11-02", "r": "Romans 10–12"}, {"d": 58, "date": "2026-11-03", "r": "Romans 13–14"}, {"d": 59, "date": "2026-11-04", "r": "Romans 15–16"}, {"d": 60, "date": "2026-11-05", "r": "1 Corinthians 1–2"}, {"d": 61, "date": "2026-11-06", "r": "1 Corinthians 3–5"}, {"d": 62, "date": "2026-11-07", "r": "1 Corinthians 6–7"}, {"d": 63, "date": "2026-11-08", "r": "1 Corinthians 8–9"}, {"d": 64, "date": "2026-11-09", "r": "1 Corinthians 10–11"}, {"d": 65, "date": "2026-11-10", "r": "1 Corinthians 12–14"}, {"d": 66, "date": "2026-11-11", "r": "1 Corinthians 15–16"}, {"d": 67, "date": "2026-11-12", "r": "2 Corinthians 1–2"}, {"d": 68, "date": "2026-11-13", "r": "2 Corinthians 3–4"}, {"d": 69, "date": "2026-11-14", "r": "2 Corinthians 5–7"}, {"d": 70, "date": "2026-11-15", "r": "2 Corinthians 8–9"}, {"d": 71, "date": "2026-11-16", "r": "2 Corinthians 10–11"}, {"d": 72, "date": "2026-11-17", "r": "2 Corinthians 12–13"}, {"d": 73, "date": "2026-11-18", "r": "Galatians 1–3"}, {"d": 74, "date": "2026-11-19", "r": "Galatians 4–5"}, {"d": 75, "date": "2026-11-20", "r": "Galatians 6; Ephesians 1"}, {"d": 76, "date": "2026-11-21", "r": "Ephesians 2–3"}, {"d": 77, "date": "2026-11-22", "r": "Ephesians 4–6"}, {"d": 78, "date": "2026-11-23", "r": "Philippians 1–2"}, {"d": 79, "date": "2026-11-24", "r": "Philippians 3–4"}, {"d": 80, "date": "2026-11-25", "r": "Colossians 1–2"}, {"d": 81, "date": "2026-11-26", "r": "Colossians 3–4; 1 Thessalonians 1"}, {"d": 82, "date": "2026-11-27", "r": "1 Thessalonians 2–3"}, {"d": 83, "date": "2026-11-28", "r": "1 Thessalonians 4–5"}, {"d": 84, "date": "2026-11-29", "r": "2 Thessalonians 1–2"}, {"d": 85, "date": "2026-11-30", "r": "2 Thessalonians 3; 1 Timothy 1–2"}, {"d": 86, "date": "2026-12-01", "r": "1 Timothy 3–4"}, {"d": 87, "date": "2026-12-02", "r": "1 Timothy 5–6"}, {"d": 88, "date": "2026-12-03", "r": "2 Timothy 1–2"}, {"d": 89, "date": "2026-12-04", "r": "2 Timothy 3–4; Titus 1"}, {"d": 90, "date": "2026-12-05", "r": "Titus 2–3"}, {"d": 91, "date": "2026-12-06", "r": "Philemon; Hebrews 1"}, {"d": 92, "date": "2026-12-07", "r": "Hebrews 2–3"}, {"d": 93, "date": "2026-12-08", "r": "Hebrews 4–6"}, {"d": 94, "date": "2026-12-09", "r": "Hebrews 7–8"}, {"d": 95, "date": "2026-12-10", "r": "Hebrews 9–10"}, {"d": 96, "date": "2026-12-11", "r": "Hebrews 11–12"}, {"d": 97, "date": "2026-12-12", "r": "Hebrews 13; James 1–2"}, {"d": 98, "date": "2026-12-13", "r": "James 3–4"}, {"d": 99, "date": "2026-12-14", "r": "James 5; 1 Peter 1"}, {"d": 100, "date": "2026-12-15", "r": "1 Peter 2–3"}, {"d": 101, "date": "2026-12-16", "r": "1 Peter 4–5; 2 Peter 1"}, {"d": 102, "date": "2026-12-17", "r": "2 Peter 2–3"}, {"d": 103, "date": "2026-12-18", "r": "1 John 1–2"}, {"d": 104, "date": "2026-12-19", "r": "1 John 3–4"}, {"d": 105, "date": "2026-12-20", "r": "1 John 5; 2 John; 3 John"}, {"d": 106, "date": "2026-12-21", "r": "Jude; Revelation 1"}, {"d": 107, "date": "2026-12-22", "r": "Revelation 2–3"}, {"d": 108, "date": "2026-12-23", "r": "Revelation 4–5"}, {"d": 109, "date": "2026-12-24", "r": "Revelation 6–8"}, {"d": 110, "date": "2026-12-25", "r": "Revelation 9–10"}, {"d": 111, "date": "2026-12-26", "r": "Revelation 11–12"}, {"d": 112, "date": "2026-12-27", "r": "Revelation 13–14"}, {"d": 113, "date": "2026-12-28", "r": "Revelation 15–16"}, {"d": 114, "date": "2026-12-29", "r": "Revelation 17–18"}, {"d": 115, "date": "2026-12-30", "r": "Revelation 19–20"}, {"d": 116, "date": "2026-12-31", "r": "Revelation 21–22"}];
+
+/* ===== 2027–28 Journey · OT primary + NT companion (dual-track) ===== */
+const OT_BOOKS_39=["Genesis","Exodus","Leviticus","Numbers","Deuteronomy","Joshua","Judges","Ruth","1 Samuel","2 Samuel","1 Kings","2 Kings","1 Chronicles","2 Chronicles","Ezra","Nehemiah","Esther","Job","Psalms","Proverbs","Ecclesiastes","Song of Solomon","Isaiah","Jeremiah","Lamentations","Ezekiel","Daniel","Hosea","Joel","Amos","Obadiah","Jonah","Micah","Nahum","Habakkuk","Zephaniah","Haggai","Zechariah","Malachi"];
+const NT_BOOKS_27=["Matthew","Mark","Luke","John","Acts","Romans","1 Corinthians","2 Corinthians","Galatians","Ephesians","Philippians","Colossians","1 Thessalonians","2 Thessalonians","1 Timothy","2 Timothy","Titus","Philemon","Hebrews","James","1 Peter","2 Peter","1 John","2 John","3 John","Jude","Revelation"];
+const PLAN27_RAW="0,1,1,3,1;0,2,2,3,2;0,3,4,3,3;0,5,6,3,4;0,7,8,3,5;0,9,10,3,6;0,11,12,3,7;0,13,14,3,8;0,15,15,3,9;0,16,17,3,10;0,18,18,3,11;0,19,20,3,12;0,21,21,3,13;0,22,22,3,14;0,23,23,3,15;0,24,24,3,16;0,25,25,3,17;0,26,26,3,18;0,27,28,3,19;0,29,30,3,20;0,31,31,3,21;0,32,32,11,1;0,33,33,11,2;0,34,34,11,3;0,35,35,11,4;0,36,36,18,1;0,37,37,18,2;0,38,38,18,3;0,39,39,18,4;0,40,40,18,5;0,41,41,18,6;0,42,42,18,7;0,43,43,18,8;0,44,44,18,9;0,45,45,18,10;0,46,46,18,11;0,47,47,18,12;0,48,48,18,13;0,49,49,2,1;0,50,50,2,2;1,1,1,2,3;1,2,2,2,4;1,3,3,2,5;1,4,4,2,6;1,5,5,2,7;1,6,6,2,8;1,7,7,2,9;1,8,8,2,10;1,9,9,2,11;1,10,10,2,12;1,11,11,2,13;1,12,12,2,14;1,13,13,2,15;1,14,14,2,16;1,15,15,2,17;1,16,16,2,18;1,17,17,2,19;1,18,18,2,20;1,19,19,2,21;1,20,20,2,22;1,21,21,2,23;1,22,22,2,24;1,23,24,5,1;1,25,26,5,2;1,27,28,5,3;1,29,30,5,4;1,31,32,5,5;1,33,34,5,6;1,35,36,5,7;1,37,38,5,8;1,39,39,5,9;1,40,40,5,10;2,1,1,5,11;2,2,2,5,12;2,3,4,5,13;2,5,6,5,14;2,7,8,5,15;2,9,9,5,16;2,10,10,8,1;2,11,11,8,2;2,12,12,8,3;2,13,13,8,4;2,14,14,8,5;2,15,15,8,6;2,16,16,1,1;2,17,17,1,2;2,18,18,1,3;2,19,19,1,4;2,20,20,1,5;2,21,21,1,6;2,22,22,1,7;2,23,23,1,8;2,24,24,1,9;2,25,26,1,10;2,27,27,1,11;3,1,1,1,12;3,2,2,1,13;3,3,3,1,14;3,4,4,1,15;3,5,5,1,16;3,6,6,20,1;3,7,7,20,2;3,8,8,20,3;3,9,9,20,4;3,10,10,20,5;3,11,11,9,1;3,12,12,9,2;3,13,13,9,3;3,14,14,9,4;3,15,15,9,5;3,16,16,9,6;3,17,17,7,1;3,18,18,7,2;3,19,19,7,3;3,20,20,7,4;3,21,21,7,5;3,22,22,7,6;3,23,23,7,7;3,24,24,7,8;3,25,25,7,9;3,26,26,7,10;3,27,27,7,11;3,28,28,7,12;3,29,29,7,13;3,30,30,10,1;3,31,31,10,2;3,32,32,10,3;3,33,34,10,4;3,35,36,22,1;4,1,1,22,2;4,2,2,22,3;4,3,3,22,4;4,4,4,22,5;4,5,5,21,1;4,6,7,21,2;4,8,8,21,3;4,9,10,0,1;4,11,11,0,2;4,12,12,0,3;4,13,13,0,4;4,14,14,0,5;4,15,15,0,6;4,16,16,0,7;4,17,17,0,8;4,18,19,0,9;4,20,21,0,10;4,22,23,0,11;4,24,25,0,12;4,26,27,0,13;4,28,29,0,14;4,30,31,0,15;4,32,32,0,16;4,33,33,0,17;4,34,34,0,18;5,1,1,0,19;5,2,2,0,20;5,3,3,0,21;5,4,4,0,22;5,5,6,0,23;5,7,8,0,24;5,9,9,0,25;5,10,10,0,26;5,11,11,0,27;5,12,12,0,28;5,13,13,19,1;5,14,14,19,2;5,15,16,19,3;5,17,18,19,4;5,19,20,19,5;5,21,22,6,1;5,23,24,6,2;6,1,1,6,3;6,2,2,6,4;6,3,3,6,5;6,4,4,6,6;6,5,5,6,7;6,6,6,6,8;6,7,7,6,9;6,8,8,6,10;6,9,9,6,11;6,10,10,6,12;6,11,11,6,13;6,12,13,6,14;6,14,15,6,15;6,16,17,6,16;6,18,19,12,1;6,20,21,12,2;7,1,2,12,3;7,3,4,12,4;8,1,1,12,5;8,2,2,14,1;8,3,3,14,2;8,4,4,14,3;8,5,5,14,4;8,6,6,14,5;8,7,8,14,6;8,9,9,16,1;8,10,10,16,2;8,11,11,16,3;8,12,12,23,1;8,13,13,24,1;8,14,15,4,1;8,16,17,4,2;8,18,19,4,3;8,20,21,4,4;8,22,23,4,5;8,24,25,4,6;8,26,27,4,7;8,28,29,4,8;8,30,31,4,9;9,1,1,4,10;9,2,2,4,11;9,3,3,4,12;9,4,4,4,13;9,5,6,4,14;9,7,7,4,15;9,8,8,4,16;9,9,9,4,17;9,10,10,4,18;9,11,11,4,19;9,12,12,4,20;9,13,13,4,21;9,14,14,4,22;9,15,16,4,23;9,17,18,4,24;9,19,20,4,25;9,21,22,4,26;9,23,24,4,27;10,1,1,4,28;10,2,2,17,1;10,3,3,15,1;10,4,4,15,2;10,5,5,15,3;10,6,6,15,4;10,7,7,25,1;10,8,9,13,1;10,10,10,13,2;10,11,11,13,3;10,12,12,26,1;10,13,13,26,2;10,14,14,26,3;10,15,15,26,4;10,16,16,26,5;10,17,17,26,6;10,18,18,26,7;10,19,19,26,8;10,20,20,26,9;10,21,21,26,10;10,22,22,26,11;11,1,1,26,12;11,2,2,26,13;11,3,3,26,14;11,4,5,26,15;11,6,6,26,16;11,7,7,26,17;11,8,8,26,18;11,9,9,26,19;11,10,10,26,20;11,11,11,26,21;11,12,12,26,22;11,13,13,0,1;11,14,14,0,2;11,15,15,0,3;11,16,17,0,4;11,18,19,0,5;11,20,21,0,6;11,22,23,0,7;11,24,25,0,8;12,1,1,0,9;12,2,2,0,10;12,3,3,0,11;12,4,4,0,12;12,5,5,0,13;12,6,6,0,14;12,7,7,0,15;12,8,8,0,16;12,9,9,0,17;12,10,11,0,18;12,12,13,0,19;12,14,15,0,20;12,16,16,0,21;12,17,17,0,22;12,18,18,0,23;12,19,19,0,24;12,20,21,0,25;12,22,22,0,26;12,23,23,0,27;12,24,24,0,28;12,25,25,8,1;12,26,26,8,2;12,27,27,8,3;12,28,28,8,4;12,29,29,8,5;13,1,1,8,6;13,2,2,18,1;13,3,3,18,2;13,4,4,18,3;13,5,5,18,4;13,6,7,18,5;13,8,9,18,6;13,10,11,18,7;13,12,13,18,8;13,14,15,18,9;13,16,17,18,10;13,18,19,18,11;13,20,21,18,12;13,22,23,18,13;13,24,25,5,1;13,26,27,5,2;13,28,28,5,3;13,29,29,5,4;13,30,30,5,5;13,31,32,5,6;13,33,34,5,7;13,35,36,5,8;14,1,1,5,9;14,2,2,5,10;14,3,3,5,11;14,4,4,5,12;14,5,6,5,13;14,7,8,5,14;14,9,10,5,15;15,1,1,5,16;15,2,3,3,1;15,4,5,3,2;15,6,6,3,3;15,7,7,3,4;15,8,8,3,5;15,9,9,3,6;15,10,10,3,7;15,11,11,3,8;15,12,12,3,9;15,13,13,3,10;16,1,2,3,11;16,3,5,3,12;16,6,8,3,13;16,9,10,3,14;17,1,1,3,15;17,2,2,3,16;17,3,3,3,17;17,4,4,3,18;17,5,5,3,19;17,6,6,3,20;17,7,7,3,21;17,8,8,11,1;17,9,9,11,2;17,10,10,11,3;17,11,11,11,4;17,12,12,1,1;17,13,13,1,2;17,14,14,1,3;17,15,16,1,4;17,17,18,1,5;17,19,20,1,6;17,21,22,1,7;17,23,24,1,8;17,25,26,1,9;17,27,28,1,10;17,29,30,1,11;17,31,32,1,12;17,33,34,1,13;17,35,36,1,14;17,37,38,1,15;17,39,40,1,16;17,41,42,2,1;18,1,3,2,2;18,4,6,2,3;18,7,8,2,4;18,9,11,2,5;18,12,14,2,6;18,15,17,2,7;18,18,18,2,8;18,19,21,2,9;18,22,23,2,10;18,24,25,2,11;18,26,28,2,12;18,29,30,2,13;18,31,32,2,14;18,33,34,2,15;18,35,36,2,16;18,37,38,2,17;18,39,41,2,18;18,42,44,2,19;18,45,46,2,20;18,47,49,2,21;18,50,51,2,22;18,52,54,2,23;18,55,56,2,24;18,57,59,4,1;18,60,62,4,2;18,63,65,4,3;18,66,67,4,4;18,68,69,4,5;18,70,71,4,6;18,72,73,4,7;18,74,75,4,8;18,76,77,4,9;18,78,78,4,10;18,79,80,4,11;18,81,82,4,12;18,83,85,4,13;18,86,88,4,14;18,89,89,4,15;18,90,91,4,16;18,92,93,4,17;18,94,96,4,18;18,97,99,4,19;18,100,102,4,20;18,103,103,4,21;18,104,104,4,22;18,105,105,4,23;18,106,106,4,24;18,107,107,4,25;18,108,109,4,26;18,110,112,4,27;18,113,115,4,28;18,116,118,9,1;18,119,119,9,2;18,120,122,9,3;18,123,125,9,4;18,126,128,9,5;18,129,131,9,6;18,132,134,6,1;18,135,135,6,2;18,136,137,6,3;18,138,140,6,4;18,141,143,6,5;18,144,145,6,6;18,146,147,6,7;18,148,150,6,8;19,1,1,6,9;19,2,2,6,10;19,3,3,6,11;19,4,4,6,12;19,5,5,6,13;19,6,6,6,14;19,7,7,6,15;19,8,8,6,16;19,9,9,7,1;19,10,10,7,2;19,11,12,7,3;19,13,13,7,4;19,14,15,7,5;19,16,16,7,6;19,17,18,7,7;19,19,19,7,8;19,20,21,7,9;19,22,23,7,10;19,24,25,7,11;19,26,27,7,12;19,28,28,7,13;19,29,29,20,1;19,30,30,20,2;19,31,31,20,3;20,1,2,20,4;20,3,4,20,5;20,5,6,19,1;20,7,8,19,2;20,9,10,19,3;20,11,12,19,4;21,1,2,19,5;21,3,5,10,1;21,6,8,10,2;22,1,2,10,3;22,3,4,10,4;22,5,5,22,1;22,6,7,22,2;22,8,9,22,3;22,10,10,22,4;22,11,12,22,5;22,13,14,23,1;22,15,16,24,1;22,17,18,17,1;22,19,20,14,1;22,21,22,14,2;22,23,24,14,3;22,25,26,14,4;22,27,28,14,5;22,29,30,14,6;22,31,32,16,1;22,33,34,16,2;22,35,36,16,3;22,37,38,15,1;22,39,40,15,2;22,41,42,15,3;22,43,44,15,4;22,45,46,12,1;22,47,48,12,2;22,49,50,12,3;22,51,52,12,4;22,53,54,12,5;22,55,56,13,1;22,57,58,13,2;22,59,60,13,3;22,61,62,21,1;22,63,64,21,2;22,65,66,21,3;23,1,2,25,1;23,3,4,26,1;23,5,6,26,2;23,7,7,26,3;23,8,9,26,4;23,10,10,26,5;23,11,12,26,6;23,13,13,26,7;23,14,15,26,8;23,16,16,26,9;23,17,18,26,10;23,19,19,26,11;23,20,20,26,12;23,21,21,26,13;23,22,22,26,14;23,23,23,26,15;23,24,24,26,16;23,25,25,26,17;23,26,26,26,18;23,27,27,26,19;23,28,28,26,20;23,29,29,26,21;23,30,30,26,22;23,31,31,2,1;23,32,32,2,2;23,33,33,2,3;23,34,35,2,4;23,36,36,2,5;23,37,38,2,6;23,39,40,2,7;23,41,42,2,8;23,43,44,2,9;23,45,46,2,10;23,47,48,2,11;23,49,50,2,12;23,51,52,2,13;24,1,1,2,14;24,2,2,2,15;24,3,3,2,16;24,4,5,2,17;25,1,1,2,18;25,2,2,2,19;25,3,4,2,20;25,5,5,2,21;25,6,6,2,22;25,7,7,2,23;25,8,8,2,24;25,9,9,0,1;25,10,10,0,2;25,11,11,0,3;25,12,12,0,4;25,13,13,0,5;25,14,14,0,6;25,15,15,0,7;25,16,16,0,8;25,17,18,0,9;25,19,19,0,10;25,20,20,0,11;25,21,21,0,12;25,22,22,0,13;25,23,23,0,14;25,24,25,0,15;25,26,27,0,16;25,28,29,0,17;25,30,31,0,18;25,32,33,0,19;25,34,35,0,20;25,36,37,0,21;25,38,39,0,22;25,40,41,0,23;25,42,43,0,24;25,44,45,0,25;25,46,47,0,26;25,48,48,0,27;26,1,1,0,28;26,2,2,1,1;26,3,3,1,2;26,4,4,1,3;26,5,5,1,4;26,6,6,1,5;26,7,8,1,6;26,9,10,1,7;26,11,12,1,8;27,1,2,1,9;27,3,5,1,10;27,6,8,1,11;27,9,11,1,12;27,12,14,1,13;28,1,1,1,14;28,2,3,1,15;29,1,2,1,16;29,3,4,3,1;29,5,7,3,2;29,8,9,3,3;30,1,1,3,4;31,1,2,3,5;31,3,4,3,6;32,1,2,3,7;32,3,4,3,8;32,5,7,3,9;33,1,3,3,10;34,1,3,3,11;35,1,3,3,12;36,1,2,3,13;37,1,2,3,14;37,3,4,3,15;37,5,6,3,16;37,7,8,3,17;37,9,11,3,18;37,12,14,3,19;38,1,2,3,20;38,3,4,3,21";
+const PLAN27_THEMES=[[1,"Knowing the Person of Christ"],[63,"Understanding His finished work"],[106,"Discovering our identity in Christ"],[137,"Living in fellowship and maturity"],[202,"Understanding God’s eternal purpose"],[261,"God’s promises and their fulfilment"],[324,"God’s nature revealed in Christ"],[389,"God’s presence and His people"],[457,"God’s character reflected in His children"],[487,"God’s sovereignty and completed purpose"],[521,"The life and teachings of Jesus (provisional)"]];
+const OT_PLAN_2027 = (function(){
+  const rows = PLAN27_RAW.split(';').map(s=>s.split(',').map(Number));
+  const start = Clock.parseISO('2027-01-01');
+  const themeAt = (dn)=>{ let t=PLAN27_THEMES[0][1]; for(let i=0;i<PLAN27_THEMES.length;i++){ if(dn>=PLAN27_THEMES[i][0]) t=PLAN27_THEMES[i][1]; } return t; };
+  return rows.map(function(r,i){
+    const ob=r[0],f=r[1],t=r[2],nb=r[3],nc=r[4];
+    const d=new Date(start); d.setDate(d.getDate()+i);
+    const otRead=OT_BOOKS_39[ob]+' '+f+(t>f?('\u2013'+t):'');
+    const ntRead=NT_BOOKS_27[nb]+' '+nc;
+    const dn=i+1;
+    return { d:dn, n:dn, N:rows.length, prog:'ot2027', dual:true, date:Clock.toISO(d), r:otRead, nt:ntRead, cycle:Math.floor(i/260)+1, theme:themeAt(dn) };
+  });
+})();
+NT_PLAN.forEach(function(e){ e.n=e.d; e.N=NT_PLAN.length; e.prog='nt2026'; e.dual=false; if(e.nt===undefined)e.nt=null; if(e.theme===undefined)e.theme=null; });
+const SCR_ENTRIES = NT_PLAN.concat(OT_PLAN_2027);
+const NT_SET = (function(){ const names=new Set(NT_BOOKS_27); const s=new Set(); BIBLE_CANON.forEach(function(x){ if(names.has(x[0])) for(let c=1;c<=x[1];c++) s.add(x[0]+' '+c); }); return s; })();
+
+const PRAYER_FOCUS = {0:"Thanksgiving",1:"Marriage",2:"Children",3:"Ministry",4:"Work",5:"Family",6:"Friends"};
+const Scripture = {
+  chaptersOf(reading) {
+    const out = [];
+    String(reading).split(';').forEach(part => {
+      part = part.trim();
+      const m = part.match(/^(.*?)\s+(\d+)(?:[–-](\d+))?$/);
+      if (m) { const b = m[1].trim(), a = +m[2], c = m[3] ? +m[3] : a; for (let i = a; i <= c; i++) out.push(b + " " + i); }
+      else if (part) { out.push(part + " 1"); }
+    });
+    return out;
+  },
+  _byDate: null,
+  dateMap() { if (!this._byDate) { this._byDate = {}; for (let i = 0; i < SCR_ENTRIES.length; i++) this._byDate[SCR_ENTRIES[i].date] = SCR_ENTRIES[i]; } return this._byDate; },
+  entryForDate(iso) { return this.dateMap()[iso] || null; },
+  progForDate(iso) { return iso <= '2026-12-31' ? 'nt2026' : 'ot2027'; },
+  entriesOfProg(prog) { return SCR_ENTRIES.filter(e => e.prog === prog); },
+  planDayNumByDate(iso) { const e = this.dateMap()[iso]; return e ? e.n : null; },
+  prescribedThrough(iso) { const prog = this.progForDate(iso); let n = 0; for (const e of SCR_ENTRIES) { if (e.prog === prog && e.date <= iso) n = e.n; } return n; },
+  progLen(iso) { return this.progForDate(iso) === 'nt2026' ? NT_PLAN.length : OT_PLAN_2027.length; },
+  progLabel(iso) { return this.progForDate(iso) === 'nt2026' ? '116-Day New Testament' : 'Whole-Bible Journey · OT + NT companion'; },
+  progLastDate(iso) { const es = this.entriesOfProg(this.progForDate(iso)); return es[es.length - 1].date; },
+  lastDate() { return SCR_ENTRIES[SCR_ENTRIES.length - 1].date; },
+  ntSet() { return NT_SET; },
+  catchupInfo(data, now) {
+    const s = data.spirit || {};
+    const from = s.catchupFrom || 4, to = s.catchupTo || 28, total = to - from + 1, done = s.catchupDone || 0, remaining = total - done;
+    if (remaining <= 0) return { complete: true, done: done, total: total, from: from, to: to };
+    const target = s.catchupTarget || '2026-11-30';
+    const daysLeft = Math.max(1, Math.round((Clock.parseISO(target) - now) / 86400000));
+    const interval = Math.max(1, Math.floor(daysLeft / remaining));
+    const perWeek = Math.max(1, Math.round(remaining / (daysLeft / 7)));
+    const since = s.catchupLast ? Math.round((now - Clock.parseISO(s.catchupLast)) / 86400000) : 999;
+    const mon = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][(+target.slice(5,7)) - 1];
+    return { complete: false, done: done, total: total, remaining: remaining, nextRef: 'Matthew ' + (from + done), perWeek: perWeek, interval: interval, dueToday: since >= interval, target: target, targetLabel: (+target.slice(8,10)) + ' ' + mon, daysLeft: daysLeft };
+  }
+};
+
 const Score = {
-  weekPct(habitLog, weekKey, catalog) {
-    const log = habitLog[weekKey] || {};
-    let got = 0, tot = 0;
-    catalog.forEach(h => { tot += h.w; if (log[h.id]) got += h.w; });
-    return tot ? Math.round(got / tot * 100) : 0;
+  bodyBreakdown(data, now, win) {
+    win = win || 7;
+    const sched = data.program.schedule, toISO = Clock.toISO, parse = Clock.parseISO;
+    const todayISO = toISO(now);
+    const days = [];
+    for (let i = win - 1; i >= 0; i--) { const dd = new Date(now); dd.setDate(dd.getDate() - i); days.push(toISO(dd)); }
+    const band = { clean: 100, ok: 70, off: 30, high: 100, mid: 70, low: 30 };
+    const minKey = obj => { let m = null; for (const k in (obj || {})) { if (m === null || k < m) m = k; } return m; };
+    const firstWorkout = (data.workouts || []).reduce((m, w) => (m === null || w.date < m) ? w.date : m, null);
+    const minOf = (a, b) => (a && b) ? (a < b ? a : b) : (a || b);
+    const sun = iso => (data.sunPlan && data.sunPlan[iso]) || null;
+    // Generic dimension scorer honouring the four denominator states.
+    const dim = (firstLog, scheduled, value) => {
+      if (!firstLog) return null;                       // never logged => no data => excluded
+      let sum = 0, cnt = 0;
+      for (const iso of days) {
+        if (iso < firstLog) continue;                   // pre-adoption => N/A
+        const day = sched[parse(iso).getDay()];
+        if (!scheduled(iso, day)) continue;             // not prescribed => N/A
+        const v = value(iso, day);                      // null = not logged
+        if (v == null) { if (iso === todayISO) continue; sum += 0; cnt++; continue; }  // today pending excluded; past missing = 0
+        sum += v; cnt++;
+      }
+      return cnt ? Math.round(sum / cnt) : null;
+    };
+    const movement = dim(
+      minOf(minKey(data.movement), firstWorkout),
+      (iso, day) => !!day && (day.kind === "gym" || (day.kind === "mixed" && day.activity === "basketball") || (day.kind === "flex" && sun(iso) === "gym")),
+      (iso, day) => day.kind === "gym" ? ((data.workouts || []).some(w => w.date === iso) ? 100 : null) : ((data.movement && data.movement[iso]) ? 100 : null)
+    );
+    const activity = dim(
+      minKey(data.steps),
+      (iso, day) => !!(day && day.steps != null),
+      (iso, day) => { const s = data.steps && data.steps[iso]; return s == null ? null : Math.min(100, Math.round(s / day.steps * 100)); }
+    );
+    const nutrition = dim(minKey(data.nutrition), () => true, iso => { const v = data.nutrition && data.nutrition[iso]; return (v && band[v] != null) ? band[v] : null; });
+    const hydration = dim(minKey(data.hydration), () => true, iso => { const v = data.hydration && data.hydration[iso]; return (v && band[v] != null) ? band[v] : null; });
+    const rband = { on: 100, close: 70, off: 30 };
+    const recovery = dim(minKey(data.sleep), () => true, iso => { const v = data.sleep && data.sleep[iso]; return (v && rband[v] != null) ? rband[v] : null; });
+    const W = { nutrition: 30, movement: 25, recovery: 20, activity: 15, hydration: 10 };
+    const dims = { movement: movement, activity: activity, nutrition: nutrition, hydration: hydration, recovery: recovery };
+    let num = 0, den = 0;
+    for (const k in dims) { if (dims[k] != null) { num += W[k] * dims[k]; den += W[k]; } }   // renormalise across active dimensions
+    const body = den ? Math.round(num / den) : null;
+    const coverage = den / 100;                                  // active prescribed weight / total (0..1)
+    return { body: body, movement: movement, activity: activity, nutrition: nutrition, hydration: hydration, recovery: recovery, win: win, coverage: coverage, coveragePct: Math.round(coverage * 100) };
   },
-  recentProcess(habitLog, catalog, now) {                 // avg of weeks with any ticks, last 4
-    const scored = Clock.weekKeysBack(now, 4)
-      .filter(k => habitLog[k] && Object.keys(habitLog[k]).length)
-      .map(k => this.weekPct(habitLog, k, catalog));
-    return scored.length ? Math.round(scored.reduce((a, c) => a + c, 0) / scored.length) : null;
+  spiritBreakdown(data, now, win) {
+    win = win || 7;
+    const s = data.spirit || {}, toISO = Clock.toISO, parse = Clock.parseISO, todayISO = toISO(now);
+    const days = []; for (let i = win - 1; i >= 0; i--) { const dd = new Date(now); dd.setDate(dd.getDate() - i); days.push(toISO(dd)); }
+    const weekMonISO = (d) => { const dt = parse(d), dow = (dt.getDay() + 6) % 7, m = new Date(dt); m.setDate(m.getDate() - dow); return toISO(m); };
+    const jr = s.journeyRead || {}; const jk = Object.keys(jr); const firstRead = jk.length ? jk.sort()[0] : null;
+    const journey = (() => { if (!firstRead) return null; let sum = 0, cnt = 0; for (const iso of days) { const e = Scripture.entryForDate(iso); if (!e) continue; if (iso < firstRead) continue; const rec = jr[iso]; const frac = e.dual ? (((rec === true || (rec && rec.ot)) ? 0.5 : 0) + ((rec === true || (rec && rec.nt)) ? 0.5 : 0)) : (rec ? 1 : 0); if (frac > 0) { sum += frac * 100; cnt++; } else if (iso < todayISO) { sum += 0; cnt++; } } return cnt ? Math.round(sum / cnt) : null; })();
+    const prayer = (() => { const pk = Object.keys(s.prayer || {}); if (!pk.length) return null; const first = pk.sort()[0]; let sum = 0, cnt = 0; for (const iso of days) { if (iso < first) continue; if ((s.prayer || {})[iso]) { sum += 100; cnt++; } else if (iso < todayISO) { sum += 0; cnt++; } } return cnt ? Math.round(sum / cnt) : null; })();
+    const bsf = (() => { const b = s.bsf; if (!b || !b.active) return null; const wks = b.weeks || {}; const wkKeys = Object.keys(wks); if (!wkKeys.length) return null; const firstW = wkKeys.sort()[0]; const curW = weekMonISO(todayISO); const val = w => (w.r && w.q) ? 100 : ((w.r || w.q) ? 50 : 0); if (win <= 7) { if (curW < firstW) return null; const w = wks[curW]; return (w && w.r && w.q) ? 100 : null; } let sum = 0, cnt = 0; for (let wm = parse(weekMonISO(days[0])); toISO(wm) <= curW; wm.setDate(wm.getDate() + 7)) { const wmISO = toISO(wm); if (wmISO < firstW) continue; const w = wks[wmISO]; const isCur = wmISO === curW; if (w && w.r && w.q) { sum += 100; cnt++; } else if (isCur) {} else { sum += (w ? val(w) : 0); cnt++; } } return cnt ? Math.round(sum / cnt) : null; })();
+    const testimony = (() => { const ts = s.testimonies || []; if (!ts.length) return null; const firstW = weekMonISO(ts.map(t => t.date).sort()[0]); const curW = weekMonISO(todayISO); if (win <= 7) { if (curW < firstW) return null; const sun = toISO(new Date(parse(curW).getTime() + 6 * 86400000)); return ts.some(t => t.date >= curW && t.date <= sun) ? 100 : null; } let sum = 0, cnt = 0; for (let wm = parse(weekMonISO(days[0])); toISO(wm) <= curW; wm.setDate(wm.getDate() + 7)) { const wmISO = toISO(wm); if (wmISO < firstW) continue; const sun = toISO(new Date(wm.getTime() + 6 * 86400000)); const has = ts.some(t => t.date >= wmISO && t.date <= sun); const isCur = wmISO === curW; if (has) { sum += 100; cnt++; } else if (!isCur) { sum += 0; cnt++; } } return cnt ? Math.round(sum / cnt) : null; })();
+    const W = { journey: 30, prayer: 30, bsf: 20, testimony: 20 };
+    const dims = { journey: journey, prayer: prayer, bsf: bsf, testimony: testimony };
+    let num = 0, den = 0; for (const k in dims) { if (dims[k] != null) { num += W[k] * dims[k]; den += W[k]; } }
+    const spirit = den ? Math.round(num / den) : null;
+    return { spirit: spirit, journey: journey, prayer: prayer, bsf: bsf, testimony: testimony, win: win, coverage: den / 100, coveragePct: Math.round(den / 100 * 100) };
   },
-  // M19: resting-HR scored against evidence bands (not an ad-hoc curve). Very low is NOT auto-rewarded to 100
+  mindBreakdown(data, now, win) {
+    win = win || 7;
+    const m = data.mind || {}, toISO = Clock.toISO, todayISO = toISO(now);
+    const readLog = m.readLog || {}, items = m.items || [];
+    const learned = iso => ((readLog[iso] || []).length > 0) || items.some(i => i.date === iso);
+    let first = null; const upd = d => { if (d && (first === null || d < first)) first = d; };
+    Object.keys(readLog).forEach(upd); items.forEach(i => upd(i.date));
+    if (!first) return { mind: null, win: win, coverage: 0, coveragePct: 0 };
+    const days = []; for (let i = win - 1; i >= 0; i--) { const dd = new Date(now); dd.setDate(dd.getDate() - i); days.push(toISO(dd)); }
+    let learnedN = 0, counted = 0;
+    for (const iso of days) { if (iso < first) continue; if (iso === todayISO && !learned(iso)) continue; counted++; if (learned(iso)) learnedN++; }
+    if (!counted) return { mind: null, win: win, coverage: 0, coveragePct: 0 };
+    const mind = Math.min(100, Math.round(learnedN / counted * 100 * 7 / 6));
+    return { mind: mind, win: win, coverage: 1, coveragePct: 100 };
+  },  // M19: resting-HR scored against evidence bands (not an ad-hoc curve). Very low is NOT auto-rewarded to 100
   // (it can be athletic OR bradycardia), and elevated is flagged for review rather than silently averaged.
   rhr(v) {
     if (v == null) return null;
@@ -871,7 +1086,6 @@ const Score = {
     const personal = (typeof App !== "undefined" && App.isPersonal && App.isPersonal());
     const comp = [
       { k: "Body", v: this.body(briW, data.targets && data.targets.bri), w: personal ? 25 : 30 },
-      { k: "Behaviour", v: this.recentProcess(data.habitLog, data.habitsCatalog, now), w: personal ? 25 : 35 },
       { k: "Fitness", v: this.fitness(last), w: personal ? 20 : 35 }
     ];
     if (personal) {   // Strength & Activity are the structured-programme signals (owner only)
@@ -952,22 +1166,32 @@ const Insights = {
     const cut = new Date(now.getTime() - days * 86400000);
     return (workouts || []).filter(w => Clock.parseISO(w.date) >= cut).length;
   },
-  habitAdherence(habitLog, catalog, now, nWeeks) {
-    const keys = Clock.weekKeysBack(now, nWeeks);
-    return catalog.map(hb => {
-      let hit = 0; keys.forEach(k => { if (habitLog[k] && habitLog[k][hb.id]) hit++; });
-      return { label: hb.label || hb.id, pct: Math.round(hit / nWeeks * 100), hit, of: nWeeks };
-    });
-  },
-  processTrend(habitLog, catalog, now, nWeeks) {
-    return Clock.weekKeysBack(now, nWeeks).map(k => ({
-      week: k,
-      pct: (habitLog[k] && Object.keys(habitLog[k]).length) ? Score.weekPct(habitLog, k, catalog) : null
-    }));
-  }
 };
 
 /* ============ UI HELPERS ============ */
+
+/* M·Score ring — three arcs (Spirit/Body/Mind), each filled to its pillar score; headline = average of present pillars */
+const MSCORE_W = { spirit: 45, body: 35, mind: 20 };
+function mscoreRing(sp, bd, md) {
+  const cx = 75, cy = 75, r = 60, span = 96;
+  const P = a => { const t = a * Math.PI / 180; return [(cx + r * Math.sin(t)).toFixed(2), (cy - r * Math.cos(t)).toFixed(2)]; };
+  const arc = (a0, a1) => { const [sx, sy] = P(a0), [ex, ey] = P(a1), large = Math.abs(a1 - a0) > 180 ? 1 : 0; return "M" + sx + "," + sy + " A" + r + "," + r + " 0 " + large + " 1 " + ex + "," + ey; };
+  const seg = (center, pct, varName) => {
+    const start = center - span / 2, end = center + span / 2;
+    let out = '<path d="' + arc(start, end) + '" fill="none" stroke="var(--ring-track)" stroke-width="7.5" stroke-linecap="round"/>';
+    if (pct != null) { const fe = start + span * (Math.max(0, Math.min(100, pct)) / 100); out += '<path d="' + arc(start, fe) + '" fill="none" stroke="var(' + varName + ')" stroke-width="7.5" stroke-linecap="round"/>'; }
+    return out;
+  };
+  const vals = [sp, bd, md].filter(v => v != null);
+  const msp = [["spirit", sp], ["body", bd], ["mind", md]].filter(x => x[1] != null);
+  let wnum = 0, wden = 0; msp.forEach(x => { wnum += MSCORE_W[x[0]] * x[1]; wden += MSCORE_W[x[0]]; });
+  const head = msp.length >= 2 ? Math.round(wnum / wden) : null;
+  return '<svg viewBox="0 0 150 150" class="mring" aria-hidden="true">' +
+    seg(0, sp, "--spirit") + seg(120, bd, "--body") + seg(240, md, "--mind") +
+    '<text x="75" y="80" text-anchor="middle" class="mring-n">' + (head == null ? "&#8212;" : head) + '</text>' +
+    '<text x="75" y="97" text-anchor="middle" class="mring-l">M·SCORE</text></svg>';
+}
+
 function esc(s) { return String(s).replace(/[&<>"']/g, c => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[c])); }
 function toast(msg) {
   const t = document.getElementById("toast");
@@ -1004,34 +1228,26 @@ const App = {
     if (hasData && ageDays >= 14)
       setTimeout(() => toast(lastB ? "Backup is " + Math.round(ageDays) + " days old — open Data to Copy/Export" : "No backup yet — open Data to Copy/Export your history"), 1400);
   },
-  trackView: "measure",   // Track tab sub-view (M45): "measure" | "habits"
-  renderAll() { this.renderToday(); this.renderLog(); this.renderMeasure(); this.renderHabits(); this.applyTrackView(); },
+  renderAll() { this.renderToday(); this.renderLog(); this.renderMeasure(); this.renderHome(); },
   initNav() {
     const btns = document.querySelectorAll("nav.tabs button");
     btns.forEach(btn => btn.addEventListener("click", () => this.switchTab(btn.dataset.scr)));
   },
-  setTrackView(v) { this.trackView = v; this.applyTrackView(); },
-  applyTrackView() {
-    const m = document.getElementById("scr-measure"), h = document.getElementById("scr-habits");
-    if (!m || !h) return;
-    const showM = this.trackView !== "habits";
-    m.style.display = showM ? "block" : "none";
-    h.style.display = showM ? "none" : "block";
-    const bm = document.getElementById("tv-measure"), bh = document.getElementById("tv-habits");
-    if (bm) bm.classList.toggle("on", showM);
-    if (bh) bh.classList.toggle("on", !showM);
-  },
   switchTab(name) {
-    // Measure & Habits now live inside the single Track tab (M45); route legacy calls there.
-    if (name === "measure" || name === "habits") { this.trackView = name; name = "track"; }
-    document.querySelectorAll("nav.tabs button").forEach(b => b.setAttribute("aria-selected", b.dataset.scr === name ? "true" : "false"));
+    if (name === "measure" || name === "habits") name = "track";
+    const BODY = ["dash", "today", "log", "track", "progress"];
+    const world = name === "home" ? "home" : BODY.indexOf(name) !== -1 ? "body" : name;
+    const navKey = world === "body" ? "dash" : world;
+    document.querySelectorAll("nav.tabs button").forEach(b => b.setAttribute("aria-selected", b.dataset.scr === navKey ? "true" : "false"));
     document.querySelectorAll(".screen").forEach(s => s.classList.remove("active"));
-    document.getElementById("scr-" + name).classList.add("active");
-    // re-render read-only views each time they're opened so they always reflect the latest data
-    const fn = { today: "renderToday", track: "renderTrack", dash: "renderDash", progress: "renderProgress", data: "renderData" }[name];
+    const target = document.getElementById("scr-" + name); if (target) target.classList.add("active");
+    const sub = document.getElementById("bodysub"); if (sub) sub.style.display = world === "body" ? "flex" : "none";
+    if (world === "body") document.querySelectorAll("#bodysub button").forEach(b => b.classList.toggle("on", b.dataset.sub === name));
+    const fn = { home: "renderHome", spirit: "renderSpirit", mind: "renderMind", today: "renderToday", track: "renderTrack", dash: "renderDash", progress: "renderProgress", data: "renderData" }[name];
     if (fn && typeof this[fn] === "function") this[fn]();
+    try { window.scrollTo(0, 0); } catch (e) {}
   },
-  renderTrack() { this.renderMeasure(); this.renderHabits(); this.applyTrackView(); },
+  renderTrack() { this.renderMeasure(); },
 
   /* ---- TODAY ---- */
   renderToday() {
@@ -1043,7 +1259,6 @@ const App = {
     const last = data.measurements[data.measurements.length - 1];
     let briTxt = "—", zone = null;
     if (last && last.waistCm) { const b = Calc.bri(last.waistCm, data.profile.heightM); briTxt = b.toFixed(2); zone = Calc.briZone(b); }
-    if (!this.isPersonal()) { el.innerHTML = this.commercialToday(now, dateStr, last, briTxt, zone); return; }
     const isGym = day.kind === "gym";
     const cl = isGym ? this.clusterOf(day.sessionKey) : null;
     const blk = isGym ? this.phaseFor(cl) : null;
@@ -1065,11 +1280,11 @@ const App = {
         const ex = this.exFor(slot, cl);
         const stars = slot.star ? ' <span class="star">' + "★".repeat(slot.star) + "</span>" : "";
         const sug = Prog.suggest(data, day.sessionKey, slot, ex);
-        html += `<div class="exrow"><div class="n"><b>${esc(ex)}${stars}</b><span>${esc(slot.name)} • ${esc(slot.rx)}</span>
-          <span class="cue ${sug.mode === "up" ? "up" : ""}">${esc(sug.text)}</span></div></div>`;
+        const cue = (sug.mode === "up") ? `<span class="cue up">${esc(sug.text)}</span>` : "";
+        html += `<div class="exrow"><div class="n"><b>${esc(ex)}${stars}</b><span>${esc(slot.name)} · ${esc(slot.rx)}</span>${cue}</div></div>`;
       });
       html += `<div class="note" style="margin-top:10px">${esc(day.note)}</div>
-        <div style="margin-top:12px"><button class="btn" onclick="App.setLogSession('${day.sessionKey}');App.switchTab('log')">Log this session</button></div></div>`;
+        <div style="margin-top:12px"><button class="act lg fill" onclick="App.setLogSession('${day.sessionKey}');App.switchTab('log')">Log this session</button></div></div>`;
     } else if (day.kind === "mixed") {
       html += `<div class="card"><h2>${esc(day.type)}</h2><div class="note">${esc(day.note)}</div></div>`;   // confirmations handled by the plan card above
     } else {
@@ -1371,67 +1586,371 @@ const App = {
     this.data.measurements.splice(idx, 1); Store.save(this.data); this.renderMeasure(); this.renderToday();
   },
 
-  /* ---- HABITS ---- */
-  renderHabits() {
-    const data = this.data, el = document.getElementById("scr-habits");
-    const now = this.now(), curKey = Clock.isoWeekKey(now);
-    const wkLog = data.habitLog[curKey] || {};
-    const pct = Score.weekPct(data.habitLog, curKey, data.habitsCatalog);
-    let html = `<div class="card"><h2>This week — ${esc(curKey)} • Process ${pct}%</h2>
-      <div class="note">The six vital-few behaviours, weighted by impact (×3 high, ×2 medium). Tick what you held this week.</div>`;
-    data.habitsCatalog.forEach(h => {
-      const on = !!wkLog[h.id];
-      const streak = Logic.habitStreak(data.habitLog, h.id, now);
-      html += `<button class="toggle" aria-pressed="${on}" onclick="App.toggleHabit('${esc(h.id)}')">
-        <span class="box" aria-hidden="true">${on ? "✓" : ""}</span>${esc(h.label)}
-        <span class="stk">×${h.w}${streak > 0 ? " • " + streak + "wk" : ""}</span></button>`;
-    });
-    html += `</div><div class="card"><h2>Last 12 weeks</h2>`;
-    const keys = Clock.weekKeysBack(now, 12);
-    data.habitsCatalog.forEach(h => {
-      html += `<div class="note" style="margin-top:8px">${esc(h.label)}</div><div class="heat" role="img" aria-label="${esc(h.label)} last 12 weeks">`;
-      keys.forEach(k => { html += `<div class="${data.habitLog[k] && data.habitLog[k][h.id] ? "on" : ""}" title="${esc(k)}"></div>`; });
-      html += `</div>`;
-    });
-    html += `</div>`;
-    const NOISE = [
-      ["HIGH","Standardise sodium across the week","Water is retained in response to sodium changes, not absolute levels — inconsistent sodium causes 1–2 kg swings.","Cook 5+ meals at home weekly"],
-      ["HIGH","Drink water consistently, not reactively","Erratic intake makes the body hoard water; steady 3–3.5 L daily gives stable readings.","750 ml bottle × 4 daily"],
-      ["HIGH","Protect sleep consistency","Cortisol regulation depends on circadian consistency — 7 h every night beats 6 h/9 h alternating.","Fixed bedtime, ±30 min"],
-      ["HIGH","Minimise alcohol","Affects fluid balance, disrupts sleep for 24–48 h, elevates cortisol.","None Mon–Fri, ≤2 units weekend"],
-      ["HIGH","Eat at consistent times","Gut motility and hunger hormones adapt to your schedule.","Lunch 1–2pm, dinner 8–9pm"],
-      ["MED","Keep a consistent training rhythm","Random skips or back-to-back hard days shift inflammation, causing 0.5–1.5 kg fluid retention.","Weekly schedule fixed"],
-      ["MED","Time carbs to training days","Each gram of glycogen binds 3–4 g water; random evening carbs add water overnight.","Carbs at lunch on training days"],
-      ["MED","Keep fibre intake steady","Going low→high fibre suddenly creates 24–48 h bloating.","Greens + legumes every weekday"],
-      ["MED","Don't chase food variety","Same proteins, veg and carbs = familiar gut response = predictable scale.","Same 5–6 proteins Mon–Fri"],
-      ["MED","Manage stress proactively","Cortisol from work, family and sleep loss directly drives water retention.","Walk 30 min on the hardest day"],
-      ["LOW","Limit creatine cycling","Creatine adds 1–2 kg intracellular water on start, loses it on stop.","3–5 g daily, or skip"],
-      ["LOW","Be careful with NSAIDs","Ibuprofen and naproxen affect fluid balance.","Only when truly needed"],
-      ["LOW","Watch caffeine timing","Coffee past 2pm disrupts sleep, looping to cortisol and water retention.","Last coffee by 2pm"],
-      ["LOW","Standardise the weigh-in","Same conditions remove measurement noise.","Same scale, same time, weekly"]
-    ];
-    const riskCls = { HIGH: "red", MED: "orange", LOW: "teal" };
-    let noiseRows = NOISE.map((n, i) =>
-      `<div style="padding:8px 0;border-bottom:1px solid var(--line)"><b>${i + 1}. ${esc(n[1])}</b> <span class="chip ${riskCls[n[0]]}">${n[0]}</span>
-        <div class="note" style="margin-top:3px">${esc(n[2])}</div>
-        <div class="note" style="margin-top:2px"><b>Quick win:</b> ${esc(n[3])}</div></div>`).join("");
-    html += `<div class="card"><details class="proto"><summary>Why these habits — weight-noise control guide</summary>
-      <div class="note" style="margin:8px 0">Habits ranked by impact. The top 4 eliminate 60–70% of preventable weight noise — the day-to-day scale swings that aren't real fat change.</div>
-      ${noiseRows}</details></div>`;
-    el.innerHTML = html;
-  },
-  toggleHabit(id) {
-    const k = Clock.isoWeekKey(this.now());
-    const log = this.data.habitLog;
-    log[k] = log[k] || {};
-    log[k][id] = !log[k][id];
-    Store.save(this.data); this.renderHabits();
-  }
 };
+
+/* ---- MSELA 2.0 world renderers ---- */
+
+App.bodyPillar = function (now) { try { return Score.bodyBreakdown(this.data, now || this.now(), 7).body; } catch (e) { return null; } };
+App.renderHome = function () {
+  const el = document.getElementById("scr-home"); if (!el) return;
+  const data = this.data, now = this.now(), d = now.getDay(), hr = now.getHours();
+  const part = hr < 12 ? "Good morning" : hr < 18 ? "Good afternoon" : "Good evening";
+  const nm = ((data.profile && data.profile.name) || "").trim();
+  const iso = Clock.toISO(now), day = data.program.schedule[d];
+  const body = this.bodyPillar(now), spirit = this.spiritPillar(now), mind = this.mindPillar(now);
+  const _mw = { spirit: 45, body: 35, mind: 20 };
+  const _pres = [["spirit", spirit], ["body", body], ["mind", mind]].filter(x => x[1] != null);
+  let _cn = 0, _cd = 0; _pres.forEach(x => { _cn += _mw[x[0]] * x[1]; _cd += _mw[x[0]]; });
+  const composite = _pres.length >= 2 ? Math.round(_cn / _cd) : null;
+  const exp = this._exp || null;
+  const sig = (c, lbl, v) => '<div><div class="l" style="color:var(' + c + ')">' + lbl + '</div><div class="v">' + (v == null ? "—" : v) + '</div></div>';
+  const srow = (label, value, right, rightCls, onclick) => '<div class="todayrow"><div style="flex:1"><div class="rlabel">' + esc(label) + '</div><div class="rval">' + value + '</div></div>' + (right ? ('<div class="' + rightCls + '"' + (onclick ? ' onclick="' + onclick + '"' : '') + '>' + right + '</div>') : '') + '</div>';
+  const bchip = (lbl, onclick, on) => '<button type="button" class="bchip' + (on ? ' on' : '') + '" onclick="' + onclick + '">' + esc(lbl) + '</button>';
+
+  /* ---- SPIRIT ---- */
+  const s = this.spirit();
+  let srows = "";
+  const te = Scripture.entryForDate(iso);
+  if (te && te.dual) {
+    const rec = s.journeyRead[iso]; const otd = rec === true || (rec && rec.ot); const ntd = rec === true || (rec && rec.nt);
+    srows += '<div class="todayrow"><div style="flex:1"><div class="rlabel">Scripture · Old Testament</div><div class="rval">' + esc(te.r) + '</div></div><div class="' + (otd ? 'act sp done' : 'act sp') + '" onclick="App.readJourneyDate(\'' + iso + '\',\'ot\')">' + (otd ? '✓' : 'Read') + '</div></div>';
+    srows += '<div class="todayrow"><div style="flex:1"><div class="rlabel">Companion · New Testament</div><div class="rval">' + esc(te.nt) + '</div><div class="t-support" style="font-size:11px;margin-top:1px">' + esc(te.theme) + '</div></div><div class="' + (ntd ? 'act sp done' : 'act sp') + '" onclick="App.readJourneyDate(\'' + iso + '\',\'nt\')">' + (ntd ? '✓' : 'Read') + '</div></div>';
+  }
+  else if (te) { const jdone = !!s.journeyRead[iso]; srows += srow('Scripture', esc(te.r), jdone ? '✓' : 'Read', jdone ? 'act sp done' : 'act sp', "App.readJourney()"); }
+  else srows += srow('Scripture', iso > Scripture.lastDate() ? 'Plan complete ✓' : 'Journey begins 7 Sep', '', '', '');
+  const prayed = s.prayer[iso];
+  srows += srow('Prayer of the day', esc(PRAYER_FOCUS[d]), prayed ? '✓' : 'Pray', prayed ? 'act sp done' : 'act sp', "App.togglePrayer()");
+  if (s.bsf.active) {
+    const bw = (s.bsf.weeks && s.bsf.weeks[this.weekMon(now)]) || { r: false, q: false };
+    const bsfp = (lbl, pt, on) => '<span class="act mini ' + (on ? 'sp' : 'q') + '" onclick="App.toggleBsf(\'' + pt + '\')">' + lbl + (on ? ' ✓' : '') + '</span>';
+    srows += '<div class="todayrow"><div style="flex:1"><div class="rlabel">BSF Study</div><div class="rval">This week · Reading · Questions</div></div><div style="display:flex;gap:6px;align-items:center">' + bsfp('Reading', 'r', bw.r) + bsfp('Questions', 'q', bw.q) + '</div></div>';
+  }
+  const ci = Scripture.catchupInfo(data, now);
+  if (ci && !ci.complete) {
+    const pace = ci.dueToday ? ('Due today \u00b7 \u2248' + ci.perWeek + '/wk to ' + ci.targetLabel) : ('\u2248' + ci.perWeek + '/wk \u00b7 on pace');
+    srows += '<div class="todayrow"><div style="flex:1"><div class="rlabel" style="font-size:11px">Catch-up \u00b7 Matthew</div><div class="rval" style="font-size:14px;color:var(--slate)">' + ci.nextRef + '</div><div class="t-support" style="font-size:11px;margin-top:1px">' + pace + '</div></div><div class="act mini ' + (ci.dueToday ? 'sp' : 'q') + '" onclick="App.readCatchup()">Read</div></div>';
+  }
+  if (d === 0 && !this.testimonyThisWeek(now)) {
+    srows += srow('Testimony', 'Record this week’s remembrance', 'Write', 'act sp', "App.switchTab('spirit')");
+  }
+
+  /* ---- BODY ---- */
+  let rows = "";
+  const stepsRow = (target) => {
+    const sv = data.steps && data.steps[iso];
+    const content = sv != null ? (target != null ? Number(sv).toLocaleString() + ' / ' + Number(target).toLocaleString() : Number(sv).toLocaleString()) : (target != null ? 'Target ' + Number(target).toLocaleString() : 'Not yet logged');
+    rows += srow('Steps', content, sv != null ? 'Edit' : 'Log', sv != null ? 'act mini' : 'act', "App.expand('steps')");
+    if (exp === 'steps') rows += '<div class="srow"><input type="number" inputmode="numeric" placeholder="' + (target != null ? ('e.g. ' + target) : 'e.g. 8000') + '" value="' + (sv != null ? sv : '') + '" onchange="App.setSteps(this.value)"><button type="button" class="bchip" style="flex:0 0 72px" onclick="App.expand(null)">Done</button></div>';
+  };
+  if (day.kind === 'gym') {
+    const sess = data.program.sessions[day.sessionKey];
+    const title = sess ? sess.title.replace(/^[A-Za-z]+ — /, '') : day.type;
+    const done = data.workouts.some(w => w.date === iso);
+    rows += srow('Strength', esc(title), done ? '✓' : 'Open', done ? 'act done' : 'act', done ? '' : "App.switchTab('today')");
+    stepsRow(day.steps);
+  } else if (day.kind === 'mixed' && day.activity === 'basketball') {
+    const bb = data.movement && data.movement[iso];
+    rows += srow('Movement', 'Basketball', bb ? '✓' : 'Log', bb ? 'act done' : 'act', "App.toggleMovement()");
+    stepsRow(null);
+  } else if (day.kind === 'rest') {
+    rows += srow('Movement', 'Rest day', '', '', '');
+    stepsRow(day.steps);
+  } else if (day.kind === 'flex') {
+    const plan = (data.sunPlan && data.sunPlan[iso]) || null;
+    if (!plan) {
+      rows += srow('Movement', 'Choose today’s plan', '', '', '');
+      rows += '<div class="bchips">' + bchip('Rest', "App.setSunPlan('rest')", false) + bchip('Walk', "App.setSunPlan('walk')", false) + bchip('Gym', "App.setSunPlan('gym')", false) + '</div>';
+    } else {
+      const lbl = { rest: 'Rest', walk: 'Walk', gym: 'Gym' }[plan];
+      rows += srow('Movement', 'Plan — ' + lbl, 'Change', 'act mini', "App.setSunPlan(null)");
+      if (plan === 'gym') { const bb = data.movement && data.movement[iso]; rows += srow('Gym session', bb ? 'Done' : 'Not yet logged', bb ? '✓' : 'Log', bb ? 'act done' : 'act', "App.toggleMovement()"); }
+      stepsRow(day.steps);
+    }
+  }
+  const nmap = { clean: 'On plan', ok: 'Mostly on plan', off: 'Off plan' };
+  const nv = (data.nutrition && ['clean', 'ok', 'off'].includes(data.nutrition[iso])) ? data.nutrition[iso] : null;
+  rows += srow('Nutrition', nv ? nmap[nv] : 'Not yet logged', nv ? 'Edit' : 'Log', nv ? 'act mini' : 'act', "App.expand('nutrition')");
+  if (exp === 'nutrition') rows += '<div class="bchips">' + bchip('On plan', "App.setNutrition('clean')", nv === 'clean') + bchip('Mostly', "App.setNutrition('ok')", nv === 'ok') + bchip('Off plan', "App.setNutrition('off')", nv === 'off') + '</div>';
+  const wmap = { high: 'On target', mid: 'Moderate', low: 'Low' };
+  const wv = (data.hydration && ['high', 'mid', 'low'].includes(data.hydration[iso])) ? data.hydration[iso] : null;
+  rows += srow('Hydration', wv ? wmap[wv] : 'Not yet logged', wv ? 'Edit' : 'Log', wv ? 'act mini' : 'act', "App.expand('water')");
+  if (exp === 'water') rows += '<div class="bchips">' + bchip('On target', "App.setWater('high')", wv === 'high') + bchip('Moderate', "App.setWater('mid')", wv === 'mid') + bchip('Low', "App.setWater('low')", wv === 'low') + '</div>';
+  const smap = { on: 'On target', close: 'Close', off: 'Off target' };
+  const sv = (data.sleep && ['on', 'close', 'off'].includes(data.sleep[iso])) ? data.sleep[iso] : null;
+  rows += srow('Recovery', sv ? smap[sv] : 'Not yet logged', sv ? 'Edit' : 'Log', sv ? 'act mini' : 'act', "App.expand('recovery')");
+  if (exp === 'recovery') rows += '<div class="bchips">' + bchip('On target', "App.setSleep('on')", sv === 'on') + bchip('Close', "App.setSleep('close')", sv === 'close') + bchip('Off target', "App.setSleep('off')", sv === 'off') + '</div>';
+  if (d === 1) { const measured = data.measurements.some(m => m.date === iso); rows += srow('Measurements', measured ? 'Recorded' : 'Due this morning', measured ? '✓' : 'Record', measured ? 'act done' : 'act', measured ? '' : "App.switchTab('track')"); }
+
+  /* ---- MIND ---- */
+  const m = this.mind();
+  const learnedN = this.mindTodayCount(now);
+  let mrows = srow('Learning', learnedN > 0 ? (learnedN + (learnedN === 1 ? ' item' : ' items') + ' today') : 'Not yet logged', learnedN > 0 ? 'Edit' : 'Log', learnedN > 0 ? 'act mini md' : 'act md', "App.expand('mind')");
+  if (exp === 'mind') {
+    const reading = m.books.filter(b => b.status === 'reading');
+    if (reading.length) {
+      reading.forEach(b => { const read = (m.readLog[iso] || []).indexOf(b.id) >= 0; mrows += '<div class="todayrow" style="padding:9px 2px"><div style="flex:1"><div class="rval" style="font-size:15px">' + esc(b.title) + '</div></div><div class="act mini md' + (read ? ' done' : '') + '" onclick="App.mindToggleRead(\'' + b.id + '\')">' + (read ? 'Read ✓' : 'Read') + '</div></div>'; });
+    }
+    mrows += '<div class="srow"><input id="mind-book" placeholder="Add a book you’re reading" style="flex:1"><button type="button" class="bchip" style="flex:0 0 60px" onclick="App.mindAddBook(document.getElementById(\'mind-book\').value)">Add</button></div>';
+    const types = [['summary', 'Summary'], ['article', 'Article'], ['paper', 'Paper'], ['lecture', 'Lecture'], ['podcast', 'Podcast'], ['other', 'Other']];
+    mrows += '<div class="bchips" style="flex-wrap:wrap">' + types.map(t => '<button type="button" class="bchip' + (this._mindType === t[0] ? ' on' : '') + '" onclick="App.mindSetType(\'' + t[0] + '\')">' + t[1] + '</button>').join('') + '</div>';
+    if (this._mindType) {
+      const uy = this._mindUseful === true, un = this._mindUseful === false;
+      mrows += '<div class="srow"><input id="mind-item" placeholder="Title" style="flex:1"></div>';
+      mrows += '<div class="bchips"><button type="button" class="bchip' + (uy ? ' on' : '') + '" onclick="App.mindSetItemUseful(true)">Useful</button><button type="button" class="bchip' + (un ? ' on' : '') + '" onclick="App.mindSetItemUseful(false)">Not useful</button><button type="button" class="bchip" style="margin-left:auto;border-color:var(--mind);color:var(--mind)" onclick="App.mindSaveItem()">Save</button></div>';
+    }
+  }
+  const underRing = composite == null ? 'Building your picture' : composite >= 80 ? 'On track' : composite >= 60 ? 'Steady' : 'Needs attention';
+  const insight = (() => {
+    const sb = Score.spiritBreakdown(data, now, 7), bb = Score.bodyBreakdown(data, now, 7);
+    const dims = []; const push = (n, v) => { if (v != null) dims.push({ n: n, v: v }); };
+    push('Scripture', sb.journey); push('Prayer', sb.prayer); push('Study', sb.bsf); push('Testimony', sb.testimony);
+    push('Movement', bb.movement); push('Steps', bb.activity); push('Nutrition', bb.nutrition); push('Hydration', bb.hydration); push('Recovery', bb.recovery);
+    if (!dims.length) return 'Log today’s basics to begin.';
+    dims.sort((a, b) => b.v - a.v); const top = dims[0], low = dims[dims.length - 1];
+    const strong = top.v >= 75, weak = low.v < 55 && low.n !== top.n;
+    if (strong && weak) return top.n + ' is strong. ' + low.n + ' needs attention.';
+    if (weak) return low.n + ' needs attention.';
+    if (strong) return top.n + ' is strong.';
+    return 'A steady day — keep the rhythm.';
+  })();
+  el.innerHTML =
+    '<div class="greet">' + part + (nm ? ', ' + esc(nm) : '') + '</div>' +
+    '<div style="text-align:center;margin:12px 0 2px">' + mscoreRing(spirit, body, mind) + '<div class="t-support" style="margin-top:2px">' + underRing + '</div></div>' +
+    '<div class="t-label" style="color:var(--spirit);margin:12px 0 2px">SPIRIT</div><div style="display:flex;flex-direction:column">' + srows + '</div>' +
+    '<div class="t-label" style="color:var(--body);margin:14px 0 2px">BODY</div><div style="display:flex;flex-direction:column">' + rows + '</div>' +
+    '<div class="t-label" style="color:var(--mind);margin:14px 0 2px">MIND</div><div style="display:flex;flex-direction:column">' + mrows + '</div>' +
+    '<div style="height:1px;background:var(--line);margin:18px 2px 14px"></div>' +
+    '<div class="t-label" style="margin-bottom:11px">Your signals</div><div class="sig">' + sig('--spirit', 'SPIRIT', spirit) + sig('--body', 'BODY', body) + sig('--mind', 'MIND', mind) + '</div>' +
+    '<div class="t-support" style="margin-top:14px;color:var(--slate)">' + esc(insight) + '</div>';
+};
+App.renderSpirit = function () {
+  const el = document.getElementById("scr-spirit"); if (!el) return;
+  const s = this.spirit(), now = this.now(), d = now.getDay(), iso = Clock.toISO(now);
+  const od = this.odometer(now);
+  const te = Scripture.entryForDate(iso);
+  const prog = Scripture.progForDate(iso), progEntries = Scripture.entriesOfProg(prog), progN = progEntries.length, progLabel = Scripture.progLabel(iso);
+  const fracOf = (e) => { const rec = s.journeyRead[e.date]; return e.dual ? (((rec === true || (rec && rec.ot)) ? 0.5 : 0) + ((rec === true || (rec && rec.nt)) ? 0.5 : 0)) : (rec ? 1 : 0); };
+  const fullOf = (e) => { const rec = s.journeyRead[e.date]; return e.dual ? (rec === true || (rec && rec.ot && rec.nt)) : !!rec; };
+  let doneFrac = 0; for (const e of progEntries) doneFrac += fracOf(e);
+  const planPct = Math.round(doneFrac / progN * 100);
+  const todayDay = te ? te.n : Scripture.prescribedThrough(iso);
+  const progKeys = Object.keys(s.journeyRead || {}).filter(k => Scripture.progForDate(k) === prog).sort(); const firstReadProg = progKeys.length ? progKeys[0] : null;
+  let behind = 0; if (firstReadProg) { for (const e of progEntries) { if (e.date >= firstReadProg && e.date <= iso && !fullOf(e)) behind++; } }
+  const recToday = s.journeyRead[iso]; const otdToday = recToday === true || (recToday && recToday.ot); const ntdToday = recToday === true || (recToday && recToday.nt);
+  const cs = Scripture.catchupInfo(this.data, now);
+  const focus = PRAYER_FOCUS[d], prayed = s.prayer[iso];
+  const exp = this._spExp || null;
+  const fmtDate = (i) => Clock.parseISO(i).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+  let pc = 0, pt = 0; for (let i = 0; i < 7; i++) { const dd = new Date(now); dd.setDate(dd.getDate() - i); if (s.prayer[Clock.toISO(dd)]) pc++; pt++; } const rhythm = Math.round(pc / pt * 100);
+  const lap = s.bibleLap || 1; const lapName = lap === 1 ? "First" : lap === 2 ? "Second" : lap === 3 ? "Third" : (lap + "th");
+  const label = (t, c) => '<div class="t-label" style="color:' + (c || 'var(--slate)') + ';margin:22px 0 10px">' + t + '</div>';
+  const bar = (p, col) => '<div style="height:5px;background:var(--line);border-radius:3px;margin-top:10px;overflow:hidden"><div style="height:100%;width:' + p + '%;background:' + col + '"></div></div>';
+  let html = '';
+  html += '<div style="font-family:var(--font-voice);font-size:26px;color:var(--spirit)">Spirit</div><div class="t-support" style="letter-spacing:.04em;margin-top:2px">Word · Prayer · Remembrance</div>';
+
+  html += label('SCRIPTURE');
+  const dayRow = (e) => { const rec = s.journeyRead[e.date]; if (e.dual) { const o = rec === true || (rec && rec.ot), n = rec === true || (rec && rec.nt); return '<div style="display:flex;align-items:center;gap:8px;padding:7px 0"><div style="flex:1;font-size:13px;color:var(--navy)">' + fmtDate(e.date) + ' · ' + esc(e.r) + ' <span style="color:var(--slate)">/ ' + esc(e.nt) + '</span></div><span class="act ' + (o ? 'sp' : 'q') + ' mini" onclick="App.readJourneyDate(\'' + e.date + '\',\'ot\')">OT' + (o ? ' ✓' : '') + '</span><span class="act ' + (n ? 'sp' : 'q') + ' mini" onclick="App.readJourneyDate(\'' + e.date + '\',\'nt\')">NT' + (n ? ' ✓' : '') + '</span></div>'; } const done = !!rec; return '<div style="display:flex;align-items:center;gap:10px;padding:6px 0"><div style="flex:1;font-size:13px;color:var(--navy)">' + fmtDate(e.date) + ' · ' + esc(e.r) + '</div><span class="act ' + (done ? 'sp' : 'q') + ' mini" onclick="App.readJourneyDate(\'' + e.date + '\')">' + (done ? 'Read ✓' : 'Read') + '</span></div>'; };
+  const aheadList = (() => { const out = []; for (const e of progEntries) { if (e.date > iso) { out.push(e); if (out.length >= 6) break; } } return out; })();
+  const behindList = (() => { const out = []; if (!firstReadProg) return out; for (let i = progEntries.length - 1; i >= 0 && out.length < 6; i--) { const e = progEntries[i]; if (e.date >= firstReadProg && e.date <= iso && !fullOf(e)) out.push(e); } return out; })();
+  const todayAction = te ? (te.dual
+    ? ('<div style="margin-top:14px;display:flex;gap:8px"><span class="act ' + (otdToday ? 'sp done' : 'sp') + '" onclick="App.readJourneyDate(\'' + iso + '\',\'ot\')">OT' + (otdToday ? ' \u2713' : '') + '</span><span class="act ' + (ntdToday ? 'sp done' : 'sp') + '" onclick="App.readJourneyDate(\'' + iso + '\',\'nt\')">NT' + (ntdToday ? ' \u2713' : '') + '</span></div>')
+    : ('<div style="margin-top:14px"><span class="act sp" onclick="App.readJourney()">' + (s.journeyRead[iso] ? 'Read \u2713' : 'Read today') + '</span></div>')) : '';
+  const aheadBlock = aheadList.length ? ('<div style="border-top:1px solid var(--line);margin-top:14px;padding-top:12px"><div style="display:flex;align-items:center;justify-content:space-between"><div class="t-support">Read ahead</div><span class="act q mini" onclick="App.spOpen(\'ahead\')">' + (exp === 'ahead' ? 'Hide' : 'Show') + '</span></div>' + (exp === 'ahead' ? ('<div style="margin-top:6px">' + aheadList.map(dayRow).join('') + '</div>') : '') + '</div>') : '';
+  const behindBlock = behind > 0 ? ('<div style="border-top:1px solid var(--line);margin-top:14px;padding-top:12px"><div class="t-support">' + behind + ' day' + (behind === 1 ? '' : 's') + ' to catch up since you started:</div><div style="margin-top:6px">' + behindList.map(dayRow).join('') + '</div></div>') : '';
+  html += '<div class="card"><div class="t-label">Journey</div><div style="font-family:var(--font-voice);font-size:20px;color:var(--navy);margin-top:4px">' + (te ? esc(te.r) : (iso > Scripture.lastDate() ? 'Plan complete \u2713' : 'Begins 7 Sep')) + '</div>' + (te && te.dual ? ('<div class="t-support" style="margin-top:3px;color:var(--slate)">Companion \u00b7 ' + esc(te.nt) + ' \u00b7 ' + esc(te.theme) + (te.cycle ? (' \u00b7 cycle ' + te.cycle) : '') + '</div>') : '') + '<div class="t-support" style="margin-top:3px">' + progLabel + ' \u00b7 day ' + (todayDay || progN) + ' of ' + progN + '</div>' + bar(planPct, 'var(--spirit)') + '<div class="t-support" style="margin-top:5px">' + (Math.round(doneFrac * 10) / 10) + ' of ' + progN + ' days read \u00b7 ' + planPct + '%</div>' + todayAction + aheadBlock + behindBlock + '</div>';
+  html += '<div style="display:flex;gap:10px">'
+    + '<div class="card" style="flex:1"><div class="t-label">Study</div><div style="font-family:var(--font-voice);font-size:17px;color:var(--navy);margin-top:4px">BSF</div><div class="t-support" style="margin-top:3px">' + (s.bsf.active ? 'Active' : 'Paused') + '</div></div>'
+    + '<div class="card" style="flex:1"><div class="t-label">Catch-up</div><div style="font-family:var(--font-voice);font-size:17px;color:var(--navy);margin-top:4px">' + (cs.complete ? 'Complete ✓' : cs.nextRef) + '</div><div class="t-support" style="margin-top:3px">' + (cs.complete ? 'Matthew ' + cs.from + '–' + cs.to : (cs.done + '/' + cs.total + ' · \u2248' + cs.perWeek + '/wk · by ' + cs.targetLabel)) + '</div></div>'
+    + '</div>';
+  const eraLabel = od.era === 'nt' ? 'New Testament' : (lapName + ' journey through the Bible');
+  const litTotal = s.litChapters || 0; const ntLaps = (s.litNT || 0) / 260; const lapReadout = (s.litNT >= 260) ? ('New Testament read ' + (Math.round(ntLaps * 10) / 10) + '\u00d7 through') : '';
+  html += '<div class="card" style="text-align:center;padding:24px 18px"><div class="t-label">The journey through Scripture</div><div style="font-family:var(--font-voice);font-size:38px;color:var(--navy);margin:10px 0 2px;line-height:1">' + od.covered + ' <span style="font-size:17px;color:var(--slate)">/ ' + od.total.toLocaleString() + '</span></div><div style="font-family:var(--font-voice);font-size:16px;color:var(--spirit)">' + od.pct + '%</div><div class="t-support" style="margin-top:12px">' + eraLabel + '</div><div class="t-support" style="margin-top:4px;color:var(--slate)">' + litTotal.toLocaleString() + ' chapters read in all' + (lapReadout ? (' \u00b7 ' + lapReadout) : '') + '</div>' + (od.era === 'bible' && od.covered >= BIBLE_TOTAL ? '<div style="margin-top:12px"><button class="btn" onclick="App.resetBible()">Begin a new journey</button></div>' : '') + '</div>';
+
+  html += label('PRAYER');
+  html += '<div class="card"><div class="t-label">Today</div><div style="font-family:var(--font-voice);font-size:24px;color:var(--navy);margin-top:4px">' + esc(focus) + '</div><div class="t-support" style="margin-top:2px">A focus for today’s communion</div><div style="margin-top:14px"><span class="act sp' + (prayed ? ' done' : '') + '" onclick="App.togglePrayer()">' + (prayed ? 'Prayed ✓' : 'Pray') + '</span></div>';
+  html += '<div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:14px">';
+  [[1, 'Mon Marriage'], [2, 'Tue Children'], [3, 'Wed Ministry'], [4, 'Thu Work'], [5, 'Fri Family'], [6, 'Sat Friends'], [0, 'Sun Thanks']].forEach(wk => { const on = wk[0] === d; html += '<span style="font-size:11px;padding:4px 9px;border-radius:999px;' + (on ? 'background:var(--spirit);color:#0F1A17' : 'background:var(--bg);color:var(--slate)') + '">' + wk[1] + '</span>'; });
+  html += '</div><div class="t-support" style="margin-top:12px">7-day rhythm ' + rhythm + '%</div>';
+  const openReqs = (s.prayerReqs || []).filter(r => !r.answered);
+  if (openReqs.length) { html += '<div style="border-top:1px solid var(--line);margin-top:14px;padding-top:12px"><div class="t-label">Open requests</div>'; openReqs.slice(-4).forEach(r => { html += '<div class="t-support" style="margin-top:6px;color:var(--navy)">· ' + esc(r.text) + '</div>'; }); html += '</div>'; }
+  html += '<div style="margin-top:12px">' + (exp === 'request' ? ('<textarea id="pr-text" maxlength="200" placeholder="A request to bring before God" style="width:100%;min-height:54px;background:var(--bg);border:1px solid var(--line);border-radius:11px;color:var(--navy);font:inherit;padding:9px"></textarea><div style="margin-top:8px;display:flex;gap:8px"><span class="act sp" onclick="App.saveRequest()">Save</span> <span class="act q" onclick="App.spOpen(null)">Cancel</span></div>') : '<span class="act q" onclick="App.spOpen(\'request\')">＋ Add a request</span>') + '</div>';
+  html += '</div>';
+
+  html += label('TESTIMONY');
+  html += '<div class="card">';
+  const ts = (s.testimonies || []).slice().sort((a, b) => a.date < b.date ? 1 : -1);
+  if (!ts.length) html += '<div class="t-support">No entries yet. When God answers or acts, record it here.</div>';
+  else ts.slice(0, 8).forEach(t => { html += '<div style="padding:12px 0;border-bottom:1px solid var(--line)"><div style="font-family:var(--font-voice);font-size:15px;color:var(--navy);line-height:1.5">“' + esc(t.text) + '”</div><div class="t-support" style="margin-top:6px">' + fmtDate(t.date) + (t.tags && t.tags.length ? (' · ' + esc(t.tags.join(', '))) : '') + (t.linkedReqDate ? (' · answered prayer · request ' + fmtDate(t.linkedReqDate)) : '') + '</div></div>'; });
+  const openReqOpts = (s.prayerReqs || []).filter(r => !r.answered);
+  html += '<div style="margin-top:12px">' + (exp === 'testimony' ? (
+    '<textarea id="t-text" maxlength="600" placeholder="What did God do?" style="width:100%;min-height:72px;background:var(--bg);border:1px solid var(--line);border-radius:11px;color:var(--navy);font:inherit;padding:9px"></textarea>'
+    + '<input id="t-tags" placeholder="tags (comma-separated, optional)" style="width:100%;margin-top:8px;background:var(--bg);border:1px solid var(--line);border-radius:11px;color:var(--navy);font:inherit;padding:9px">'
+    + (openReqOpts.length ? ('<select id="t-link" style="width:100%;margin-top:8px;background:var(--bg);border:1px solid var(--line);border-radius:11px;color:var(--navy);font:inherit;padding:9px"><option value="">Link to an open request (optional)</option>' + openReqOpts.map(r => '<option value="' + r.id + '">' + esc(r.text.slice(0, 40)) + '</option>').join('') + '</select>') : '')
+    + '<div style="margin-top:8px;display:flex;gap:8px"><span class="act sp" onclick="App.saveTestimony()">Save</span> <span class="act q" onclick="App.spOpen(null)">Cancel</span></div>'
+  ) : '<span class="act q" onclick="App.spOpen(\'testimony\')">＋ Add a remembrance</span>') + '</div>';
+  html += '</div>';
+  if (ts.length) html += '<div style="margin-top:12px"><span class="act q" onclick="App.exportTestimony()">Export the Book of Testimony</span></div>';
+
+  el.innerHTML = html;
+};
+App.renderMind = function () {
+  const el = document.getElementById("scr-mind"); if (!el) return;
+  const m = this.mind(), now = this.now(), iso = Clock.toISO(now);
+  const fmt = i => Clock.parseISO(i).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
+  const typeLbl = { summary: 'Summary', article: 'Article', paper: 'Paper', lecture: 'Lecture', podcast: 'Podcast', other: 'Other', book: 'Book' };
+  const label = t => '<div class="t-label" style="margin:22px 0 10px">' + t + '</div>';
+  const umark = u => u === true ? '<span style="color:var(--body)">useful</span>' : u === false ? '<span style="color:var(--slate2)">not useful</span>' : '';
+  let html = '<div style="font-family:var(--font-voice);font-size:26px;color:var(--mind)">Mind</div><div class="t-support" style="letter-spacing:.04em;margin-top:2px">Understand · Retain</div>';
+
+  html += label('CURRENTLY READING');
+  const reading = m.books.filter(b => b.status === 'reading');
+  html += '<div class="card">';
+  if (!reading.length) html += '<div class="t-support">Nothing on the shelf yet. Add a book you’re reading.</div>';
+  else reading.forEach(b => {
+    const read = (m.readLog[iso] || []).indexOf(b.id) >= 0;
+    html += '<div style="padding:10px 0;border-bottom:1px solid var(--line)"><div style="display:flex;align-items:center;gap:10px"><div style="flex:1;font-family:var(--font-voice);font-size:16px;color:var(--navy)">' + esc(b.title) + '</div><span class="act mini md' + (read ? ' done' : '') + '" onclick="App.mindToggleRead(\'' + b.id + '\')">' + (read ? 'Read ✓' : 'Read') + '</span></div>'
+      + '<div style="display:flex;gap:8px;align-items:center;margin-top:6px"><span class="t-support">Started ' + fmt(b.started) + '</span><span class="act q mini" style="margin-left:auto" onclick="App.mindFinishBook(\'' + b.id + '\',\'finished\')">Finish</span><span class="act q mini" onclick="App.mindFinishBook(\'' + b.id + '\',\'abandoned\')">Abandon</span></div></div>';
+  });
+  html += '<div class="srow" style="margin-top:10px"><input id="mind-book-w" placeholder="Add a book you’re reading" style="flex:1"><button type="button" class="bchip" style="flex:0 0 60px" onclick="App.mindAddBook(document.getElementById(\'mind-book-w\').value)">Add</button></div></div>';
+
+  html += label('RECENT LEARNING');
+  const events = m.items.map(i => ({ date: i.date, title: i.title, type: i.type, useful: i.useful, kind: 'item', id: i.id }))
+    .concat(m.books.filter(b => b.ended).map(b => ({ date: b.ended, title: b.title, type: 'book', useful: b.useful, kind: 'book', id: b.id, status: b.status })));
+  events.sort((a, b) => a.date < b.date ? 1 : -1);
+  html += '<div class="card">';
+  if (!events.length) html += '<div class="t-support">Your recent learning will appear here.</div>';
+  else events.slice(0, 10).forEach(e => {
+    const meta = typeLbl[e.type] + ' · ' + fmt(e.date) + (e.kind === 'book' ? (' · ' + (e.status === 'abandoned' ? 'abandoned' : 'finished')) : '');
+    html += '<div style="padding:9px 0;border-bottom:1px solid var(--line)"><div style="font-family:system-ui;font-size:14.5px;color:var(--navy)">' + esc(e.title) + '</div><div class="t-support" style="margin-top:3px">' + meta + (e.useful != null ? (' · ' + umark(e.useful)) : '') + '</div>'
+      + (e.useful == null ? ('<div style="margin-top:6px;display:flex;gap:6px"><span class="act q mini" onclick="App.mindRate(\'' + e.kind + '\',\'' + e.id + '\',true)">Useful</span><span class="act q mini" onclick="App.mindRate(\'' + e.kind + '\',\'' + e.id + '\',false)">Not useful</span></div>') : '') + '</div>';
+  });
+  html += '</div>';
+
+  html += label('LEARNING LIBRARY');
+  const counts = { book: m.books.length, summary: 0, article: 0, paper: 0, lecture: 0, podcast: 0, other: 0 };
+  m.items.forEach(i => { counts[i.type] = (counts[i.type] || 0) + 1; });
+  const order = [['book', 'Books'], ['summary', 'Summaries'], ['article', 'Articles'], ['paper', 'Papers'], ['lecture', 'Lectures'], ['podcast', 'Podcasts'], ['other', 'Other']];
+  const shown = order.filter(o => counts[o[0]]);
+  html += '<div class="card"><div style="display:flex;flex-wrap:wrap;gap:14px;justify-content:space-around">' + (shown.length ? shown.map(o => '<div style="text-align:center;min-width:56px"><div style="font-family:var(--font-voice);font-size:20px;color:var(--navy)">' + counts[o[0]] + '</div><div class="t-support">' + o[1] + '</div></div>').join('') : '<div class="t-support">Nothing logged yet.</div>') + '</div></div>';
+
+  html += label('INSIGHTS');
+  const rated = m.items.filter(i => i.useful != null).concat(m.books.filter(b => b.useful != null));
+  const totalLogged = m.items.length + m.books.length;
+  html += '<div class="card">';
+  if (totalLogged < 12 || rated.length < 8) {
+    html += '<div class="t-support">Your patterns will emerge as your Learning Library grows.</div>';
+  } else {
+    const pct = Math.round(rated.filter(r => r.useful === true).length / rated.length * 100);
+    html += '<div style="text-align:center"><div style="font-family:var(--font-voice);font-size:32px;color:var(--mind)">' + pct + '%</div><div class="t-support">rated useful · ' + rated.length + ' rated</div></div>';
+    const byType = {}; m.items.forEach(i => { if (i.useful != null) { (byType[i.type] = byType[i.type] || []).push(i.useful); } });
+    const bu = m.books.filter(b => b.useful != null).map(b => b.useful); if (bu.length) byType.book = bu;
+    const lines = []; order.forEach(o => { const arr = byType[o[0]]; if (arr && arr.length >= 5) { lines.push(o[1] + ' ' + Math.round(arr.filter(Boolean).length / arr.length * 100) + '% useful'); } });
+    if (lines.length) html += '<div class="t-support" style="margin-top:12px;line-height:1.8">' + lines.join('<br>') + '</div>';
+    const fin = m.books.filter(b => b.status === 'finished').length, ab = m.books.filter(b => b.status === 'abandoned').length;
+    if (fin + ab >= 3) html += '<div class="t-support" style="margin-top:10px">' + fin + ' finished · ' + ab + ' abandoned</div>';
+  }
+  html += '</div>';
+  el.innerHTML = html;
+};
+
+App.expand = function (which) { this._exp = (this._exp === which) ? null : which; this.renderHome(); };
+App.setNutrition = function (state) { const iso = Clock.toISO(this.now()); this.data.nutrition = this.data.nutrition || {}; if (this.data.nutrition[iso] === state) delete this.data.nutrition[iso]; else this.data.nutrition[iso] = state; this._exp = null; Store.save(this.data); this.renderHome(); };
+App.setWater = function (state) { const iso = Clock.toISO(this.now()); this.data.hydration = this.data.hydration || {}; if (this.data.hydration[iso] === state) delete this.data.hydration[iso]; else this.data.hydration[iso] = state; this._exp = null; Store.save(this.data); this.renderHome(); };
+App.setSteps = function (v) { const iso = Clock.toISO(this.now()); this.data.steps = this.data.steps || {}; const n = Math.round(Number(v)); if (n && n > 0) this.data.steps[iso] = n; else delete this.data.steps[iso]; this._exp = null; Store.save(this.data); this.renderHome(); };
+App.setSleep = function (state) { const iso = Clock.toISO(this.now()); this.data.sleep = this.data.sleep || {}; if (this.data.sleep[iso] === state) delete this.data.sleep[iso]; else this.data.sleep[iso] = state; this._exp = null; Store.save(this.data); this.renderHome(); };
+App.toggleMovement = function () { const iso = Clock.toISO(this.now()); this.data.movement = this.data.movement || {}; if (this.data.movement[iso]) delete this.data.movement[iso]; else this.data.movement[iso] = true; this._exp = null; Store.save(this.data); this.renderHome(); };
+App.setSunPlan = function (plan) { const iso = Clock.toISO(this.now()); this.data.sunPlan = this.data.sunPlan || {}; if (plan === null) delete this.data.sunPlan[iso]; else this.data.sunPlan[iso] = plan; this._exp = null; Store.save(this.data); this.renderHome(); };
+App._bodyWin = 7;
+App.setBodyWin = function (w) { this._bodyWin = w; this.renderDash(); };
+App.bodySummaryCard = function (now) {
+  const win = this._bodyWin || 7;
+  const b = Score.bodyBreakdown(this.data, now || this.now(), win);
+  const winLbl = { 7: 'Last 7 days', 30: 'Last 30 days', 90: 'Last 90 days' }[win] || ('Last ' + win + ' days');
+  const rowm = (lbl, v) => '<div style="display:flex;align-items:center;gap:10px;margin-top:12px"><div style="font-size:12.5px;color:var(--slate);width:92px">' + lbl + '</div><div style="flex:1;height:6px;background:var(--line);border-radius:3px;overflow:hidden">' + (v == null ? '' : '<div style="height:100%;width:' + v + '%;background:var(--body)"></div>') + '</div><div style="font-family:var(--font-voice);font-size:17px;color:var(--navy);width:30px;text-align:right">' + (v == null ? '—' : v) + '</div></div>';
+  const tab = (w) => '<button type="button" class="bchip' + (win === w ? ' on' : '') + '" onclick="App.setBodyWin(' + w + ')">' + w + 'd</button>';
+  return '<div class="card"><div style="text-align:center"><div class="t-label" style="color:var(--body)">Body</div><div style="font-size:44px;color:var(--navy);font-family:var(--font-voice);line-height:1.1;margin:4px 0">' + (b.body == null ? '—' : b.body) + '</div><div class="t-support">' + winLbl + (b.coverage != null && b.coverage < 1 ? ' \u00b7 building data \u00b7 ' + b.coveragePct + '% coverage' : (b.coverage === 1 ? ' \u00b7 full picture' : '')) + '</div></div>' +
+    '<div class="bchips" style="padding:12px 0 2px">' + tab(7) + tab(30) + tab(90) + '</div>' +
+    '<div style="margin-top:6px">' + rowm('Movement', b.movement) + rowm('Steps', b.activity) + rowm('Nutrition', b.nutrition) + rowm('Hydration', b.hydration) + rowm('Recovery', b.recovery) + '</div>' +
+    '<div class="t-support" style="text-align:center;margin-top:14px;color:var(--slate2)">Log today on the Today tab</div></div>';
+};
+
+App.spirit = function () {
+  const d = this.data; d.spirit = d.spirit || {};
+  const s = d.spirit;
+  s.journeyRead = s.journeyRead || {};
+  s.coverage = s.coverage || {};
+  s.prayer = s.prayer || {};
+  s.bsf = s.bsf || { active: true, weeks: {} };
+  s.bsf.weeks = s.bsf.weeks || {};
+  if (s.catchupDone == null) s.catchupDone = 0;
+  if (s.catchupFrom == null) s.catchupFrom = 5;
+  if (s.catchupTo == null) s.catchupTo = 28;
+  if (!s.catchupTarget) s.catchupTarget = '2026-11-30';
+  if (s.catchupLast === undefined) s.catchupLast = null;
+  s.testimonies = s.testimonies || [];
+  s.prayerReqs = s.prayerReqs || [];
+  if (s.bibleLap == null) s.bibleLap = 1;
+  if (s.litChapters == null) { const keys = Object.keys(s.coverage || {}); s.litChapters = keys.length; s.litNT = keys.filter(k => NT_SET.has(k)).length; }
+  if (s.litNT == null) s.litNT = Object.keys(s.coverage || {}).filter(k => NT_SET.has(k)).length;
+  return s;
+};
+App.rerender = function () { try { this.renderHome(); } catch (e) {} try { this.renderSpirit(); } catch (e) {} try { this.renderMind(); } catch (e) {} };
+App.spOpen = function (which) { this._spExp = (this._spExp === which) ? null : which; this.renderSpirit(); };
+App.readJourney = function () { this.readJourneyDate(Clock.toISO(this.now())); };
+// Add a reading's chapters to the lifetime tally (repeats counted) and the unique-coverage odometer (idempotent).
+App._addReading = function (s, readingStr, isNT) { const chs = Scripture.chaptersOf(readingStr); chs.forEach(k => { s.coverage[k] = true; }); s.litChapters = (s.litChapters || 0) + chs.length; if (isNT) s.litNT = (s.litNT || 0) + chs.length; };
+App.readJourneyDate = function (iso, track) {
+  const s = this.spirit(); const e = Scripture.entryForDate(iso); if (!e) return;
+  if (e.dual) {
+    let rec = s.journeyRead[iso]; if (rec === true) rec = { ot: true, nt: true }; rec = rec || { ot: false, nt: false };
+    const t = (track === 'nt') ? 'nt' : 'ot';
+    if (rec[t]) { rec[t] = false; } else { rec[t] = true; this._addReading(s, t === 'ot' ? e.r : e.nt, t === 'nt'); }
+    if (!rec.ot && !rec.nt) delete s.journeyRead[iso]; else s.journeyRead[iso] = rec;
+  } else {
+    if (s.journeyRead[iso]) { delete s.journeyRead[iso]; } else { s.journeyRead[iso] = true; this._addReading(s, e.r, true); }
+  }
+  Store.save(this.data); this.rerender();
+};
+// Two-era odometer: New Testament (260) until 31 Dec 2026, whole Bible (1189) from 1 Jan 2027. NT chapters carry over.
+App.odometer = function (now) { const s = this.spirit(); const iso = Clock.toISO(now || this.now()); const keys = Object.keys(s.coverage || {}); if (iso <= '2026-12-31') { const n = keys.filter(k => NT_SET.has(k)).length; return { covered: n, total: 260, era: 'nt', pct: Math.round(n / 260 * 1000) / 10 }; } return { covered: keys.length, total: BIBLE_TOTAL, era: 'bible', pct: Math.round(keys.length / BIBLE_TOTAL * 1000) / 10 }; };
+App.markJourneyThrough = function () { const s = this.spirit(), today = Clock.toISO(this.now()); for (let i = 0; i < NT_PLAN.length; i++) { const e = NT_PLAN[i]; if (e.date <= today) { s.journeyRead[e.date] = true; Scripture.chaptersOf(e.r).forEach(k => { s.coverage[k] = true; }); } } Store.save(this.data); this.rerender(); };
+App.togglePrayer = function () { const s = this.spirit(), iso = Clock.toISO(this.now()); if (s.prayer[iso]) delete s.prayer[iso]; else s.prayer[iso] = true; Store.save(this.data); this.rerender(); };
+App.weekMon = function (now) { const d = new Date(now); const dow = (d.getDay() + 6) % 7; d.setDate(d.getDate() - dow); return Clock.toISO(d); };
+App.toggleBsf = function (part) { const s = this.spirit(); const wk = this.weekMon(this.now()); const w = s.bsf.weeks[wk] || { r: false, q: false }; w[part] = !w[part]; if (!w.r && !w.q) delete s.bsf.weeks[wk]; else s.bsf.weeks[wk] = w; Store.save(this.data); this.rerender(); };
+App.readCatchup = function () { const s = this.spirit(); const from = s.catchupFrom || 4, to = s.catchupTo || 28; if ((s.catchupDone || 0) >= (to - from + 1)) return; s.coverage['Matthew ' + (from + s.catchupDone)] = true; s.litChapters = (s.litChapters || 0) + 1; s.litNT = (s.litNT || 0) + 1; s.catchupDone++; s.catchupLast = Clock.toISO(this.now()); Store.save(this.data); this.rerender(); };
+App.addPrayerRequest = function (text) { const s = this.spirit(); const t = (text || '').slice(0, 200); if (!t) return; s.prayerReqs.push({ id: 'r' + Date.now(), date: Clock.toISO(this.now()), text: t, answered: false }); Store.save(this.data); this.rerender(); };
+App.saveRequest = function () { const tx = (document.getElementById('pr-text') || {}).value || ''; if (!tx.trim()) { toast('Write the request first'); return; } this._spExp = null; this.addPrayerRequest(tx.trim()); };
+App.addTestimony = function (text, tags, linkedReqId) {
+  const s = this.spirit(); const t = (text || '').slice(0, 600); if (!t) return;
+  const id = 't' + Date.now(); let linkedReqDate = null;
+  if (linkedReqId) { const r = (s.prayerReqs || []).find(x => x.id === linkedReqId); if (r) { r.answered = true; r.answeredDate = Clock.toISO(this.now()); r.testimonyId = id; linkedReqDate = r.date; } }
+  s.testimonies.push({ id: id, date: Clock.toISO(this.now()), text: t, tags: tags || [], linkedReqId: linkedReqId || null, linkedReqDate: linkedReqDate });
+  Store.save(this.data); this.rerender();
+};
+App.saveTestimony = function () { const tx = (document.getElementById('t-text') || {}).value || ''; if (!tx.trim()) { toast('Write a few words first'); return; } const tg = ((document.getElementById('t-tags') || {}).value || '').split(',').map(x => x.trim()).filter(Boolean); const lk = (document.getElementById('t-link') || {}).value || ''; this._spExp = null; this.addTestimony(tx.trim(), tg, lk || null); };
+App.exportTestimony = function () { const s = this.spirit(); const ts = (s.testimonies || []).slice().sort((a, b) => a.date < b.date ? -1 : 1); const fmt = i => Clock.parseISO(i).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }); let md = '# The Michel Book of Testimony\n\n_Exported ' + fmt(Clock.toISO(this.now())) + ' · ' + ts.length + ' entr' + (ts.length === 1 ? 'y' : 'ies') + '_\n\n'; ts.forEach(t => { md += '## ' + fmt(t.date) + '\n\n“' + t.text + '”\n\n'; if (t.tags && t.tags.length) md += 'Tags: ' + t.tags.join(', ') + '\n\n'; if (t.linkedReqDate) md += 'Answered prayer — request first made ' + fmt(t.linkedReqDate) + '.\n\n'; md += '---\n\n'; }); DataIO.download('the-michel-book-of-testimony.md', md, 'text/markdown'); toast('Testimony exported'); };
+App.resetBible = function () { const s = this.spirit(); if (this.bibleCovered() < BIBLE_TOTAL) return; if (typeof confirm === 'function' && !confirm('You’ve read the whole Bible. Begin a new journey? Your lap count is kept.')) return; s.bibleLap = (s.bibleLap || 1) + 1; s.coverage = {}; Store.save(this.data); this.rerender(); };
+App.bibleCovered = function () { return Object.keys(this.spirit().coverage).length; };
+App.testimonyThisWeek = function (now) { const s = this.spirit(), ts = s.testimonies; const dow = (now.getDay() + 6) % 7; const mon = new Date(now); mon.setDate(mon.getDate() - dow); const monISO = Clock.toISO(mon), sunISO = Clock.toISO(new Date(mon.getTime() + 6 * 86400000)); return ts.some(t => t.date >= monISO && t.date <= sunISO); };
+App.spiritPillar = function (now) { try { return Score.spiritBreakdown(this.data, now || this.now(), 7).spirit; } catch (e) { return null; } };
+
+App.mind = function () { const d = this.data; d.mind = d.mind || {}; const m = d.mind; m.books = m.books || []; m.items = m.items || []; m.readLog = m.readLog || {}; return m; };
+App.mindTodayCount = function (now) { const m = this.mind(); const iso = Clock.toISO(now || this.now()); return ((m.readLog[iso] || []).length) + m.items.filter(i => i.date === iso).length; };
+App.mindLearnedOn = function (iso) { const m = this.mind(); return ((m.readLog[iso] || []).length > 0) || m.items.some(i => i.date === iso); };
+App.mindAddBook = function (title) { const m = this.mind(); const t = (title || '').trim().slice(0, 120); if (!t) return; const iso = Clock.toISO(this.now()); const id = 'b' + Date.now(); m.books.push({ id: id, title: t, status: 'reading', started: iso, useful: null }); (m.readLog[iso] = m.readLog[iso] || []).push(id); Store.save(this.data); this.rerender(); };
+App.mindToggleRead = function (id) { const m = this.mind(); const iso = Clock.toISO(this.now()); const a = m.readLog[iso] = m.readLog[iso] || []; const i = a.indexOf(id); if (i >= 0) a.splice(i, 1); else a.push(id); if (!a.length) delete m.readLog[iso]; Store.save(this.data); this.rerender(); };
+App.mindSetType = function (t) { this._mindType = (this._mindType === t) ? null : t; this._mindUseful = undefined; this.renderHome(); };
+App.mindSetItemUseful = function (v) { this._mindUseful = v; this.renderHome(); };
+App.mindAddItem = function (type, title, useful) { const m = this.mind(); const t = (title || '').trim().slice(0, 160); if (!t) return; m.items.push({ id: 'i' + Date.now(), date: Clock.toISO(this.now()), type: type, title: t, useful: (useful === undefined ? null : useful) }); Store.save(this.data); };
+App.mindSaveItem = function () { const t = this._mindType; if (!t) return; const tx = (document.getElementById('mind-item') || {}).value || ''; if (!tx.trim()) { toast('Add a title first'); return; } this.mindAddItem(t, tx.trim(), this._mindUseful); this._mindType = null; this._mindUseful = undefined; this.rerender(); };
+App.mindFinishBook = function (id, status) { const m = this.mind(); const b = m.books.find(x => x.id === id); if (!b) return; b.status = status; b.ended = Clock.toISO(this.now()); Store.save(this.data); this.rerender(); };
+App.mindSetBookUseful = function (id, v) { const m = this.mind(); const b = m.books.find(x => x.id === id); if (b) { b.useful = v; Store.save(this.data); this.rerender(); } };
+App.mindRate = function (kind, id, v) { const m = this.mind(); if (kind === 'book') { const b = m.books.find(x => x.id === id); if (b) b.useful = v; } else { const it = m.items.find(x => x.id === id); if (it) it.useful = v; } Store.save(this.data); this.rerender(); };
+App.mindPillar = function (now) { try { return Score.mindBreakdown(this.data, now || this.now(), 7).mind; } catch (e) { return null; } };
 
 /* ============ BOOT ============ */
 if (typeof document !== "undefined") {
-  document.addEventListener("DOMContentLoaded", () => { App.boot(); if (typeof Cloud !== "undefined") { Cloud.syncCoverState(); Cloud.init(); } });
+  document.addEventListener("DOMContentLoaded", () => { App.boot(); App.syncOnboard(); });
   // register service worker for offline + installability (no-op on file://, only runs when hosted)
   if ("serviceWorker" in navigator && location.protocol.indexOf("http") === 0) {
     window.addEventListener("load", () => navigator.serviceWorker.register("sw.js").catch(() => {}));
@@ -1454,7 +1973,7 @@ const Dash = {
   },
   gauge(briW, briN, target) {
     const cx = 150, cy = 150, r = 110;
-    let s = `<svg viewBox="0 0 300 175" role="img" aria-label="BRI gauge: waist ${briW != null ? briW.toFixed(2) : "no data"}, navel ${briN != null ? briN.toFixed(2) : "no data"}, target ${target}">`;
+    let s = `<svg viewBox="0 0 300 175" style="width:100%;max-width:250px;height:auto;display:block;margin:0 auto" role="img" aria-label="BRI gauge: waist ${briW != null ? briW.toFixed(2) : "no data"}, navel ${briN != null ? briN.toFixed(2) : "no data"}, target ${target}">`;
     for (let i = 0; i < 6; i++) {
       const d1 = this.angle(this.zoneBounds[i]), d2 = this.angle(this.zoneBounds[i + 1]);
       s += `<path d="${this.arc(cx, cy, r, d1, d2)}" stroke="${this.zoneColors[i]}" stroke-width="20" fill="none" opacity="${i % 2 ? 0.55 : 0.95}" stroke-linecap="butt"/>`;
@@ -1489,7 +2008,7 @@ const Dash = {
     const noData = pct == null;                 // null → genuinely no data; show "—" not a misleading 0%
     const p = noData ? 0 : pct;
     const r = 44, C = 2 * Math.PI * r, on = (p * C).toFixed(1);
-    return `<svg viewBox="0 0 120 132" role="img" aria-label="${esc(label)}: ${noData ? "no data" : Math.round(p * 100) + "% to target"}">
+    return `<svg viewBox="0 0 120 132" style="width:100%;max-width:92px;height:auto;display:block;margin:0 auto" role="img" aria-label="${esc(label)}: ${noData ? "no data" : Math.round(p * 100) + "% to target"}">
       <circle cx="60" cy="60" r="${r}" fill="none" stroke="var(--line)" stroke-width="10"/>
       <circle cx="60" cy="60" r="${r}" fill="none" stroke="var(--teal)" stroke-width="10" stroke-linecap="round"
         stroke-dasharray="${on} ${C.toFixed(1)}" transform="rotate(-90 60 60)"/>
@@ -1519,7 +2038,7 @@ const Dash = {
      axes are genuinely different units), hover tooltips via native <title>, per-series
      units, a readable y-axis, and an accessible data-table fallback. */
   chart(series, opts = {}) {
-    const W = 600, H = 240, pl = 44, pr = 44, pt_ = 22, pb = 30;
+    const W = 600, H = 184, pl = 44, pr = 44, pt_ = 20, pb = 28;
     // optional period window (M24): keep only points newer than `opts.days` before the latest reading
     if (opts.days) {
       const latest = Math.max(...series.flatMap(s => s.points.map(p => p.x)).concat([0]));
@@ -1610,7 +2129,7 @@ App.renderDash = function () {
   const briN = last && last.navelCm ? Calc.bri(last.navelCm, h) : null;
   const briStart = first && first.waistCm ? Calc.bri(first.waistCm, h) : null;
   const now = this.now();
-  let html = "";
+  let html = this.bodySummaryCard(now);
 
   /* health excellence index — ring hero + transparent component rings */
   const ex = Score.excellence(data, now);
@@ -1631,8 +2150,8 @@ App.renderDash = function () {
         <div class="ring" style="--p:0"><div class="inner"><span class="n">—</span><span class="of">/ 100</span></div></div>
         <div class="side"><div class="lab">${lab}</div><div class="st">${st}</div><div class="dl" style="color:var(--on-brand-mute)">${dl}</div></div>
       </div></div>
-      <div class="card"><h2>${building ? "Almost there" : "Get started"}</h2><div class="note">Your score needs at least two areas of real data — your weekly numbers and your daily habits — so a single reading can't skew it.</div>
-      <div class="grid2" style="margin-top:12px"><button class="btn" onclick="App.switchTab('measure')">Add a measurement</button><button class="btn ghost" onclick="App.switchTab('habits')">Set up habits</button></div></div>`;
+      <div class="card"><h2>${building ? "Almost there" : "Get started"}</h2><div class="note">Your score needs at least two areas of real data — your weekly measurements and your logged training — so a single reading can't skew it.</div>
+      <div class="grid2" style="margin-top:12px"><button class="btn" onclick="App.switchTab('measure')">Add a measurement</button><button class="btn ghost" onclick="App.switchTab('log')">Log a session</button></div></div>`;
   } else {
     const label = ex.headline >= 80 ? "Excellent" : ex.headline >= 60 ? "On track" : "Needs work";
     html += `<div class="ringhero">
@@ -1643,37 +2162,14 @@ App.renderDash = function () {
       <div class="gridR">` + comp.map(c => Dash.ring(c.v != null ? c.v / 100 : null, c.v != null ? "" : "no data", c.k, "")).join("") + `</div></div>`;
   }
 
-  /* behaviour process score */
-  const wkKey = Clock.isoWeekKey(now), cur = Score.weekPct(data.habitLog, wkKey, data.habitsCatalog);
-  const dow = now.getDay(), early = dow === 1 || dow === 2 || dow === 3;   // M48: don't judge a week that's barely begun
-  const band = cur >= 85 ? ["green", "dialled in"] : cur >= 70 ? ["orange", "tighten up"] : (cur === 0 || early) ? ["teal", "week in progress"] : ["orange", "behind — still time"];
-  html += `<div class="card"><h2>Behaviour — Process Score</h2>
-    <div style="text-align:center"><span class="bigscore">${cur}%</span> <span class="chip ${band[0]}">${band[1]}</span>
-    <div class="note">this week • ${esc(wkKey)} • the vital-few driving most of the result</div></div>
-    <table class="mini"><tr><th>Behaviour</th><th>Impact</th><th>This week</th></tr>`;
-  const wl = data.habitLog[wkKey] || {};
-  data.habitsCatalog.forEach(hh => {
-    html += `<tr><td>${esc(hh.label)}</td><td>×${hh.w}</td><td>${wl[hh.id] ? '<span class="chip green">held</span>' : '<span class="chip teal">not yet</span>'}</td></tr>`;
-  });
-  html += `</table>`;
-  const ow = ms.filter(m => m.waistCm != null).map(m => ({ x: Clock.parseISO(m.date).getTime(), w: m.waistCm, p: Score.weekPct(data.habitLog, Clock.isoWeekKey(Clock.parseISO(m.date)), data.habitsCatalog) }));
-  if (ow.length >= 2) {
-    html += `<h2 style="margin-top:14px">Behaviour vs waist</h2>` + Dash.chart([
-      { label: "Process", unit: "%", color: "var(--teal)", points: ow.map(p => ({ x: p.x, y: p.p })) },
-      { label: "Waist", unit: "cm", color: "var(--orange)", points: ow.map(p => ({ x: p.x, y: p.w })) }
-    ], { dual: true, label: "Process score versus waist over time" })
-    + `<div class="note">Exploratory view — an <b>association</b>, not proof of cause: weeks with higher adherence often sit alongside a lower waist, but many things move the waist. Watch the broad pattern over time, not week to week.</div>`;
-  }
-  html += `</div>`;
-
-  /* gauge */
+  /* gauge */  /* gauge */
   html += `<div class="card"><h2>Body Roundness Index</h2>${Dash.gauge(briW, briN, data.targets.bri)}`;
   if (briW != null) {
     const z = Calc.briZone(briW);
-    html += `<div style="text-align:center"><span class="chip ${z.cls}">${esc(z.label)}</span>`;
-    if (briN != null) html += `<span class="chip orange">▲ navel ${briN.toFixed(2)} (personal reference)</span>`;
-    html += `<div class="note" style="margin-top:6px">Target ${data.targets.bri.toFixed(2)} (waist ~${data.targets.waistCm}cm) • waist landmark reads leaner than navel</div>`;
-    html += `<div class="note" style="margin-top:4px;font-size:11.5px">${esc(BRI_MODEL.source)}</div></div>`;
+    html += `<div style="text-align:center;margin-top:2px"><span class="chip ${z.cls}">${esc(z.label)}</span>`;
+    html += `<div class="t-support" style="margin-top:7px;color:var(--navy)">Target ${data.targets.bri.toFixed(2)} · waist ≈${data.targets.waistCm} cm</div>`;
+    if (briN != null) html += `<div class="t-support" style="margin-top:4px;color:var(--slate2)">Navel ${briN.toFixed(2)} · personal reference</div>`;
+    html += `<div class="t-support" style="margin-top:4px;font-size:11px;color:var(--slate2)">${esc(BRI_MODEL.source)}</div></div>`;
   }
   html += `</div>`;
 
@@ -2011,271 +2507,9 @@ const FileSync = {
   }
 };
 
-/* ============ CLOUD SYNC (Supabase — optional, additive, local-first) ============ */
-const Cloud = {
-  URL: "https://vygjkcgjdbddrcaysjle.supabase.co",
-  KEY: "sb_publishable_XySZ48FKLjI8RNea4GZtlg_NzW1lWad",
-  sb: null, user: null, status: "", syncState: "synced", _pushT: null, _busy: false, _syncing: false, _skip: false,
-  // M38: a single, visible sync state — Synced / Syncing / Offline / Error.
-  syncChip() {
-    if (!this.online()) return { cls: "orange", label: "offline" };
-    const s = this.syncState || "synced";
-    return s === "pending" ? { cls: "teal", label: "syncing…" } : s === "error" ? { cls: "red", label: "sync error" } : { cls: "green", label: "synced" };
-  },
-  async client() {
-    if (this.sb) return this.sb;
-    const mod = await import("https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm");
-    this.sb = mod.createClient(this.URL, this.KEY, { auth: { persistSession: true, autoRefreshToken: true } });
-    return this.sb;
-  },
-  online() { return typeof navigator === "undefined" || navigator.onLine; },
-  async init() {
-    try {
-      const sb = await this.client();
-      const { data } = await sb.auth.getSession();
-      if (data && data.session) { this.user = data.session.user; this.prepLocalForUser(this.user.id); this.render(); await this.pullMerge("Synced on open"); }
-      sb.auth.onAuthStateChange((_e, session) => { this.user = session ? session.user : null; this.render(); });
-      // pull-merge whenever the app comes back to the foreground or regains connection → feels live across devices
-      document.addEventListener("visibilitychange", () => { if (!document.hidden && this.user) this.pullMerge("Synced"); });
-      window.addEventListener("online", () => { if (this.user) this.pullMerge("Synced"); });
-    } catch (e) { /* offline or library blocked — app stays fully local */ }
-    this.render();
-  },
-  async signUp(email, pw) {
-    email = (email || "").trim();
-    if (!email || !pw) return toast("Enter an email and a password");
-    if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return toast("Enter a valid email address");
-    if (pw.length < 8) return toast("Password needs at least 8 characters");
-    this._busy = true; toast("Creating your account…");
-    try {
-      const sb = await this.client();
-      const { data, error } = await sb.auth.signUp({ email, password: pw });
-      if (error) { toast("Couldn't create the account — try logging in instead, or use a different email."); return; }
-      if (data.session) this.user = data.user;
-      else { const r = await sb.auth.signInWithPassword({ email, password: pw }); if (r.error) { toast("Account created — now tap Log in"); return; } this.user = r.data.user; }
-      this.prepLocalForUser(this.user.id);
-      await this.pullMerge("Synced");
-      toast("Account created — sync is on");
-    } catch (e) { toast("Sign-up failed — check your connection"); }
-    finally { this._busy = false; this.render(); }
-  },
-  async signIn(email, pw) {
-    email = (email || "").trim();
-    if (!email || !pw) return toast("Enter your email and password");
-    if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return toast("Enter a valid email address");
-    this._busy = true; toast("Signing in…");
-    try {
-      const sb = await this.client();
-      const { data, error } = await sb.auth.signInWithPassword({ email, password: pw });
-      if (error) { toast("Couldn't sign in — check your email and password."); return; }
-      this.user = data.user;
-      this.prepLocalForUser(this.user.id);
-      await this.pullMerge("Synced");
-      toast("Logged in — sync is on");
-    } catch (e) { toast("Login failed — check your connection"); }
-    finally { this._busy = false; this.render(); }
-  },
-  // Tag local data with the account it belongs to; if a DIFFERENT account logs in, wipe local first so data can't bleed across accounts.
-  prepLocalForUser(uid) {
-    let prev = ""; try { prev = localStorage.getItem("msela_local_uid") || ""; } catch (e) {}
-    if (prev && prev !== uid) {
-      App.data = structuredClone(DEFAULT_DATA);
-      App.data.targets.bri = +Calc.bri(App.data.targets.waistCm, App.data.profile.heightM).toFixed(2);
-    }
-    try { localStorage.setItem("msela_local_uid", uid); } catch (e) {}
-  },
-  async signOut() {
-    try { const sb = await this.client(); await sb.auth.signOut(); } catch (e) {}
-    this.user = null; this.status = "";
-    try { localStorage.removeItem("msela_local_uid"); } catch (e) {}
-    App.data = structuredClone(DEFAULT_DATA);           // clear the browser copy so the next account can't inherit this one's data
-    App.data.targets.bri = +Calc.bri(App.data.targets.waistCm, App.data.profile.heightM).toFixed(2);
-    Store.save(App.data); App.renderAll(); this.render();
-    toast("Logged out — your data is safe in your account");
-  },
-  async changePassword() {
-    if (!this.user) return;
-    const cur = ((document.getElementById("cp-cur") || {}).value || "");
-    const nw = ((document.getElementById("cp-new") || {}).value || "");
-    const cf = ((document.getElementById("cp-confirm") || {}).value || "");
-    if (!cur || !nw) return toast("Enter your current and new password");
-    if (nw.length < 8) return toast("New password needs at least 8 characters");
-    if (nw !== cf) return toast("New passwords don't match");
-    if (nw === cur) return toast("New password must be different from the current one");
-    this._busy = true; this.render();
-    try {
-      const sb = await this.client();
-      // Step 1 — verify the CURRENT password (re-authenticate, so only the real owner can proceed)
-      const v = await sb.auth.signInWithPassword({ email: this.user.email, password: cur });
-      if (v.error) { toast("Current password is incorrect"); return; }
-      // Step 2 — set the new password
-      const u = await sb.auth.updateUser({ password: nw });
-      if (u.error) { toast(u.error.message); return; }
-      toast("Password changed ✓");
-    } catch (e) { toast("Couldn't change password — check your connection"); }
-    finally { this._busy = false; this.render(); }
-  },
-  async pull() {
-    const sb = await this.client();
-    const { data, error } = await sb.from("msela_data").select("data, updated_at").eq("user_id", this.user.id).maybeSingle();
-    if (error) throw error;
-    return data;
-  },
-  async push() {
-    if (!this.user) return;
-    try {
-      const sb = await this.client();
-      const { error } = await sb.from("msela_data").upsert({ user_id: this.user.id, data: App.data, updated_at: new Date().toISOString() }, { onConflict: "user_id" });
-      this.status = error ? "Sync error — will retry" : "Synced " + new Date().toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" });
-      this.syncState = error ? "error" : "synced";
-    } catch (e) { this.status = "Sync error — will retry"; this.syncState = "error"; }
-    this.render();
-  },
-  async pullMerge(label) {
-    if (!this.user || !this.online() || this._syncing) return;
-    this._syncing = true;
-    try {
-      const remote = await this.pull();
-      let adopted = false;
-      if (remote && remote.data) {
-        const sig = d => JSON.stringify([d.measurements, d.workouts, d.activities, d.deloads, d.checkpoints, d.tombstones, d.habitLog, d.profile, d.targets]);
-        const before = sig(App.data);
-        App.data = mergeSaved(Cloud.merge(App.data, remote.data));
-        App.data.targets.bri = +Calc.bri(App.data.targets.waistCm, App.data.profile.heightM).toFixed(2);
-        adopted = sig(App.data) !== before;   // re-render only if real records actually changed
-      }
-      Store.save(App.data);            // writes locally (and via the hook re-pushes the merged set)
-      await this.push();
-      if (adopted) App.renderAll();    // only re-render when newer data actually arrived — never disrupt your current screen mid-edit
-      if (label) this.status = label + " " + new Date().toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" });
-      this.render();
-    } catch (e) { this.status = "Sync error — will retry"; this.syncState = "error"; this.render(); }
-    finally { this._syncing = false; }
-  },
-  queuePush() {
-    if (!this.user) return;
-    clearTimeout(this._pushT);
-    this.syncState = "pending"; this.render();   // M38: show pending until the push confirms
-    // pull-merge-then-push so a local change never clobbers another device's recent edits
-    this._pushT = setTimeout(() => this.pullMerge("Synced"), 1500);
-  },
-  // Last-write-wins: whichever side changed most recently wins as a whole. For a single user
-  // across their own devices this is predictable and correct — your latest action (add, edit,
-  // delete or un-tick) wins everywhere, and changes still cross between devices. The program and
-  // habitsCatalog always come from the app's code (forced in mergeSaved), so they're never lost.
-  // Does this blob hold any real user content? (used so an empty side never overwrites a populated one)
-  hasContent(d) {
-    if (!d) return false;
-    if (((d.profile && d.profile.name) || "").trim()) return true;
-    if (d.measurements && d.measurements.length) return true;
-    if (d.workouts && d.workouts.length) return true;
-    if (d.activities && d.activities.length) return true;
-    if (d.deloads && d.deloads.length) return true;
-    if (d.habitLog && Object.keys(d.habitLog).some(wk => Object.values(d.habitLog[wk] || {}).some(Boolean))) return true;
-    if (d.checkpoints && d.checkpoints.some(c => c && (c.date || c.result || (c.status && c.status !== "todo")))) return true;
-    return false;
-  },
-  // Decide whether to adopt the remote blob. Content beats emptiness first (so a blank local can
-  // never wipe real cloud data, and a blank cloud can never wipe real local data); only when BOTH
-  // sides have content do we fall back to last-write-wins by timestamp.
-  pickRemote(local, remote, remoteUpdated) {
-    const lHas = this.hasContent(local), rHas = this.hasContent(remote);
-    if (lHas && !rHas) return false;
-    if (rHas && !lHas) return true;
-    const lUp = (local && local.updatedAt) ? new Date(local.updatedAt).getTime() : 0;
-    const rUp = remoteUpdated ? new Date(remoteUpdated).getTime() : 0;
-    return rUp > lUp;
-  },
-  // Record-level merge (M01/M02/M03): union every collection by its natural key so two devices'
-  // different edits both survive; per-key conflicts resolve to the newer record version; deletes are
-  // honoured via tombstones so a removed record can't resurrect. An empty side can never overwrite a
-  // populated one. (habitLog + profile use whole-object newer-wins for now — M21/M02 refine later.)
-  merge(local, remote) {
-    const A = local || {}, B = remote || {};
-    const ts = x => (x && x.updatedAt) ? new Date(x.updatedAt).getTime() : 0;
-    const out = structuredClone(A);
-    // 1) union record collections by key; newer record version wins on conflict
-    for (const coll of REC_COLLS) {
-      const map = new Map();
-      for (const r of (A[coll] || [])) map.set(recKey(coll, r), r);
-      for (const r of (B[coll] || [])) { const k = recKey(coll, r); const cur = map.get(k); if (!cur || ts(r) > ts(cur)) map.set(k, r); }
-      out[coll] = [...map.values()];
-    }
-    // 2) union tombstones (keep the newest delete per key)
-    const tMap = new Map();
-    const addT = t => { const k = t.coll + "::" + t.key; const cur = tMap.get(k); if (!cur || new Date(t.at).getTime() > new Date(cur.at).getTime()) tMap.set(k, t); };
-    (A.tombstones || []).forEach(addT); (B.tombstones || []).forEach(addT);
-    out.tombstones = [...tMap.values()];
-    // 3) apply tombstones — a delete removes a record only if the delete is newer than that record's version
-    const delAt = new Map(out.tombstones.map(t => [t.coll + "::" + t.key, new Date(t.at).getTime()]));
-    for (const coll of REC_COLLS) out[coll] = out[coll].filter(r => { const d = delAt.get(coll + "::" + recKey(coll, r)); return !(d != null && d >= ts(r)); });
-    // 4) singletons — never let an empty side overwrite a populated one; else the newer blob wins
-    const lUp = ts(A), rUp = ts(B), newer = rUp > lUp ? B : A;
-    const nmA = ((A.profile && A.profile.name) || "").trim(), nmB = ((B.profile && B.profile.name) || "").trim();
-    out.profile = structuredClone(nmA && !nmB ? A.profile : (nmB && !nmA ? B.profile : (newer.profile || A.profile)));
-    const ticks = hl => hl && Object.keys(hl).some(wk => Object.values(hl[wk] || {}).some(Boolean));
-    const tkA = ticks(A.habitLog), tkB = ticks(B.habitLog);
-    out.habitLog = structuredClone(tkA && !tkB ? A.habitLog : (tkB && !tkA ? B.habitLog : (newer.habitLog || A.habitLog || {})));
-    out.targets = structuredClone(newer.targets || A.targets);
-    out.programState = structuredClone(newer.programState || A.programState || { startDate: (A.program && A.program.startDate) });
-    // weekly steps: union by week, newer blob wins on a conflicting week
-    out.stepsLog = structuredClone(Object.assign({}, (rUp > lUp ? A.stepsLog : B.stepsLog) || {}, (rUp > lUp ? B.stepsLog : A.stepsLog) || {}));
-    out.updatedAt = new Date().toISOString();
-    return out;
-  },
-  card() {
-    if (this.user) {
-      const sc = this.syncChip();
-      return `<div class="card"><h2 style="display:flex;justify-content:space-between;align-items:center;gap:8px">Cloud sync <span class="chip ${sc.cls}">${sc.label}</span></h2>
-        <div class="note">Signed in as <b>${esc(this.user.email || "you")}</b>. Your data syncs automatically across every device you log in on.${this.status ? " <br>" + esc(this.status) + "." : ""}</div>
-        <div class="grid2" style="margin-top:12px">
-          <button class="btn" ${this._busy ? "disabled" : ""} onclick="Cloud.pullMerge('Synced')">Sync now</button>
-          <button class="btn ghost" onclick="Cloud.signOut()">Log out</button>
-        </div>
-        <details class="proto" style="margin-top:12px"><summary>Change password</summary>
-          <div class="note" style="margin:6px 0">Two steps: enter your current password, then your new one — so only you can change it.</div>
-          <div class="fld"><label for="cp-cur">Current password</label><input type="password" id="cp-cur" autocomplete="current-password"></div>
-          <div class="fld"><label for="cp-new">New password</label><input type="password" id="cp-new" autocomplete="new-password"></div>
-          <div class="fld"><label for="cp-confirm">Confirm new password</label><input type="password" id="cp-confirm" autocomplete="new-password"></div>
-          <button class="btn" ${this._busy ? "disabled" : ""} onclick="Cloud.changePassword()">Change password</button>
-        </details></div>`;
-    }
-    return `<div class="card"><h2>Cloud sync — your data on every device</h2>
-      <div class="note">Create an account (or log in) and Msela keeps everything in sync across your phone, tablet and computer automatically. Optional — without it the app still works and your data stays on this device.</div>
-      <div class="grid2" style="margin-top:12px">
-        <div class="fld"><label for="cl-email">Email</label><input type="email" id="cl-email" autocomplete="username" inputmode="email"></div>
-        <div class="fld"><label for="cl-pw">Password</label><input type="password" id="cl-pw" autocomplete="current-password"></div>
-      </div>
-      <div class="grid2" style="margin-top:8px">
-        <button class="btn" ${this._busy ? "disabled" : ""} onclick="Cloud.signIn(document.getElementById('cl-email').value, document.getElementById('cl-pw').value)">Log in</button>
-        <button class="btn ghost" ${this._busy ? "disabled" : ""} onclick="Cloud.signUp(document.getElementById('cl-email').value, document.getElementById('cl-pw').value)">Create account</button>
-      </div>
-      <div class="note" style="margin-top:8px">First time? Tap <b>Create account</b>. Already have one (e.g. on another device)? Tap <b>Log in</b> and your data appears here.</div></div>`;
-  },
-  syncCoverState() {
-    const cover = document.getElementById("cover");
-    // login cover shows on every fresh open until you're signed in; "Continue on this device" only dismisses it for this session
-    if (cover) cover.style.display = (this.user || this._skip) ? "none" : "flex";
-    if (typeof App.syncOnboard === "function") App.syncOnboard();
-  },
-  render() {
-    this.syncCoverState();
-    if (typeof App.applyMode === "function") App.applyMode();
-    const td = document.getElementById("scr-today");
-    if (td && td.classList.contains("active") && typeof App.renderToday === "function") App.renderToday();
-    const el = document.getElementById("scr-data");
-    if (el && el.classList.contains("active") && typeof App.renderData === "function") App.renderData();
-  }
-};
-App.coverLogin = function () { Cloud.signIn((document.getElementById("cv-email") || {}).value, (document.getElementById("cv-pw") || {}).value); };
-App.coverSignup = function () { Cloud.signUp((document.getElementById("cv-email") || {}).value, (document.getElementById("cv-pw") || {}).value); };
-App.coverSkip = function () { Cloud._skip = true; Cloud.syncCoverState(); toast("Using Msela on this device"); };
-App.showCover = function () { Cloud._skip = false; Cloud.syncCoverState(); };
-// PERSONAL vs COMMERCIAL mode: only the owner account unlocks the full workout program; everyone else gets the commercial app.
-App.isPersonal = function () {
-  return typeof Cloud !== "undefined" && !!Cloud.user && OWNER_EMAILS.indexOf(((Cloud.user.email) || "").toLowerCase().trim()) !== -1;
-};
-App.applyMode = function () { if (document.body) document.body.classList.toggle("commercial", !this.isPersonal()); };
+/* ============ PERSONAL BUILD — single user, no cloud, local-first ============ */
+App.isPersonal = function () { return true; };   // personal single-user build — full programme always on
+App.applyMode = function () { if (document.body) document.body.classList.remove("commercial"); };App.applyMode = function () { if (document.body) document.body.classList.toggle("commercial", !this.isPersonal()); };
 // Phase 4: the day's planned confirmations, as a clean chip row. Only today's 1–2 items ever show.
 App.dayPlan = function (now, day) {
   const data = this.data, today = Clock.toISO(now), d = now.getDay();
@@ -2383,49 +2617,6 @@ App.toggleTheme = function () {
   try { localStorage.setItem("msela_theme", next); } catch (e) {}
   this.syncThemeBtn();
 };
-// Commercial Today: simple daily activity log (no gym program)
-App.commercialToday = function (now, dateStr, last, briTxt, zone) {
-  const data = this.data, today = Clock.toISO(now);
-  let html = `<div class="card hero"><h2>${esc(dateStr)}</h2>
-    <div class="big">Today</div>
-    <div class="meta">Log what you did, hold your habits, measure weekly.</div>
-    <div class="kpis">
-      <div class="kpi"><div class="v">${briTxt}</div><div class="l">BRI (waist)${zone ? " • " + esc(zone.label) : ""}</div></div>
-      <div class="kpi"><div class="v">${last ? esc(last.weightKg) + " kg" : "—"}</div><div class="l">Last weigh-in</div></div>
-    </div></div>`;
-  const cats = [
-    { type: "workout", label: "Workout", emoji: "🏋️", note: "Tap the muscle groups you trained.", subs: ["Chest", "Triceps", "Biceps", "Shoulders", "Core", "Legs", "Back"] },
-    { type: "movement", label: "Movement", emoji: "🚶", note: "How did you move today?", subs: ["Walking", "Jogging", "Cycling"] },
-    { type: "sports", label: "General sports / workout", emoji: "🤾", note: "Any game or general session.", subs: null },
-    { type: "other", label: "Other workout", emoji: "🧘", note: "Pick what you did.", subs: ["Calisthenics", "Pilates", "HIIT", "Yoga"] }
-  ];
-  const norm = s => (s || "").toLowerCase();
-  html += `<div class="card"><h2>Log today's activity</h2><div class="note">Tap what you did — tap again to undo.</div>`;
-  cats.forEach(c => {
-    const wk = this.activityWeek(c.type, now);
-    if (c.subs) {
-      const pills = c.subs.map(s => {
-        const on = (data.activities || []).some(a => a.date === today && a.type === c.type && norm(a.sub) === norm(s));
-        return `<button class="pill" aria-pressed="${on}" onclick="App.logActivity('${c.type}','${norm(s)}')">${esc(s)}</button>`;
-      }).join("");
-      html += `<div class="actcat"><div class="h"><b>${c.emoji} ${esc(c.label)}</b><span class="note">${wk} this week</span></div>
-        <div class="note" style="margin-top:2px">${esc(c.note)}</div><div class="optrow">${pills}</div></div>`;
-    } else {
-      const on = (data.activities || []).some(a => a.date === today && a.type === c.type);
-      html += `<div class="actcat"><div class="h"><b>${c.emoji} ${esc(c.label)}</b><span class="note">${wk} this week${on ? " • done today" : ""}</span></div>
-        <div class="optrow"><button class="pill" aria-pressed="${on}" onclick="App.logActivity('${c.type}')">${on ? "✓ Logged today" : "Log it"}</button></div></div>`;
-    }
-  });
-  html += `</div>`;
-  if (now.getDay() === 1) {
-    html += `<div class="card"><h2>Measurement morning</h2><div class="note">Within 30 min of waking • post-bathroom • pre-food/water • same scale, hard floor.</div>
-      <div style="margin-top:12px"><button class="btn ghost" onclick="App.switchTab('measure')">Enter measurements</button></div></div>`;
-  } else {
-    html += `<div class="card"><div class="note">Measure weekly on Monday mornings and tick your habits daily — consistency is what moves your numbers.</div></div>`;
-  }
-  html += `<div class="footer-note">Private to your account · synced across your devices</div>`;
-  return html;
-};
 // First-run setup: show the onboarding overlay when a user has no name set (and isn't on the cover)
 App.syncOnboard = function () {
   const o = document.getElementById("onboard"); if (!o) return;
@@ -2445,7 +2636,6 @@ App.completeOnboarding = function () {
   if (tw) d.targets.waistCm = tw;
   d.targets.bri = +Calc.bri(d.targets.waistCm, d.profile.heightM).toFixed(2);
   Store.save(d); this.renderAll();
-  if (typeof Cloud !== "undefined") Cloud.syncCoverState();
   this.syncOnboard();
   toast("You're all set — welcome to Msela");
 };
@@ -2469,7 +2659,7 @@ App.renderData = function () {
         </div>
         <div class="note" style="margin-top:10px">${this.fileName ? "Auto-saving to <b>" + esc(this.fileName) + "</b>" : "Not linked — currently using on-device storage."}</div></div>`
     : `<div class="card"><h2>File-first storage</h2><div class="note">This browser can't link a file directly (Safari / Firefox). Use Export / Import below to keep a file backup. On Chrome or Edge you'd also get one-tap auto-save straight to a file.</div></div>`;
-  el.innerHTML = Cloud.card() + banner + fc + `
+  el.innerHTML = banner + fc + `
     <div class="card"><h2>Data &amp; backup</h2>
       <div class="note">Your data lives on this device. Export regularly — that file is your real backup and long-term archive.</div>
       <div class="grid2" style="margin-top:12px">
@@ -2575,18 +2765,13 @@ App.saveProfile = function () {
   d.targets.bri = +Calc.bri(d.targets.waistCm, d.profile.heightM).toFixed(2);
   Store.save(d); this.renderAll(); toast("Profile saved");
 };
-// M11: a single, unambiguous reset. Signs out of any account first (so no partial reset ever propagates to
-// the cloud), then fully clears THIS device to a clean default — every collection, not a partial subset.
+// M11: a single, unambiguous reset — fully clears THIS device to a clean default (every collection, not a partial subset). The programme is re-seeded from code.
 App.startFresh = async function () {
-  if (!confirm("Start fresh for a new person? This signs out of any account and clears ALL logged data on THIS device (your programme stays). Export a backup first if unsure.")) return;
-  if (typeof Cloud !== "undefined" && Cloud.user) {
-    await Cloud.signOut();                       // blanks local to a clean default + unlinks the account; nothing is pushed
-  } else {
-    const d = structuredClone(DEFAULT_DATA);
-    d.targets.bri = +Calc.bri(d.targets.waistCm, d.profile.heightM).toFixed(2);
-    Store.save(d); this.data = d; this.renderAll();
-  }
-  this.switchTab("data");
+  if (!confirm("Start fresh for a new person? This clears ALL logged data on THIS device (your programme stays). Export a backup first if unsure.")) return;
+  const d = structuredClone(DEFAULT_DATA);
+  d.targets.bri = +Calc.bri(d.targets.waistCm, d.profile.heightM).toFixed(2);
+  Store.save(d); this.data = d; this.renderAll();
+  this.switchTab("data");  this.switchTab("data");
   toast("Fresh start — set the profile above, then begin");
 };
 
@@ -2755,16 +2940,10 @@ App.lensScores = function (data, now, fmt) {
     return `<tr><td>${esc(c.k)}</td><td style="color:var(--slate)">weight ${c.w}%</td><td><span class="chip ${chip}">${c.v == null ? "no data" : c.v}</span></td></tr>`;
   }).join("");
   const exDesc = this.isPersonal()
-    ? "A weighted blend of your body, behaviour, fitness markers and strength trend — a guide to where to look, not a diagnosis."
-    : "A weighted blend of your body, behaviour and fitness markers — a guide to where to look, not a diagnosis.";
+    ? "A weighted blend of your body, fitness markers and strength trend — a guide to where to look, not a diagnosis."
+    : "A weighted blend of your body and fitness markers — a guide to where to look, not a diagnosis.";
   const exCard = `<div class="card"><h2 style="display:flex;justify-content:space-between;align-items:center;gap:8px">Health Excellence index <span class="chip ${headChip}">${head}</span></h2><div class="note">${exDesc}</div><table class="mini"><tr><th>Component</th><th></th><th>Score</th></tr>${crows}</table></div>`;
-  const tr = Insights.processTrend(data.habitLog, data.habitsCatalog, now, 6);
-  let prow = tr.map(w => `<td style="text-align:center"><span class="chip ${w.pct == null ? "teal" : w.pct >= 80 ? "green" : w.pct >= 50 ? "orange" : "red"}" style="margin:0">${w.pct == null ? "–" : w.pct}</span></td>`).join("");
-  const procCard = `<div class="card"><h2>Behaviour score — last 6 weeks</h2><div class="note">Weekly habit adherence %, weighted by importance. Consistency here is what moves the body numbers.</div><div class="scrollx"><table class="mini nowrap"><tr>${tr.map(w => `<th style="text-align:center">${esc(w.week.split("-W")[1])}</th>`).join("")}</tr><tr>${prow}</tr></table></div></div>`;
-  const adh = Insights.habitAdherence(data.habitLog, data.habitsCatalog, now, 8);
-  let arows = adh.map(a => `<tr><td>${esc(a.label)}</td><td>${a.hit}/${a.of} wks</td><td><span class="chip ${a.pct >= 80 ? "green" : a.pct >= 50 ? "orange" : "red"}">${a.pct}%</span></td></tr>`).join("");
-  const adhCard = `<div class="card"><h2>Habit adherence — last 8 weeks</h2><table class="mini"><tr><th>Habit</th><th>Weeks hit</th><th>Rate</th></tr>${arows}</table></div>`;
-  return exCard + procCard + adhCard;
+  return exCard;   // legacy "Health Excellence" lens, superseded by the Body pillar; former procCard/adhCard removed in 2.0
 };
 App._renderAllProg = App.renderAll;
 App.renderAll = function () { this._renderAllProg(); this.renderProgress(); };
