@@ -399,7 +399,7 @@ try{var _t=localStorage.getItem("msela_theme"); document.documentElement.setAttr
 "use strict";
 /* ============ DATA MODEL & SEED (program is data, not code) ============ */
 const STORE_KEY = "uhs_data_v1";
-const APP_VERSION = "2026-10-20 · v19.0 · MSELA 2.0 · Today-summary · pillar logging · Sleep · 3-lens Trends";   // visible build tag — bump on every deploy so we can confirm what's actually live on a device
+const APP_VERSION = "2026-10-20 · v19.1 · MSELA 2.0 · Matthew catch-up Read on Spirit page";   // visible build tag — bump on every deploy so we can confirm what's actually live on a device
 const DEFAULT_DATA = {
   schema: 1,
   profile: { name: "", heightM: 1.75 },
@@ -1712,7 +1712,7 @@ App.renderSpirit = function () {
   html += '<div class="card"><div class="t-label">Journey</div><div style="font-family:var(--font-voice);font-size:20px;color:var(--navy);margin-top:4px">' + (te ? esc(te.r) : (iso > Scripture.lastDate() ? 'Plan complete \u2713' : 'Begins 7 Sep')) + '</div>' + (te && te.dual ? ('<div class="t-support" style="margin-top:3px;color:var(--slate)">Companion \u00b7 ' + esc(te.nt) + ' \u00b7 ' + esc(te.theme) + (te.cycle ? (' \u00b7 cycle ' + te.cycle) : '') + '</div>') : '') + '<div class="t-support" style="margin-top:3px">' + progLabel + ' \u00b7 day ' + (todayDay || progN) + ' of ' + progN + '</div>' + bar(planPct, 'var(--spirit)') + '<div class="t-support" style="margin-top:5px">' + (Math.round(doneFrac * 10) / 10) + ' of ' + progN + ' days read \u00b7 ' + planPct + '%</div>' + todayAction + aheadBlock + behindBlock + '</div>';
   html += '<div style="display:flex;gap:10px">'
     + '<div class="card" style="flex:1"><div class="t-label">Study</div><div style="font-family:var(--font-voice);font-size:17px;color:var(--navy);margin-top:4px">BSF</div><div class="t-support" style="margin-top:3px">' + (s.bsf.active ? 'Active' : 'Paused') + '</div></div>'
-    + '<div class="card" style="flex:1"><div class="t-label">Catch-up</div><div style="font-family:var(--font-voice);font-size:17px;color:var(--navy);margin-top:4px">' + (cs.complete ? 'Complete ✓' : cs.nextRef) + '</div><div class="t-support" style="margin-top:3px">' + (cs.complete ? 'Matthew ' + cs.from + '–' + cs.to : (cs.done + '/' + cs.total + ' · \u2248' + cs.perWeek + '/wk · by ' + cs.targetLabel)) + '</div></div>'
+    + '<div class="card" style="flex:1"><div class="t-label">Catch-up</div><div style="font-family:var(--font-voice);font-size:17px;color:var(--navy);margin-top:4px">' + (cs.complete ? 'Complete ✓' : cs.nextRef) + '</div><div class="t-support" style="margin-top:3px">' + (cs.complete ? 'Matthew ' + cs.from + '–' + cs.to : (cs.done + '/' + cs.total + ' · \u2248' + cs.perWeek + '/wk · by ' + cs.targetLabel)) + '</div>' + (cs.complete ? '' : '<div class="t-support" style="margin-top:4px;font-size:11px;color:var(--slate2)">' + (cs.dueToday ? 'Due today' : 'On pace') + '</div><div style="margin-top:10px"><span class="act sp mini" onclick="App.readCatchup()">Read ' + esc(cs.nextRef) + '</span></div>') + '</div>'
     + '</div>';
   const eraLabel = od.era === 'nt' ? 'New Testament' : (lapName + ' journey through the Bible');
   const litTotal = s.litChapters || 0; const ntLaps = (s.litNT || 0) / 260; const lapReadout = (s.litNT >= 260) ? ('New Testament read ' + (Math.round(ntLaps * 10) / 10) + '\u00d7 through') : '';
