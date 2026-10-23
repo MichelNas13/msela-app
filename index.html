@@ -373,7 +373,6 @@ try{var _t=localStorage.getItem("msela_theme"); document.documentElement.setAttr
   <div id="bodysub" class="subnav" style="display:none">
     <button class="seg" data-sub="dash" onclick="App.switchTab('dash')">Overview</button>
     <button class="seg" data-sub="today" onclick="App.switchTab('today')">Session</button>
-    <button class="seg" data-sub="log" onclick="App.switchTab('log')">Log</button>
     <button class="seg" data-sub="track" onclick="App.switchTab('track')">Measure</button>
     <button class="seg" data-sub="progress" onclick="App.switchTab('progress')">Trends</button>
   </div>
@@ -381,8 +380,7 @@ try{var _t=localStorage.getItem("msela_theme"); document.documentElement.setAttr
   <section id="scr-spirit" class="screen" role="tabpanel" aria-label="Spirit"></section>
   <section id="scr-mind" class="screen" role="tabpanel" aria-label="Mind"></section>
   <section id="scr-dash" class="screen" role="tabpanel" aria-label="Dashboard"></section>
-  <section id="scr-today" class="screen" role="tabpanel" aria-label="Today"></section>
-  <section id="scr-log" class="screen" role="tabpanel" aria-label="Log workout"></section>
+  <section id="scr-today" class="screen" role="tabpanel" aria-label="Session"></section>
   <section id="scr-track" class="screen" role="tabpanel" aria-label="Measurements">
     <div id="scr-measure"></div>
   </section>
@@ -401,7 +399,7 @@ try{var _t=localStorage.getItem("msela_theme"); document.documentElement.setAttr
 "use strict";
 /* ============ DATA MODEL & SEED (program is data, not code) ============ */
 const STORE_KEY = "uhs_data_v1";
-const APP_VERSION = "2026-10-09 · v18.0 · MSELA 2.0 · 2027–28 dual-track Journey (OT+NT) · two-era odometer";   // visible build tag — bump on every deploy so we can confirm what's actually live on a device
+const APP_VERSION = "2026-10-20 · v19.0 · MSELA 2.0 · Today-summary · pillar logging · Sleep · 3-lens Trends";   // visible build tag — bump on every deploy so we can confirm what's actually live on a device
 const DEFAULT_DATA = {
   schema: 1,
   profile: { name: "", heightM: 1.75 },
@@ -573,17 +571,31 @@ const Store = {
   },
   save(d, keepStamp) {
     if (!keepStamp) d.updatedAt = new Date().toISOString();   // stamp for cloud-merge conflict resolution (skip on boot-time normalisation)
-    let json; try { json = JSON.stringify(d); } catch (e) { return; }
+    let json; try { json = JSON.stringify(d); } catch (e) { try { App._lastSaveOK = false; } catch (_) {} if (typeof toast === "function") toast("⚠ Couldn't prepare your data to save."); return; }
     try {
       const prev = localStorage.getItem(STORE_KEY);
       // keep the last good main copy in the mirror BEFORE overwriting the main key
       if (prev) { try { if (this.parseValid(prev)) localStorage.setItem(MIRROR_KEY, prev); } catch (e) {} }
       localStorage.setItem(STORE_KEY, json);
+      const landed = localStorage.getItem(STORE_KEY) === json;   // read-back: did the write actually persist?
+      try { App._lastSaveAt = new Date(); App._lastSaveOK = landed; } catch (_) {}
+      if (!landed && typeof toast === "function") toast("⚠ The save didn't stick — this device may be clearing app storage. Export a backup from Data.");
     } catch (e) {
       // S1-11: storage full / write blocked — never fail silently. The previous good copy is untouched.
-      if (typeof toast === "function") toast("⚠ Couldn't save on this device — storage may be full. Export a backup from Data to be safe.");
+      try { App._lastSaveOK = false; } catch (_) {}
+      if (typeof toast === "function") toast("⚠ Couldn't save on this device — storage may be full or blocked. Export a backup from Data to be safe.");
     }
     if (typeof FileSync !== "undefined" && FileSync.handle) FileSync.write(d); // mirror to linked file if any
+  },
+  // Ask the browser to make this app's storage durable (not auto-evicted). Installed apps are usually granted it.
+  requestPersist() {
+    try {
+      if (navigator.storage && navigator.storage.persist) {
+        const done = (g) => { try { App._persist = g ? 'granted' : 'denied'; if (App.renderData) App.renderData(); } catch (e) {} };
+        if (navigator.storage.persisted) navigator.storage.persisted().then(a => { if (a) done(true); else navigator.storage.persist().then(done); });
+        else navigator.storage.persist().then(done);
+      } else { App._persist = 'unsupported'; }
+    } catch (e) { App._persist = 'error'; }
   }
 };
 
@@ -748,11 +760,11 @@ const FRAME = (function () {
         { name: "Side delts",        star: 2, tent: "lateral", rx: "4 × 10-15", w: ["Machine Lateral Raise"] },
         { name: "Shoulders — press", star: 1, tent: "ohp",     rx: "3 × 8-10",  w: ["Arnold Press (standing)"] },
         { name: "Rear delts / traps",                          rx: "3 × 15-20", w: ["Face Pull"] },
-        { name: "Biceps — EZ",       star: 1, tent: "curl",     rx: "3 × 8-10",  w: ["EZ-Bar Curl"] },
+        { name: "Biceps — preacher", star: 1, tent: "curl",    rx: "3 × 8-10",  w: ["Preacher Curl"] },
         { name: "Brachialis",                                   rx: "3 × 10-12", w: ["Hammer Curl"] },
-        { name: "Core — flexion",                              rx: "3 × 10-15", w: ["Hanging Leg Raise"] },
-        { name: "Core — abs",                                  rx: "3 × 12-15", w: ["Cable Crunch"] },
-        { name: "Core — brace",                                rx: "3 × 30-60s", w: ["Plank"] }
+        { name: "Biceps — EZ",                                  rx: "3 × 8-10",  w: ["EZ-Bar Curl"] },
+        { name: "Core — brace",                                rx: "3 × 30-60s", w: ["Plank"] },
+        { name: "Core — flexion",                              rx: "3 × 10-15", w: ["Hanging Leg Raise"] }
       ]
     },
     pullB: {
@@ -955,7 +967,7 @@ const Score = {
     const movement = dim(
       minOf(minKey(data.movement), firstWorkout),
       (iso, day) => !!day && (day.kind === "gym" || (day.kind === "mixed" && day.activity === "basketball") || (day.kind === "flex" && sun(iso) === "gym")),
-      (iso, day) => day.kind === "gym" ? ((data.workouts || []).some(w => w.date === iso) ? 100 : null) : ((data.movement && data.movement[iso]) ? 100 : null)
+      (iso, day) => ((data.movement && data.movement[iso]) || (data.workouts || []).some(w => w.date === iso)) ? 100 : null   // v19: gym completion flagged via movement[iso] (Log removed) or legacy logged workout
     );
     const activity = dim(
       minKey(data.steps),
@@ -999,11 +1011,11 @@ const Score = {
     Object.keys(readLog).forEach(upd); items.forEach(i => upd(i.date));
     if (!first) return { mind: null, win: win, coverage: 0, coveragePct: 0 };
     const days = []; for (let i = win - 1; i >= 0; i--) { const dd = new Date(now); dd.setDate(dd.getDate() - i); days.push(toISO(dd)); }
-    let learnedN = 0, counted = 0;
-    for (const iso of days) { if (iso < first) continue; if (iso === todayISO && !learned(iso)) continue; counted++; if (learned(iso)) learnedN++; }
-    if (!counted) return { mind: null, win: win, coverage: 0, coveragePct: 0 };
-    const mind = Math.min(100, Math.round(learnedN / counted * 100 * 7 / 6));
-    return { mind: mind, win: win, coverage: 1, coveragePct: 100 };
+    // v19: presence only — target 6 learning-days/week. Score = min(100, learningDays/6 × 100). 7th day earns no extra credit.
+    let learnedN = 0;
+    for (const iso of days) { if (learned(iso)) learnedN++; }
+    const mind = Math.min(100, Math.round(learnedN / 6 * 100));
+    return { mind: mind, learnedDays: learnedN, win: win, coverage: 1, coveragePct: 100 };
   },  // M19: resting-HR scored against evidence bands (not an ad-hoc curve). Very low is NOT auto-rewarded to 100
   // (it can be athletic OR bradycardia), and elevated is flagged for review rather than silently averaged.
   rhr(v) {
@@ -1210,6 +1222,7 @@ const App = {
   logSession: "pushA", logWeek: 1,
 
   boot() {
+    Store.requestPersist();   // ask Android/Chrome to keep this app's storage durable (fixes eviction between launches)
     this.data = Store.load();
     // keep BRI target consistent with the waist target (mirrors the workbook's live formula)
     this.data.targets.bri = +Calc.bri(this.data.targets.waistCm, this.data.profile.heightM).toFixed(2);
@@ -1228,7 +1241,7 @@ const App = {
     if (hasData && ageDays >= 14)
       setTimeout(() => toast(lastB ? "Backup is " + Math.round(ageDays) + " days old — open Data to Copy/Export" : "No backup yet — open Data to Copy/Export your history"), 1400);
   },
-  renderAll() { this.renderToday(); this.renderLog(); this.renderMeasure(); this.renderHome(); },
+  renderAll() { this.renderToday(); this.renderMeasure(); this.renderHome(); },
   initNav() {
     const btns = document.querySelectorAll("nav.tabs button");
     btns.forEach(btn => btn.addEventListener("click", () => this.switchTab(btn.dataset.scr)));
@@ -1243,7 +1256,7 @@ const App = {
     const target = document.getElementById("scr-" + name); if (target) target.classList.add("active");
     const sub = document.getElementById("bodysub"); if (sub) sub.style.display = world === "body" ? "flex" : "none";
     if (world === "body") document.querySelectorAll("#bodysub button").forEach(b => b.classList.toggle("on", b.dataset.sub === name));
-    const fn = { home: "renderHome", spirit: "renderSpirit", mind: "renderMind", today: "renderToday", track: "renderTrack", dash: "renderDash", progress: "renderProgress", data: "renderData" }[name];
+    const fn = { home: "renderHome", spirit: "renderSpirit", mind: "renderMind", today: "renderToday", track: "renderTrack", dash: "renderDash", progress: "renderProgress", data: "renderData", log: "renderToday" }[name];
     if (fn && typeof this[fn] === "function") this[fn]();
     try { window.scrollTo(0, 0); } catch (e) {}
   },
@@ -1252,62 +1265,29 @@ const App = {
   /* ---- TODAY ---- */
   renderToday() {
     const data = this.data, now = this.now();
-    const el = document.getElementById("scr-today");
-    const wk = Clock.week(data, now);
+    const el = document.getElementById("scr-today"); if (!el) return;
     const day = data.program.schedule[now.getDay()];
+    const iso = Clock.toISO(now);
     const dateStr = now.toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long" });
-    const last = data.measurements[data.measurements.length - 1];
-    let briTxt = "—", zone = null;
-    if (last && last.waistCm) { const b = Calc.bri(last.waistCm, data.profile.heightM); briTxt = b.toFixed(2); zone = Calc.briZone(b); }
-    const isGym = day.kind === "gym";
-    const cl = isGym ? this.clusterOf(day.sessionKey) : null;
-    const blk = isGym ? this.phaseFor(cl) : null;
-    let html = `<div class="card hero"><h2>${esc(dateStr)}</h2>
-      <div class="big">${esc(day.type)}${isGym ? " • Cluster " + cl : ""}</div>
-      <div class="meta">${isGym ? (blk ? esc(blk.name + " block • " + blk.params) : "") : esc(day.note)}</div>
-      <div class="kpis">
-        <div class="kpi"><div class="v">${briTxt}</div><div class="l">BRI (waist)${zone ? " • " + zone.label : ""}</div></div>
-        <div class="kpi"><div class="v">${last ? esc(last.weightKg) + " kg" : "—"}</div><div class="l">Last weigh-in</div></div>
-      </div></div>`;
-    html += this.todayPlanCard(now, day);   // clean daily confirmation chips (Phase 4)
-    if (isGym && this.isBlocked(day.sessionKey)) {
+    const doneFlag = (data.movement && data.movement[iso]) || data.workouts.some(w => w.date === iso);
+    const completeBtn = (label) => `<div style="margin-top:14px"><span class="act lg ${doneFlag ? 'done' : ''}" onclick="App.toggleMovement()">${doneFlag ? label + ' ✓' : 'Mark ' + label.toLowerCase()}</span></div>`;
+    let html = `<div style="font-family:var(--font-voice);font-size:26px;color:var(--body)">Session</div><div class="t-support" style="margin-top:2px">${esc(dateStr)}</div>`;
+    if (day.kind === "gym") {
       const sess = data.program.sessions[day.sessionKey];
-      html += `<div class="card"><h2>${esc(sess.title)} — done for this block ✓</h2><div class="note">You've finished this day's ${this.blockEnd()} clusters. Recover — finish the other strength days to unlock the deload.</div></div>`;
-    } else if (isGym) {
-      const sess = data.program.sessions[day.sessionKey];
-      html += `<div class="card"><h2>${esc(sess.title)} — Cluster ${cl}</h2>`;
-      sess.slots.forEach(slot => {
-        const ex = this.exFor(slot, cl);
-        const stars = slot.star ? ' <span class="star">' + "★".repeat(slot.star) + "</span>" : "";
-        const sug = Prog.suggest(data, day.sessionKey, slot, ex);
-        const cue = (sug.mode === "up") ? `<span class="cue up">${esc(sug.text)}</span>` : "";
-        html += `<div class="exrow"><div class="n"><b>${esc(ex)}${stars}</b><span>${esc(slot.name)} · ${esc(slot.rx)}</span>${cue}</div></div>`;
-      });
-      html += `<div class="note" style="margin-top:10px">${esc(day.note)}</div>
-        <div style="margin-top:12px"><button class="act lg fill" onclick="App.setLogSession('${day.sessionKey}');App.switchTab('log')">Log this session</button></div></div>`;
-    } else if (day.kind === "mixed") {
-      html += `<div class="card"><h2>${esc(day.type)}</h2><div class="note">${esc(day.note)}</div></div>`;   // confirmations handled by the plan card above
+      html += `<div class="card"><div class="t-label" style="color:var(--body)">${esc(sess.title.replace(/^[A-Za-z]+ — /, ''))}</div><div style="margin-top:8px">`;
+      sess.slots.forEach(slot => { const ex = (slot.w && slot.w[0]) || slot.name; html += `<div style="padding:9px 0;border-bottom:1px solid var(--line);font-size:15px;color:var(--navy)">${esc(ex)}</div>`; });
+      html += `</div>${completeBtn('Session complete')}<div class="t-support" style="margin-top:10px;color:var(--slate2)">Progress yourself as you see fit — Msela just keeps the plan and your consistency.</div></div>`;
+    } else if (day.kind === "mixed" && day.activity === "basketball") {
+      html += `<div class="card"><div class="t-label" style="color:var(--body)">Basketball</div><div class="t-support" style="margin-top:6px">${esc(day.note || 'Play today.')}</div>${completeBtn('Done')}</div>`;
+    } else if (day.kind === "flex") {
+      const plan = (data.sunPlan && data.sunPlan[iso]) || null;
+      html += `<div class="card"><div class="t-label" style="color:var(--body)">Sunday — flexible</div>`;
+      if (!plan) html += `<div class="t-support" style="margin-top:6px">Choose today's plan on the Body tab (Rest · Walk · Gym).</div>`;
+      else { const lbl = { rest: 'Rest', walk: 'Walk', gym: 'Gym' }[plan]; html += `<div class="t-support" style="margin-top:6px">Plan — ${lbl}.</div>` + (plan === 'gym' ? completeBtn('Session complete') : ''); }
+      html += `</div>`;
     } else {
-      html += `<div class="card"><h2>${esc(day.type)}</h2><div class="note">${esc(day.note)}</div></div>`;
+      html += `<div class="card"><div class="t-label" style="color:var(--body)">${esc(day.type)}</div><div class="t-support" style="margin-top:6px">${esc(day.note || 'Rest today.')}</div></div>`;
     }
-    const bp = this.blockProgress();
-    if (bp.ready) {
-      html += `<div class="card hero" style="background:linear-gradient(135deg,#1B4570,#267474)"><h2>BLOCK ${bp.block} COMPLETE 🎉</h2>
-        <div class="meta">All four strength days hit ${bp.end} clusters. Take a deload week — lighter loads, keep your walks and basketball — then mark it done:</div>
-        <div style="margin-top:12px"><button class="btn" onclick="App.completeDeload()">Mark deload done → unlock Block ${bp.block + 1}</button></div></div>`;
-    } else {
-      const grow = (lbl, have, need) => `<div class="exrow"><div class="n"><b>${lbl}</b></div><span class="chip ${have >= need ? "green" : "teal"}">${Math.min(have, need)}/${need}</span></div>`;
-      const LBL = { pushA: "Chest+Tri clusters", pushB: "Delts+Bi clusters", pullB: "Back+Legs clusters" };
-      html += `<div class="card"><h2>Block ${bp.block} → deload progress</h2>
-        ${bp.keys.map(k => grow(LBL[k] || k, bp.days[k], bp.end)).join("")}
-        <div class="note" style="margin-top:8px">Hit all four strength days to earn your deload.</div></div>`;
-    }
-    if (now.getDay() === 1) {
-      html += `<div class="card"><h2>Measurement morning</h2><div class="note">Within 30 min of waking • post-bathroom • pre-food/water • same scale, hard floor. Do it before you eat or train today.</div>
-        <div style="margin-top:12px"><button class="btn ghost" onclick="App.switchTab('measure')">Enter measurements</button></div></div>`;
-    }
-    html += this.catchUpCard(now);
-    html += `<div class="footer-note">Local-first • your data stays on this device</div>`;
     el.innerHTML = html;
   },
 
@@ -1371,6 +1351,7 @@ const App = {
   },
   renderLog() {
     const data = this.data, el = document.getElementById("scr-log");
+    if (!el) return;   // v19: Log tab removed — function retained but inert
     const sess = data.program.sessions[this.logSession];
     const cl = this.clusterOf(this.logSession), blk = this.phaseFor(cl);
     let html = `<div class="card"><h2>Log a session</h2>
@@ -1483,14 +1464,11 @@ const App = {
         <div class="fld"><label for="m-waist">Waist (cm)</label><input type="number" inputmode="decimal" step="0.1" id="m-waist" oninput="App.livePreview()"></div>
         <div class="fld"><label for="m-navel">Navel (cm)</label><input type="number" inputmode="decimal" step="0.1" id="m-navel" oninput="App.livePreview()"></div>
         <div class="fld"><label for="m-hip">Hip (cm)</label><input type="number" inputmode="decimal" step="0.1" id="m-hip" oninput="App.livePreview()"></div>
-        <div class="fld"><label for="m-sleep">Sleep (hrs avg)</label><input type="number" inputmode="decimal" step="0.1" id="m-sleep"></div>
-        <div class="fld"><label for="m-sleepscore">Sleep score (watch)</label><input type="number" inputmode="numeric" step="1" id="m-sleepscore" placeholder="0-100"><div class="note" style="font-size:11px;margin-top:3px">Your device's own score — brands aren't directly comparable; use it as a personal trend.</div></div>
         <div class="fld"><label for="m-rhr">Resting HR</label><input type="number" inputmode="numeric" step="1" id="m-rhr"></div>
         <div class="fld"><label for="m-sys">BP systolic</label><input type="number" inputmode="numeric" step="1" id="m-sys"></div>
         <div class="fld"><label for="m-dia">BP diastolic</label><input type="number" inputmode="numeric" step="1" id="m-dia"></div>
         <div class="fld"><label for="m-bf">Body Fat % (DEXA)</label><input type="number" inputmode="decimal" step="0.1" id="m-bf" placeholder="DEXA only" oninput="App.livePreview()"></div>
       </div>
-      <div class="fld"><label for="m-notes">Notes (sodium, late meal, poor sleep…)</label><input type="text" id="m-notes" maxlength="160"></div>
       <div id="m-preview" class="note" style="min-height:20px"></div>
       <div id="m-msgs"></div>
       <div style="margin-top:8px"><button class="btn" onclick="App.saveMeasure()">Save measurement</button></div></div>`;
@@ -1553,9 +1531,8 @@ const App = {
     const v = {
       date: document.getElementById("m-date").value,
       weightKg: numVal("m-weight"), waistCm: numVal("m-waist"), navelCm: numVal("m-navel"),
-      hipCm: numVal("m-hip"), sleepH: numVal("m-sleep"), sleepScore: numVal("m-sleepscore"), rhr: numVal("m-rhr"),
-      bpSys: numVal("m-sys"), bpDia: numVal("m-dia"), bodyFatPct: numVal("m-bf"),
-      notes: (document.getElementById("m-notes").value || "").trim() || undefined
+      hipCm: numVal("m-hip"), rhr: numVal("m-rhr"),
+      bpSys: numVal("m-sys"), bpDia: numVal("m-dia"), bodyFatPct: numVal("m-bf")
     };
     v.updatedAt = new Date().toISOString();
     const last = data.measurements[data.measurements.length - 1];
@@ -1574,8 +1551,8 @@ const App = {
     const m = this.data.measurements[idx];
     const set = (id, v) => { const el = document.getElementById(id); if (el) el.value = (v == null ? "" : v); };
     set("m-date", m.date); set("m-weight", m.weightKg); set("m-waist", m.waistCm); set("m-navel", m.navelCm);
-    set("m-hip", m.hipCm); set("m-sleep", m.sleepH); set("m-sleepscore", m.sleepScore); set("m-rhr", m.rhr);
-    set("m-sys", m.bpSys); set("m-dia", m.bpDia); set("m-bf", m.bodyFatPct); set("m-notes", m.notes || "");
+    set("m-hip", m.hipCm); set("m-rhr", m.rhr);
+    set("m-sys", m.bpSys); set("m-dia", m.bpDia); set("m-bf", m.bodyFatPct);
     this.livePreview();
     window.scrollTo({ top: 0, behavior: "smooth" });
     toast("Loaded — edit any field and Save (same date overwrites)");
@@ -1593,48 +1570,44 @@ const App = {
 App.bodyPillar = function (now) { try { return Score.bodyBreakdown(this.data, now || this.now(), 7).body; } catch (e) { return null; } };
 App.renderHome = function () {
   const el = document.getElementById("scr-home"); if (!el) return;
-  const data = this.data, now = this.now(), d = now.getDay(), hr = now.getHours();
+  const data = this.data, now = this.now(), hr = now.getHours();
   const part = hr < 12 ? "Good morning" : hr < 18 ? "Good afternoon" : "Good evening";
   const nm = ((data.profile && data.profile.name) || "").trim();
-  const iso = Clock.toISO(now), day = data.program.schedule[d];
   const body = this.bodyPillar(now), spirit = this.spiritPillar(now), mind = this.mindPillar(now);
   const _mw = { spirit: 45, body: 35, mind: 20 };
   const _pres = [["spirit", spirit], ["body", body], ["mind", mind]].filter(x => x[1] != null);
   let _cn = 0, _cd = 0; _pres.forEach(x => { _cn += _mw[x[0]] * x[1]; _cd += _mw[x[0]]; });
   const composite = _pres.length >= 2 ? Math.round(_cn / _cd) : null;
+  const underRing = composite == null ? 'Building your picture' : composite >= 80 ? 'On track' : composite >= 60 ? 'Steady' : 'Needs attention';
+  const stateWord = v => v == null ? 'No data yet' : v >= 80 ? 'On track' : v >= 60 ? 'Steady' : 'Needs attention';
+  const insight = (() => {
+    const sb = Score.spiritBreakdown(data, now, 7), bb = Score.bodyBreakdown(data, now, 7);
+    const dims = []; const push = (n, v) => { if (v != null) dims.push({ n: n, v: v }); };
+    push('Scripture', sb.journey); push('Prayer', sb.prayer); push('Study', sb.bsf); push('Testimony', sb.testimony);
+    push('Movement', bb.movement); push('Steps', bb.activity); push('Nutrition', bb.nutrition); push('Hydration', bb.hydration); push('Sleep', bb.recovery);
+    if (!dims.length) return 'Open a pillar to log today’s basics.';
+    dims.sort((a, b) => b.v - a.v); const top = dims[0], low = dims[dims.length - 1];
+    const strong = top.v >= 75, weak = low.v < 55 && low.n !== top.n;
+    if (strong && weak) return top.n + ' is strong. ' + low.n + ' needs attention.';
+    if (weak) return low.n + ' needs attention.';
+    if (strong) return top.n + ' is strong.';
+    return 'A steady day — keep the rhythm.';
+  })();
+  const pillarRow = (tab, colorVar, label, v) =>
+    '<div class="todayrow" style="cursor:pointer" onclick="App.switchTab(\'' + tab + '\')"><div style="flex:1"><div class="rlabel" style="color:var(' + colorVar + ')">' + label + '</div><div class="rval">' + stateWord(v) + '</div></div><div style="display:flex;align-items:center;gap:12px"><div style="font-family:var(--font-voice);font-size:27px;color:var(--navy);min-width:40px;text-align:right">' + (v == null ? '—' : v) + '</div><div class="act q mini">Open ›</div></div></div>';
+  el.innerHTML =
+    '<div class="greet">' + part + (nm ? ', ' + esc(nm) : '') + '</div>' +
+    '<div style="text-align:center;margin:12px 0 2px">' + mscoreRing(spirit, body, mind) + '<div class="t-support" style="margin-top:2px">' + underRing + '</div></div>' +
+    '<div class="t-label" style="margin:18px 0 6px">Your pillars today</div>' +
+    '<div style="display:flex;flex-direction:column">' + pillarRow('spirit', '--spirit', 'Spirit', spirit) + pillarRow('dash', '--body', 'Body', body) + pillarRow('mind', '--mind', 'Mind', mind) + '</div>' +
+    '<div class="t-support" style="margin-top:18px;color:var(--slate);text-align:center">' + esc(insight) + '</div>';
+};
+App.bodyToday = function (now) {
+  now = now || this.now();
+  const data = this.data, iso = Clock.toISO(now), d = now.getDay(), day = data.program.schedule[d];
   const exp = this._exp || null;
-  const sig = (c, lbl, v) => '<div><div class="l" style="color:var(' + c + ')">' + lbl + '</div><div class="v">' + (v == null ? "—" : v) + '</div></div>';
   const srow = (label, value, right, rightCls, onclick) => '<div class="todayrow"><div style="flex:1"><div class="rlabel">' + esc(label) + '</div><div class="rval">' + value + '</div></div>' + (right ? ('<div class="' + rightCls + '"' + (onclick ? ' onclick="' + onclick + '"' : '') + '>' + right + '</div>') : '') + '</div>';
   const bchip = (lbl, onclick, on) => '<button type="button" class="bchip' + (on ? ' on' : '') + '" onclick="' + onclick + '">' + esc(lbl) + '</button>';
-
-  /* ---- SPIRIT ---- */
-  const s = this.spirit();
-  let srows = "";
-  const te = Scripture.entryForDate(iso);
-  if (te && te.dual) {
-    const rec = s.journeyRead[iso]; const otd = rec === true || (rec && rec.ot); const ntd = rec === true || (rec && rec.nt);
-    srows += '<div class="todayrow"><div style="flex:1"><div class="rlabel">Scripture · Old Testament</div><div class="rval">' + esc(te.r) + '</div></div><div class="' + (otd ? 'act sp done' : 'act sp') + '" onclick="App.readJourneyDate(\'' + iso + '\',\'ot\')">' + (otd ? '✓' : 'Read') + '</div></div>';
-    srows += '<div class="todayrow"><div style="flex:1"><div class="rlabel">Companion · New Testament</div><div class="rval">' + esc(te.nt) + '</div><div class="t-support" style="font-size:11px;margin-top:1px">' + esc(te.theme) + '</div></div><div class="' + (ntd ? 'act sp done' : 'act sp') + '" onclick="App.readJourneyDate(\'' + iso + '\',\'nt\')">' + (ntd ? '✓' : 'Read') + '</div></div>';
-  }
-  else if (te) { const jdone = !!s.journeyRead[iso]; srows += srow('Scripture', esc(te.r), jdone ? '✓' : 'Read', jdone ? 'act sp done' : 'act sp', "App.readJourney()"); }
-  else srows += srow('Scripture', iso > Scripture.lastDate() ? 'Plan complete ✓' : 'Journey begins 7 Sep', '', '', '');
-  const prayed = s.prayer[iso];
-  srows += srow('Prayer of the day', esc(PRAYER_FOCUS[d]), prayed ? '✓' : 'Pray', prayed ? 'act sp done' : 'act sp', "App.togglePrayer()");
-  if (s.bsf.active) {
-    const bw = (s.bsf.weeks && s.bsf.weeks[this.weekMon(now)]) || { r: false, q: false };
-    const bsfp = (lbl, pt, on) => '<span class="act mini ' + (on ? 'sp' : 'q') + '" onclick="App.toggleBsf(\'' + pt + '\')">' + lbl + (on ? ' ✓' : '') + '</span>';
-    srows += '<div class="todayrow"><div style="flex:1"><div class="rlabel">BSF Study</div><div class="rval">This week · Reading · Questions</div></div><div style="display:flex;gap:6px;align-items:center">' + bsfp('Reading', 'r', bw.r) + bsfp('Questions', 'q', bw.q) + '</div></div>';
-  }
-  const ci = Scripture.catchupInfo(data, now);
-  if (ci && !ci.complete) {
-    const pace = ci.dueToday ? ('Due today \u00b7 \u2248' + ci.perWeek + '/wk to ' + ci.targetLabel) : ('\u2248' + ci.perWeek + '/wk \u00b7 on pace');
-    srows += '<div class="todayrow"><div style="flex:1"><div class="rlabel" style="font-size:11px">Catch-up \u00b7 Matthew</div><div class="rval" style="font-size:14px;color:var(--slate)">' + ci.nextRef + '</div><div class="t-support" style="font-size:11px;margin-top:1px">' + pace + '</div></div><div class="act mini ' + (ci.dueToday ? 'sp' : 'q') + '" onclick="App.readCatchup()">Read</div></div>';
-  }
-  if (d === 0 && !this.testimonyThisWeek(now)) {
-    srows += srow('Testimony', 'Record this week’s remembrance', 'Write', 'act sp', "App.switchTab('spirit')");
-  }
-
-  /* ---- BODY ---- */
   let rows = "";
   const stepsRow = (target) => {
     const sv = data.steps && data.steps[iso];
@@ -1645,8 +1618,8 @@ App.renderHome = function () {
   if (day.kind === 'gym') {
     const sess = data.program.sessions[day.sessionKey];
     const title = sess ? sess.title.replace(/^[A-Za-z]+ — /, '') : day.type;
-    const done = data.workouts.some(w => w.date === iso);
-    rows += srow('Strength', esc(title), done ? '✓' : 'Open', done ? 'act done' : 'act', done ? '' : "App.switchTab('today')");
+    const done = data.workouts.some(w => w.date === iso) || (data.movement && data.movement[iso]);
+    rows += srow('Strength', esc(title), done ? '✓' : 'Open', done ? 'act done' : 'act', "App.switchTab('today')");
     stepsRow(day.steps);
   } else if (day.kind === 'mixed' && day.activity === 'basketball') {
     const bb = data.movement && data.movement[iso];
@@ -1675,21 +1648,21 @@ App.renderHome = function () {
   const wv = (data.hydration && ['high', 'mid', 'low'].includes(data.hydration[iso])) ? data.hydration[iso] : null;
   rows += srow('Hydration', wv ? wmap[wv] : 'Not yet logged', wv ? 'Edit' : 'Log', wv ? 'act mini' : 'act', "App.expand('water')");
   if (exp === 'water') rows += '<div class="bchips">' + bchip('On target', "App.setWater('high')", wv === 'high') + bchip('Moderate', "App.setWater('mid')", wv === 'mid') + bchip('Low', "App.setWater('low')", wv === 'low') + '</div>';
-  const smap = { on: 'On target', close: 'Close', off: 'Off target' };
+  const smap = { on: 'Well · 7h+', close: 'Okay · 5.5–7h', off: 'Poorly · under 5.5h' };
   const sv = (data.sleep && ['on', 'close', 'off'].includes(data.sleep[iso])) ? data.sleep[iso] : null;
-  rows += srow('Recovery', sv ? smap[sv] : 'Not yet logged', sv ? 'Edit' : 'Log', sv ? 'act mini' : 'act', "App.expand('recovery')");
-  if (exp === 'recovery') rows += '<div class="bchips">' + bchip('On target', "App.setSleep('on')", sv === 'on') + bchip('Close', "App.setSleep('close')", sv === 'close') + bchip('Off target', "App.setSleep('off')", sv === 'off') + '</div>';
+  rows += srow('Sleep', sv ? smap[sv] : 'Not yet logged', sv ? 'Edit' : 'Log', sv ? 'act mini' : 'act', "App.expand('recovery')");
+  if (exp === 'recovery') rows += '<div class="bchips">' + bchip('Well · 7h+', "App.setSleep('on')", sv === 'on') + bchip('Okay · 5.5–7h', "App.setSleep('close')", sv === 'close') + bchip('Poorly · <5.5h', "App.setSleep('off')", sv === 'off') + '</div>';
   if (d === 1) { const measured = data.measurements.some(m => m.date === iso); rows += srow('Measurements', measured ? 'Recorded' : 'Due this morning', measured ? '✓' : 'Record', measured ? 'act done' : 'act', measured ? '' : "App.switchTab('track')"); }
-
-  /* ---- MIND ---- */
-  const m = this.mind();
+  return '<div class="card"><div class="t-label" style="color:var(--body)">Today</div><div style="display:flex;flex-direction:column;margin-top:4px">' + rows + '</div></div>';
+};
+App.mindToday = function (now) {
+  now = now || this.now();
+  const data = this.data, iso = Clock.toISO(now), m = this.mind(), exp = this._exp || null;
   const learnedN = this.mindTodayCount(now);
-  let mrows = srow('Learning', learnedN > 0 ? (learnedN + (learnedN === 1 ? ' item' : ' items') + ' today') : 'Not yet logged', learnedN > 0 ? 'Edit' : 'Log', learnedN > 0 ? 'act mini md' : 'act md', "App.expand('mind')");
+  let mrows = '<div class="todayrow"><div style="flex:1"><div class="rlabel">Learning today</div><div class="rval">' + (learnedN > 0 ? (learnedN + (learnedN === 1 ? ' item' : ' items') + ' logged') : 'Not yet logged') + '</div></div><div class="' + (learnedN > 0 ? 'act mini md' : 'act md') + '" onclick="App.expand(\'mind\')">' + (learnedN > 0 ? 'Edit' : 'Log') + '</div></div>';
   if (exp === 'mind') {
     const reading = m.books.filter(b => b.status === 'reading');
-    if (reading.length) {
-      reading.forEach(b => { const read = (m.readLog[iso] || []).indexOf(b.id) >= 0; mrows += '<div class="todayrow" style="padding:9px 2px"><div style="flex:1"><div class="rval" style="font-size:15px">' + esc(b.title) + '</div></div><div class="act mini md' + (read ? ' done' : '') + '" onclick="App.mindToggleRead(\'' + b.id + '\')">' + (read ? 'Read ✓' : 'Read') + '</div></div>'; });
-    }
+    if (reading.length) reading.forEach(b => { const read = (m.readLog[iso] || []).indexOf(b.id) >= 0; mrows += '<div class="todayrow" style="padding:9px 2px"><div style="flex:1"><div class="rval" style="font-size:15px">' + esc(b.title) + '</div></div><div class="act mini md' + (read ? ' done' : '') + '" onclick="App.mindToggleRead(\'' + b.id + '\')">' + (read ? 'Read ✓' : 'Read') + '</div></div>'; });
     mrows += '<div class="srow"><input id="mind-book" placeholder="Add a book you’re reading" style="flex:1"><button type="button" class="bchip" style="flex:0 0 60px" onclick="App.mindAddBook(document.getElementById(\'mind-book\').value)">Add</button></div>';
     const types = [['summary', 'Summary'], ['article', 'Article'], ['paper', 'Paper'], ['lecture', 'Lecture'], ['podcast', 'Podcast'], ['other', 'Other']];
     mrows += '<div class="bchips" style="flex-wrap:wrap">' + types.map(t => '<button type="button" class="bchip' + (this._mindType === t[0] ? ' on' : '') + '" onclick="App.mindSetType(\'' + t[0] + '\')">' + t[1] + '</button>').join('') + '</div>';
@@ -1699,30 +1672,9 @@ App.renderHome = function () {
       mrows += '<div class="bchips"><button type="button" class="bchip' + (uy ? ' on' : '') + '" onclick="App.mindSetItemUseful(true)">Useful</button><button type="button" class="bchip' + (un ? ' on' : '') + '" onclick="App.mindSetItemUseful(false)">Not useful</button><button type="button" class="bchip" style="margin-left:auto;border-color:var(--mind);color:var(--mind)" onclick="App.mindSaveItem()">Save</button></div>';
     }
   }
-  const underRing = composite == null ? 'Building your picture' : composite >= 80 ? 'On track' : composite >= 60 ? 'Steady' : 'Needs attention';
-  const insight = (() => {
-    const sb = Score.spiritBreakdown(data, now, 7), bb = Score.bodyBreakdown(data, now, 7);
-    const dims = []; const push = (n, v) => { if (v != null) dims.push({ n: n, v: v }); };
-    push('Scripture', sb.journey); push('Prayer', sb.prayer); push('Study', sb.bsf); push('Testimony', sb.testimony);
-    push('Movement', bb.movement); push('Steps', bb.activity); push('Nutrition', bb.nutrition); push('Hydration', bb.hydration); push('Recovery', bb.recovery);
-    if (!dims.length) return 'Log today’s basics to begin.';
-    dims.sort((a, b) => b.v - a.v); const top = dims[0], low = dims[dims.length - 1];
-    const strong = top.v >= 75, weak = low.v < 55 && low.n !== top.n;
-    if (strong && weak) return top.n + ' is strong. ' + low.n + ' needs attention.';
-    if (weak) return low.n + ' needs attention.';
-    if (strong) return top.n + ' is strong.';
-    return 'A steady day — keep the rhythm.';
-  })();
-  el.innerHTML =
-    '<div class="greet">' + part + (nm ? ', ' + esc(nm) : '') + '</div>' +
-    '<div style="text-align:center;margin:12px 0 2px">' + mscoreRing(spirit, body, mind) + '<div class="t-support" style="margin-top:2px">' + underRing + '</div></div>' +
-    '<div class="t-label" style="color:var(--spirit);margin:12px 0 2px">SPIRIT</div><div style="display:flex;flex-direction:column">' + srows + '</div>' +
-    '<div class="t-label" style="color:var(--body);margin:14px 0 2px">BODY</div><div style="display:flex;flex-direction:column">' + rows + '</div>' +
-    '<div class="t-label" style="color:var(--mind);margin:14px 0 2px">MIND</div><div style="display:flex;flex-direction:column">' + mrows + '</div>' +
-    '<div style="height:1px;background:var(--line);margin:18px 2px 14px"></div>' +
-    '<div class="t-label" style="margin-bottom:11px">Your signals</div><div class="sig">' + sig('--spirit', 'SPIRIT', spirit) + sig('--body', 'BODY', body) + sig('--mind', 'MIND', mind) + '</div>' +
-    '<div class="t-support" style="margin-top:14px;color:var(--slate)">' + esc(insight) + '</div>';
+  return '<div class="card"><div class="t-label" style="color:var(--mind)">Today</div><div style="display:flex;flex-direction:column;margin-top:4px">' + mrows + '</div></div>';
 };
+
 App.renderSpirit = function () {
   const el = document.getElementById("scr-spirit"); if (!el) return;
   const s = this.spirit(), now = this.now(), d = now.getDay(), iso = Clock.toISO(now);
@@ -1773,7 +1725,7 @@ App.renderSpirit = function () {
   html += '</div><div class="t-support" style="margin-top:12px">7-day rhythm ' + rhythm + '%</div>';
   const openReqs = (s.prayerReqs || []).filter(r => !r.answered);
   if (openReqs.length) { html += '<div style="border-top:1px solid var(--line);margin-top:14px;padding-top:12px"><div class="t-label">Open requests</div>'; openReqs.slice(-4).forEach(r => { html += '<div class="t-support" style="margin-top:6px;color:var(--navy)">· ' + esc(r.text) + '</div>'; }); html += '</div>'; }
-  html += '<div style="margin-top:12px">' + (exp === 'request' ? ('<textarea id="pr-text" maxlength="200" placeholder="A request to bring before God" style="width:100%;min-height:54px;background:var(--bg);border:1px solid var(--line);border-radius:11px;color:var(--navy);font:inherit;padding:9px"></textarea><div style="margin-top:8px;display:flex;gap:8px"><span class="act sp" onclick="App.saveRequest()">Save</span> <span class="act q" onclick="App.spOpen(null)">Cancel</span></div>') : '<span class="act q" onclick="App.spOpen(\'request\')">＋ Add a request</span>') + '</div>';
+  html += '<div style="margin-top:12px">' + (exp === 'request' ? ('<textarea id="pr-text" maxlength="200" placeholder="A request to bring before God" style="width:100%;min-height:54px;background:var(--bg);border:1px solid var(--line);border-radius:11px;color:var(--navy);font:inherit;padding:9px"></textarea><div style="margin-top:8px;display:flex;gap:8px"><span class="act sp" onclick="App.saveRequest()">Save</span> <span class="act q" onclick="App.spOpen(null)">Cancel</span></div>') : '<span class="act q" onclick="App.spOpen(\'request\')">＋ Prayer request</span>') + '</div>';
   html += '</div>';
 
   html += label('TESTIMONY');
@@ -1787,7 +1739,7 @@ App.renderSpirit = function () {
     + '<input id="t-tags" placeholder="tags (comma-separated, optional)" style="width:100%;margin-top:8px;background:var(--bg);border:1px solid var(--line);border-radius:11px;color:var(--navy);font:inherit;padding:9px">'
     + (openReqOpts.length ? ('<select id="t-link" style="width:100%;margin-top:8px;background:var(--bg);border:1px solid var(--line);border-radius:11px;color:var(--navy);font:inherit;padding:9px"><option value="">Link to an open request (optional)</option>' + openReqOpts.map(r => '<option value="' + r.id + '">' + esc(r.text.slice(0, 40)) + '</option>').join('') + '</select>') : '')
     + '<div style="margin-top:8px;display:flex;gap:8px"><span class="act sp" onclick="App.saveTestimony()">Save</span> <span class="act q" onclick="App.spOpen(null)">Cancel</span></div>'
-  ) : '<span class="act q" onclick="App.spOpen(\'testimony\')">＋ Add a remembrance</span>') + '</div>';
+  ) : '<span class="act q" onclick="App.spOpen(\'testimony\')">＋ Add a testimony</span>') + '</div>';
   html += '</div>';
   if (ts.length) html += '<div style="margin-top:12px"><span class="act q" onclick="App.exportTestimony()">Export the Book of Testimony</span></div>';
 
@@ -1801,6 +1753,9 @@ App.renderMind = function () {
   const label = t => '<div class="t-label" style="margin:22px 0 10px">' + t + '</div>';
   const umark = u => u === true ? '<span style="color:var(--body)">useful</span>' : u === false ? '<span style="color:var(--slate2)">not useful</span>' : '';
   let html = '<div style="font-family:var(--font-voice);font-size:26px;color:var(--mind)">Mind</div><div class="t-support" style="letter-spacing:.04em;margin-top:2px">Understand · Retain</div>';
+  const mb = Score.mindBreakdown(this.data, now, 7);
+  html += '<div class="card" style="text-align:center;margin-top:14px"><div class="t-label" style="color:var(--mind)">Mind score</div><div style="font-size:40px;color:var(--navy);font-family:var(--font-voice);line-height:1.1;margin:4px 0">' + (mb.mind == null ? '—' : mb.mind) + '</div><div class="t-support">' + (mb.mind == null ? 'Log learning to begin' : ((mb.learnedDays || 0) + ' of 6 learning-days this week')) + '</div></div>';
+  html += this.mindToday(now);
 
   html += label('CURRENTLY READING');
   const reading = m.books.filter(b => b.status === 'reading');
@@ -1853,13 +1808,13 @@ App.renderMind = function () {
   el.innerHTML = html;
 };
 
-App.expand = function (which) { this._exp = (this._exp === which) ? null : which; this.renderHome(); };
-App.setNutrition = function (state) { const iso = Clock.toISO(this.now()); this.data.nutrition = this.data.nutrition || {}; if (this.data.nutrition[iso] === state) delete this.data.nutrition[iso]; else this.data.nutrition[iso] = state; this._exp = null; Store.save(this.data); this.renderHome(); };
-App.setWater = function (state) { const iso = Clock.toISO(this.now()); this.data.hydration = this.data.hydration || {}; if (this.data.hydration[iso] === state) delete this.data.hydration[iso]; else this.data.hydration[iso] = state; this._exp = null; Store.save(this.data); this.renderHome(); };
-App.setSteps = function (v) { const iso = Clock.toISO(this.now()); this.data.steps = this.data.steps || {}; const n = Math.round(Number(v)); if (n && n > 0) this.data.steps[iso] = n; else delete this.data.steps[iso]; this._exp = null; Store.save(this.data); this.renderHome(); };
-App.setSleep = function (state) { const iso = Clock.toISO(this.now()); this.data.sleep = this.data.sleep || {}; if (this.data.sleep[iso] === state) delete this.data.sleep[iso]; else this.data.sleep[iso] = state; this._exp = null; Store.save(this.data); this.renderHome(); };
-App.toggleMovement = function () { const iso = Clock.toISO(this.now()); this.data.movement = this.data.movement || {}; if (this.data.movement[iso]) delete this.data.movement[iso]; else this.data.movement[iso] = true; this._exp = null; Store.save(this.data); this.renderHome(); };
-App.setSunPlan = function (plan) { const iso = Clock.toISO(this.now()); this.data.sunPlan = this.data.sunPlan || {}; if (plan === null) delete this.data.sunPlan[iso]; else this.data.sunPlan[iso] = plan; this._exp = null; Store.save(this.data); this.renderHome(); };
+App.expand = function (which) { this._exp = (this._exp === which) ? null : which; this.rerender(); };
+App.setNutrition = function (state) { const iso = Clock.toISO(this.now()); this.data.nutrition = this.data.nutrition || {}; if (this.data.nutrition[iso] === state) delete this.data.nutrition[iso]; else this.data.nutrition[iso] = state; this._exp = null; Store.save(this.data); this.rerender(); };
+App.setWater = function (state) { const iso = Clock.toISO(this.now()); this.data.hydration = this.data.hydration || {}; if (this.data.hydration[iso] === state) delete this.data.hydration[iso]; else this.data.hydration[iso] = state; this._exp = null; Store.save(this.data); this.rerender(); };
+App.setSteps = function (v) { const iso = Clock.toISO(this.now()); this.data.steps = this.data.steps || {}; const n = Math.round(Number(v)); if (n && n > 0) this.data.steps[iso] = n; else delete this.data.steps[iso]; this._exp = null; Store.save(this.data); this.rerender(); };
+App.setSleep = function (state) { const iso = Clock.toISO(this.now()); this.data.sleep = this.data.sleep || {}; if (this.data.sleep[iso] === state) delete this.data.sleep[iso]; else this.data.sleep[iso] = state; this._exp = null; Store.save(this.data); this.rerender(); };
+App.toggleMovement = function () { const iso = Clock.toISO(this.now()); this.data.movement = this.data.movement || {}; if (this.data.movement[iso]) delete this.data.movement[iso]; else this.data.movement[iso] = true; this._exp = null; Store.save(this.data); this.rerender(); };
+App.setSunPlan = function (plan) { const iso = Clock.toISO(this.now()); this.data.sunPlan = this.data.sunPlan || {}; if (plan === null) delete this.data.sunPlan[iso]; else this.data.sunPlan[iso] = plan; this._exp = null; Store.save(this.data); this.rerender(); };
 App._bodyWin = 7;
 App.setBodyWin = function (w) { this._bodyWin = w; this.renderDash(); };
 App.bodySummaryCard = function (now) {
@@ -1870,8 +1825,7 @@ App.bodySummaryCard = function (now) {
   const tab = (w) => '<button type="button" class="bchip' + (win === w ? ' on' : '') + '" onclick="App.setBodyWin(' + w + ')">' + w + 'd</button>';
   return '<div class="card"><div style="text-align:center"><div class="t-label" style="color:var(--body)">Body</div><div style="font-size:44px;color:var(--navy);font-family:var(--font-voice);line-height:1.1;margin:4px 0">' + (b.body == null ? '—' : b.body) + '</div><div class="t-support">' + winLbl + (b.coverage != null && b.coverage < 1 ? ' \u00b7 building data \u00b7 ' + b.coveragePct + '% coverage' : (b.coverage === 1 ? ' \u00b7 full picture' : '')) + '</div></div>' +
     '<div class="bchips" style="padding:12px 0 2px">' + tab(7) + tab(30) + tab(90) + '</div>' +
-    '<div style="margin-top:6px">' + rowm('Movement', b.movement) + rowm('Steps', b.activity) + rowm('Nutrition', b.nutrition) + rowm('Hydration', b.hydration) + rowm('Recovery', b.recovery) + '</div>' +
-    '<div class="t-support" style="text-align:center;margin-top:14px;color:var(--slate2)">Log today on the Today tab</div></div>';
+    '<div style="margin-top:6px">' + rowm('Movement', b.movement) + rowm('Steps', b.activity) + rowm('Nutrition', b.nutrition) + rowm('Hydration', b.hydration) + rowm('Sleep', b.recovery) + '</div></div>';
 };
 
 App.spirit = function () {
@@ -1894,7 +1848,7 @@ App.spirit = function () {
   if (s.litNT == null) s.litNT = Object.keys(s.coverage || {}).filter(k => NT_SET.has(k)).length;
   return s;
 };
-App.rerender = function () { try { this.renderHome(); } catch (e) {} try { this.renderSpirit(); } catch (e) {} try { this.renderMind(); } catch (e) {} };
+App.rerender = function () { try { this.renderHome(); } catch (e) {} try { this.renderSpirit(); } catch (e) {} try { this.renderDash(); } catch (e) {} try { this.renderMind(); } catch (e) {} };
 App.spOpen = function (which) { this._spExp = (this._spExp === which) ? null : which; this.renderSpirit(); };
 App.readJourney = function () { this.readJourneyDate(Clock.toISO(this.now())); };
 // Add a reading's chapters to the lifetime tally (repeats counted) and the unique-coverage odometer (idempotent).
@@ -1939,8 +1893,8 @@ App.mindTodayCount = function (now) { const m = this.mind(); const iso = Clock.t
 App.mindLearnedOn = function (iso) { const m = this.mind(); return ((m.readLog[iso] || []).length > 0) || m.items.some(i => i.date === iso); };
 App.mindAddBook = function (title) { const m = this.mind(); const t = (title || '').trim().slice(0, 120); if (!t) return; const iso = Clock.toISO(this.now()); const id = 'b' + Date.now(); m.books.push({ id: id, title: t, status: 'reading', started: iso, useful: null }); (m.readLog[iso] = m.readLog[iso] || []).push(id); Store.save(this.data); this.rerender(); };
 App.mindToggleRead = function (id) { const m = this.mind(); const iso = Clock.toISO(this.now()); const a = m.readLog[iso] = m.readLog[iso] || []; const i = a.indexOf(id); if (i >= 0) a.splice(i, 1); else a.push(id); if (!a.length) delete m.readLog[iso]; Store.save(this.data); this.rerender(); };
-App.mindSetType = function (t) { this._mindType = (this._mindType === t) ? null : t; this._mindUseful = undefined; this.renderHome(); };
-App.mindSetItemUseful = function (v) { this._mindUseful = v; this.renderHome(); };
+App.mindSetType = function (t) { this._mindType = (this._mindType === t) ? null : t; this._mindUseful = undefined; this.rerender(); };
+App.mindSetItemUseful = function (v) { this._mindUseful = v; this.rerender(); };
 App.mindAddItem = function (type, title, useful) { const m = this.mind(); const t = (title || '').trim().slice(0, 160); if (!t) return; m.items.push({ id: 'i' + Date.now(), date: Clock.toISO(this.now()), type: type, title: t, useful: (useful === undefined ? null : useful) }); Store.save(this.data); };
 App.mindSaveItem = function () { const t = this._mindType; if (!t) return; const tx = (document.getElementById('mind-item') || {}).value || ''; if (!tx.trim()) { toast('Add a title first'); return; } this.mindAddItem(t, tx.trim(), this._mindUseful); this._mindType = null; this._mindUseful = undefined; this.rerender(); };
 App.mindFinishBook = function (id, status) { const m = this.mind(); const b = m.books.find(x => x.id === id); if (!b) return; b.status = status; b.ended = Clock.toISO(this.now()); Store.save(this.data); this.rerender(); };
@@ -2129,7 +2083,7 @@ App.renderDash = function () {
   const briN = last && last.navelCm ? Calc.bri(last.navelCm, h) : null;
   const briStart = first && first.waistCm ? Calc.bri(first.waistCm, h) : null;
   const now = this.now();
-  let html = this.bodySummaryCard(now);
+  let html = this.bodyToday(now) + this.bodySummaryCard(now);
 
   /* health excellence index — ring hero + transparent component rings */
   const ex = Score.excellence(data, now);
@@ -2151,12 +2105,13 @@ App.renderDash = function () {
         <div class="side"><div class="lab">${lab}</div><div class="st">${st}</div><div class="dl" style="color:var(--on-brand-mute)">${dl}</div></div>
       </div></div>
       <div class="card"><h2>${building ? "Almost there" : "Get started"}</h2><div class="note">Your score needs at least two areas of real data — your weekly measurements and your logged training — so a single reading can't skew it.</div>
-      <div class="grid2" style="margin-top:12px"><button class="btn" onclick="App.switchTab('measure')">Add a measurement</button><button class="btn ghost" onclick="App.switchTab('log')">Log a session</button></div></div>`;
+      <div class="grid2" style="margin-top:12px"><button class="btn" onclick="App.switchTab('measure')">Add a measurement</button><button class="btn ghost" onclick="App.switchTab('today')">Open today's session</button></div></div>`;
   } else {
-    const label = ex.headline >= 80 ? "Excellent" : ex.headline >= 60 ? "On track" : "Needs work";
+    const bandCol = ex.headline >= 75 ? "green" : ex.headline >= 50 ? "orange" : "red";
+    const label = ex.headline >= 75 ? "Green" : ex.headline >= 50 ? "Amber" : "Red";
     html += `<div class="ringhero">
         <div class="ring" style="--p:${ex.headline}"><div class="inner"><span class="n">${ex.headline}</span><span class="of">/ 100</span></div></div>
-        <div class="side"><div class="lab">Overall</div><div class="st">${label}</div><div class="dl" style="color:var(--on-brand-mute)">${esc(parts)}</div></div>
+        <div class="side"><div class="lab">Overall</div><div class="st"><span class="chip ${bandCol}">${label}</span></div><div class="dl" style="color:var(--on-brand-mute)">${esc(parts)}</div></div>
       </div></div>
       <div class="card"><h2>The signal</h2><div class="note">Transparent by design — these rings are the real picture; the headline just flags where to look.</div>
       <div class="gridR">` + comp.map(c => Dash.ring(c.v != null ? c.v / 100 : null, c.v != null ? "" : "no data", c.k, "")).join("") + `</div></div>`;
@@ -2700,7 +2655,8 @@ App.renderData = function () {
       <tr><td>Logged sessions</td><td><b>${data.workouts.length}</b></td></tr>
       <tr><td>Program</td><td><b>${esc(data.program.name)}</b></td></tr>
       <tr><td>BRI target</td><td><b>${data.targets.bri.toFixed(2)}</b> (from waist ${data.targets.waistCm}cm)</td></tr>
-      <tr><td>Storage</td><td><b>browser local-first</b></td></tr>
+      <tr><td>Storage</td><td><b>${App._persist === 'granted' ? 'persistent ✓ (durable)' : App._persist === 'denied' ? 'at risk ✗ — device may evict' : App._persist === 'unsupported' ? 'browser local-first' : 'checking…'}</b></td></tr>
+      <tr><td>Last saved</td><td><b>${App._lastSaveAt ? (App._lastSaveOK ? '' : '⚠ not sticking · ') + App._lastSaveAt.toLocaleTimeString() : '—'}</b></td></tr>
       <tr><td>App version</td><td><b>${esc(APP_VERSION)}</b></td></tr>
     </table></div>`;
 };
@@ -2781,24 +2737,53 @@ App.setLens = function (name) { this.insightLens = name; try { localStorage.setI
 App.renderProgress = function () {
   const data = this.data, el = document.getElementById("scr-progress"); if (!el) return;
   const ms = data.measurements, h = data.profile.heightM, now = this.now();
-  // Strength & Training lenses belong to the structured program (owner only); everyone gets Body, Activity, Scores.
-  const tabs = this.isPersonal()
-    ? [["body","Body"],["strength","Strength"],["training","Training"],["activity","Activity"],["scores","Scores"]]
-    : [["body","Body"],["activity","Activity"],["scores","Scores"]];
+  // v19: three lenses — Body (is my body changing?), Consistency (am I doing what I said?), Health (broader signals).
+  const tabs = [["body","Body"],["consistency","Consistency"],["health","Health"]];
   let lens = this.insightLens || "body";
-  if (!tabs.some(([k]) => k === lens)) lens = "body";   // fall back if the saved lens is hidden in this mode
+  if (!tabs.some(([k]) => k === lens)) lens = "body";
   const menu = `<div class="seg lens" role="tablist" aria-label="Choose an analysis">` +
     tabs.map(([k,lab]) => `<button role="tab" aria-pressed="${lens === k}" onclick="App.setLens('${k}')">${lab}</button>`).join("") + `</div>`;
   const fmt = (v, dp) => v == null ? "—" : v.toFixed(dp);
   let bodyHtml;
-  if (lens === "strength") bodyHtml = this.lensStrength(data, now, fmt);
-  else if (lens === "training") bodyHtml = this.lensTraining(data, now);
-  else if (lens === "activity") bodyHtml = this.lensActivity(data, now);
-  else if (lens === "scores") bodyHtml = this.lensScores(data, now, fmt);
+  if (lens === "consistency") bodyHtml = this.lensConsistency(data, now);
+  else if (lens === "health") bodyHtml = this.lensHealth(data, now, fmt);
   else bodyHtml = this.lensBody(ms, h, now, fmt);
-  el.innerHTML = `<div class="card"><h2>Insights</h2><div class="note">Pick a lens to dig into your numbers.</div>${menu}</div>` + bodyHtml;
+  el.innerHTML = `<div class="card"><h2>Trends</h2><div class="note">Three questions: is my body changing, am I doing what I said, and what do my broader health signals say?</div>${menu}</div>` + bodyHtml;
 };
 
+App.lensConsistency = function (data, now) {
+  const wins = [7, 30, 90];
+  const bands = wins.map(w => Score.bodyBreakdown(data, now, w));
+  const chip = v => { const col = v == null ? 'teal' : v >= 75 ? 'green' : v >= 50 ? 'orange' : 'red'; return '<td style="text-align:center"><span class="chip ' + col + '">' + (v == null ? '—' : v) + '</span></td>'; };
+  const row = (lbl, key) => '<tr><td>' + lbl + '</td>' + bands.map(b => chip(b[key])).join('') + '</tr>';
+  let html = '<div class="card"><h2>Consistency</h2><div class="note">Am I doing what I said I would? Behavioural adherence over 7 / 30 / 90 days — green ≥75 · amber 50–74 · red &lt;50.</div>'
+    + '<table class="mini"><tr><th>Behaviour</th><th>7d</th><th>30d</th><th>90d</th></tr>'
+    + row('Movement', 'movement') + row('Steps', 'activity') + row('Nutrition', 'nutrition') + row('Hydration', 'hydration') + row('Sleep', 'recovery')
+    + '<tr><td><b>Body overall</b></td>' + bands.map(b => '<td style="text-align:center"><b>' + (b.body == null ? '—' : b.body) + '</b></td>').join('') + '</tr>'
+    + '</table></div>';
+  return html;
+};
+App.lensHealth = function (data, now, fmt) {
+  const ms = data.measurements, last = ms[ms.length - 1] || null;
+  const ex = Score.excellence(data, now);
+  const hv = ex.headline;
+  const band = hv == null ? { col: 'teal', lab: 'Not enough data' } : hv >= 75 ? { col: 'green', lab: 'Green' } : hv >= 50 ? { col: 'orange', lab: 'Amber' } : { col: 'red', lab: 'Red' };
+  let html = '<div class="card"><h2>Health Excellence Index</h2><div style="text-align:center;margin:10px 0 4px"><span class="chip ' + band.col + '" style="font-size:26px;padding:8px 18px">' + (hv == null ? '—' : hv) + '</span></div><div class="note" style="text-align:center">&lt;50 red · 50–74 amber · ≥75 green. A weighted blend of your health signals — a guide to where to look, not a diagnosis.</div></div>';
+  const sig = [];
+  if (last) {
+    if (last.rhr != null) sig.push(['Resting HR', last.rhr + ' bpm', Score.rhr(last.rhr), Score.rhrFlag(last.rhr)]);
+    if (last.bpSys && last.bpDia) { const bf = Score.bpFlag(last.bpSys, last.bpDia); sig.push(['Blood pressure', last.bpSys + '/' + last.bpDia, bf.cls === 'green' ? 90 : bf.cls === 'orange' ? 60 : 30, bf.cls === 'green' ? '' : bf.label]); }
+    if (last.bodyFatPct != null) sig.push(['Body fat % (DEXA)', fmt(last.bodyFatPct, 1) + '%', null, '']);
+  }
+  if (sig.length) {
+    html += '<div class="card"><h2>Health signals</h2><div class="note">From your latest measurement. Record these under Measure.</div><table class="mini"><tr><th>Signal</th><th>Latest</th><th>Read</th></tr>'
+      + sig.map(s => { const col = s[2] == null ? 'teal' : s[2] >= 75 ? 'green' : s[2] >= 50 ? 'orange' : 'red'; return '<tr><td>' + s[0] + '</td><td>' + esc(s[1]) + '</td><td><span class="chip ' + col + '">' + (s[2] == null ? 'ref' : s[2]) + '</span></td></tr>' + (s[3] ? '<tr><td colspan="3"><div class="note" style="font-size:11px;margin:0">' + esc(s[3]) + '</div></td></tr>' : ''); }).join('')
+      + '</table></div>';
+  } else {
+    html += '<div class="card"><div class="note">Record resting HR, blood pressure or DEXA body-fat under Measure to see your health signals here.</div></div>';
+  }
+  return html;
+};
 App.lensBody = function (ms, h, now, fmt) {
   if (ms.length < 2)
     return `<div class="card"><div class="note" style="text-align:center;padding:20px">Add at least two measurements and your body trends light up here — graded green / amber / red.</div></div>`;
